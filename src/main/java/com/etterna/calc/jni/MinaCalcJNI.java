@@ -40,6 +40,7 @@ public class MinaCalcJNI {
 		}
 	}
 	
-	public native String test();
+	public native String getCalcVersion();
+	public native float[] minaSDCalc(String chartkey, float musicrate, float goal);
 
 }

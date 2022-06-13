@@ -1,5 +1,7 @@
 package com.etterna.calc;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,11 @@ public class CalcManagementController {
 	
 	@GetMapping("/test")
 	public String a() {
-		return "calc version "+calc.dothing();
+		return "calc version "+calc.getCalcVersion();
+	}
+	
+	@GetMapping("/ulate")
+	public List<Float> calculate() {
+		return calc.calc();
 	}
 }
