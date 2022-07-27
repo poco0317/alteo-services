@@ -12,7 +12,7 @@ public class GetUserSkillsetRanksResponse {
 		this.attributes = attributes;
 	}
 
-	public class Ranks {
+	public static class Ranks {
 		private Integer Overall;
 		private Integer Stream;
 		private Integer Jumpstream;

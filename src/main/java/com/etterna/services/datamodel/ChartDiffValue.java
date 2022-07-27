@@ -5,6 +5,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.pk.ChartDiffValuePk;
 
 /**
@@ -19,6 +20,12 @@ public class ChartDiffValue {
 	
 	@Column(name = "value", nullable = false)
 	private Double value;
+	
+	public ChartDiffValue() {}
+	public ChartDiffValue(Chart c, Double value, Skillset ss) {
+		this.id = new ChartDiffValuePk(c, ss);
+		this.value = value;
+	}
 
 	public ChartDiffValuePk getId() {
 		return id;

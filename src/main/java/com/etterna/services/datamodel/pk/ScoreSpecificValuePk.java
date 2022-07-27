@@ -10,32 +10,32 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.etterna.calc.Skillset;
-import com.etterna.services.datamodel.Chart;
+import com.etterna.services.datamodel.HighScore;
 
 @Embeddable
-public class ChartDiffValuePk implements Serializable {
+public class ScoreSpecificValuePk implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "chart_key")
-	private Chart chart;
+	@JoinColumn(name = "score_key")
+	private HighScore score;
 	
 	@Column(name = "skillset", nullable = false)
 	private Skillset skillset;
 	
-	public ChartDiffValuePk() {}
+	public ScoreSpecificValuePk() {}
 	
-	public ChartDiffValuePk(Chart chart, Skillset skillset) {
-		this.chart = chart;
+	public ScoreSpecificValuePk(HighScore chart, Skillset skillset) {
+		this.score = chart;
 		this.skillset = skillset;
 	}
-
-	public Chart getChart() {
-		return chart;
+	
+	public HighScore getScore() {
+		return score;
 	}
 
-	public void setChart(Chart chart) {
-		this.chart = chart;
+	public void setScore(HighScore score) {
+		this.score = score;
 	}
 
 	public Skillset getSkillset() {
@@ -48,7 +48,7 @@ public class ChartDiffValuePk implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(chart, skillset);
+		return Objects.hash(score, skillset);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class ChartDiffValuePk implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ChartDiffValuePk other = (ChartDiffValuePk) obj;
-		return Objects.equals(chart, other.chart) && Objects.equals(skillset, other.skillset);
+		ScoreSpecificValuePk other = (ScoreSpecificValuePk) obj;
+		return Objects.equals(score, other.score) && Objects.equals(skillset, other.skillset);
 	}
 }

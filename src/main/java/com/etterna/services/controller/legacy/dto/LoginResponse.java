@@ -12,7 +12,7 @@ public class LoginResponse {
 		this.attributes = attributes;
 	}
 
-	public class SessionTokenDTO {
+	public static class SessionTokenDTO {
 		private String accessToken;
 
 		public String getAccessToken() {

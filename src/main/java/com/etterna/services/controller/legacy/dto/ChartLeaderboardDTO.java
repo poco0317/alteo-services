@@ -12,7 +12,7 @@ public class ChartLeaderboardDTO {
 		this.attributes = attributes;
 	}
 
-	public class LeaderboardScoreDTO {
+	public static class LeaderboardScoreDTO {
 		private Boolean hasReplay;
 		private LeaderboardUserDTO user;
 		private LeaderboardJudgmentsDTO judgements;
@@ -112,7 +112,7 @@ public class ChartLeaderboardDTO {
 		public void setWifeVersion(Integer wifeVersion) {
 			this.wifeVersion = wifeVersion;
 		}
-		public class LeaderboardUserDTO {
+		public static class LeaderboardUserDTO {
 			private String userName;
 			private String avatar;
 			private Integer userId;
@@ -149,7 +149,7 @@ public class ChartLeaderboardDTO {
 				this.playerRating = playerRating;
 			}
 		}
-		public class LeaderboardJudgmentsDTO {
+		public static class LeaderboardJudgmentsDTO {
 			private Integer marvelous;
 			private Integer perfect;
 			private Integer great;
@@ -214,7 +214,7 @@ public class ChartLeaderboardDTO {
 				this.letGoHold = letGoHold;
 			}
 		}
-		public class LeaderboardSkillsetDTO {
+		public static class LeaderboardSkillsetDTO {
 			private Float Overall;
 			private Float Stream;
 			private Float Jumpstream;

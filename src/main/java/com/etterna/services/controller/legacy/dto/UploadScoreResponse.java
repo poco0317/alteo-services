@@ -6,6 +6,12 @@ public class UploadScoreResponse {
 	private String type;
 	private SSRResultsDTO attributes;
 	
+	public static SSRResultsDTO dummyDTO() {
+		SSRResultsDTO dto = new SSRResultsDTO();
+		SSRResultsDTO.SSRs ssrs = new SSRResultsDTO.SSRs(1, 1, 1, 1, 1, 1, 1, 1);
+		dto.setDiff(ssrs);
+		return dto;
+	}
 	
 	public String getType() {
 		return type;
@@ -27,7 +33,7 @@ public class UploadScoreResponse {
 	}
 
 
-	public class SSRResultsDTO {
+	public static class SSRResultsDTO {
 		private SSRs diff;
 		
 		public SSRs getDiff() {
@@ -38,7 +44,7 @@ public class UploadScoreResponse {
 			this.diff = diff;
 		}
 
-		public class SSRs {
+		public static class SSRs {
 			private Float Overall;
 			private Float Stream;
 			private Float Jumpstream;
@@ -50,6 +56,19 @@ public class UploadScoreResponse {
 			
 			// how much the player's overall increased by when given this score
 			private Float Rating;
+			
+			public SSRs() {}
+			public SSRs(float overall, float stream, float jumpstream, float handstream, float stamina, float jackspeed, float chordjack, float technical) {
+				this.Overall = overall;
+				this.Stream = stream;
+				this.Jumpstream = jumpstream;
+				this.Handstream = handstream;
+				this.Stamina = stamina;
+				this.JackSpeed = jackspeed;
+				this.Chordjack = chordjack;
+				this.Technical = technical;
+				this.Rating = 0.f;
+			}
 
 			public Float getOverall() {
 				return Overall;

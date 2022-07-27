@@ -12,7 +12,7 @@ public class GetUserInfoResponse {
 		this.attributes = attributes;
 	}
 
-	public class UserInfoDTO {
+	public static class UserInfoDTO {
 		private UserSkillsetDTO skillsets;
 		private Double playerRating;
 		
@@ -32,7 +32,7 @@ public class GetUserInfoResponse {
 			this.playerRating = playerRating;
 		}
 
-		public class UserSkillsetDTO {
+		public static class UserSkillsetDTO {
 			private Double Overall;
 			private Double Stream;
 			private Double Jumpstream;

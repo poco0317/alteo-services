@@ -4,6 +4,12 @@ public class GetClientVersionResponse {
 	
 	private VersionDTO attributes;
 	
+	public GetClientVersionResponse() {}
+	public GetClientVersionResponse(String version) {
+		attributes = new VersionDTO();
+		attributes.setVersion(version);
+	}
+	
 	public VersionDTO getAttributes() {
 		return attributes;
 	}
@@ -12,7 +18,7 @@ public class GetClientVersionResponse {
 		this.attributes = attributes;
 	}
 
-	public class VersionDTO {
+	public static class VersionDTO {
 		private String version;
 
 		public String getVersion() {

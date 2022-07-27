@@ -24,6 +24,9 @@ public class Chart {
 
 	@Column(name = "pack_name", nullable = true)
 	private String packName;
+	
+	@Column(name = "calc_version", nullable = false)
+	private Integer calcVersion;
 
 	@OneToMany(mappedBy = "id.chart")
 	private Set<ChartDiffValue> diffValues;
@@ -77,6 +80,14 @@ public class Chart {
 
 	public void setScores(Set<HighScore> scores) {
 		this.scores = scores;
+	}
+
+	public Integer getCalcVersion() {
+		return calcVersion;
+	}
+
+	public void setCalcVersion(Integer calcVersion) {
+		this.calcVersion = calcVersion;
 	}
 
 }

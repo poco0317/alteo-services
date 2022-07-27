@@ -25,11 +25,25 @@ public class User {
 	@Column(name = "password", nullable = false)
 	private String password;
 	
+	@Column(name = "salt", nullable = false)
+	private String salt;
+	
 	@OneToMany(mappedBy = "user")
 	private Set<HighScore> scores;
 	
 	@OneToMany(mappedBy = "user")
 	private Set<LoginSession> loginSessions;
+	
+	@OneToMany(mappedBy = "id.user")
+	private Set<UserSkillsetValue> skillsetValues;
+
+	public Set<UserSkillsetValue> getSkillsetValues() {
+		return skillsetValues;
+	}
+
+	public void setSkillsetValues(Set<UserSkillsetValue> skillsetValues) {
+		this.skillsetValues = skillsetValues;
+	}
 
 	public Long getUserId() {
 		return userId;
@@ -69,6 +83,14 @@ public class User {
 
 	public void setLoginSessions(Set<LoginSession> loginSessions) {
 		this.loginSessions = loginSessions;
+	}
+
+	public String getSalt() {
+		return salt;
+	}
+
+	public void setSalt(String salt) {
+		this.salt = salt;
 	}
 
 }
