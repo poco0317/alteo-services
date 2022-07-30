@@ -1,15 +1,11 @@
 package com.etterna.services.controller;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -20,9 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.etterna.services.XmlProfileParsingService;
 import com.etterna.services.dao.ChartDao;
 
 @RestController
@@ -36,6 +34,18 @@ public class GeneralServicesApiController {
 	
 	@Autowired
 	private ChartDao charts;
+	
+	@Autowired
+	private XmlProfileParsingService xmls;
+	
+	private String auth(String bearer) {
+		return bearer.replace("Bearer ","");
+	}
+	
+	@PostMapping("/xml/upload")
+	public void uploadXml(@RequestHeader("Authorization") String authJwt, InputStream upload) {
+		xmls.intakeProfile(upload, auth(authJwt));
+	}
 	
 	@PostMapping("/rank")
 	public void rank(InputStream upload) {
@@ -86,43 +96,6 @@ public class GeneralServicesApiController {
 			m_logger.warn("Attempted to parse upload and failed. {}", e);
 		}
 		
-		parseSongDatas(songdatas, packname);
+		charts.queuePackForRanking(songdatas, packname);
 	}
-	
-	private void parseSongDatas(List<String> songdatas, String packname) {
-		final Pattern titlepattern = Pattern.compile(";[\\s]*#TITLE:([^;]+);");
-		final Pattern ckpattern = Pattern.compile(";[\\s]*#CHARTKEY:([^;]+);");
-		final Pattern diffpattern = Pattern.compile(";[\\s]*#DIFFICULTY:([^;]+);");
-		for (String contents : songdatas) {
-			Matcher titlematch = titlepattern.matcher(contents);
-			Matcher ckmatcher = ckpattern.matcher(contents);
-			Matcher diffmatcher = diffpattern.matcher(contents);
-			
-			if (!titlematch.find()) {
-				m_logger.warn("Skipped song due to missing title in {}", packname);
-				m_logger.warn("{}", contents);
-			} else {
-				String songname = titlematch.group(1);
-				List<String> cks = new LinkedList<>();
-				while (ckmatcher.find()) {
-					cks.add(ckmatcher.group(1));
-				}
-				List<String> diffs = new LinkedList<>();
-				while (diffmatcher.find()) {
-					diffs.add(diffmatcher.group(1));
-				}
-				if (diffs.size() != cks.size()) {
-					m_logger.warn("Chartkey and Diff count is not the same!!! ck {} - diff {} - Skipped ranking {}", cks.size(), diffs.size(), songname);
-				} else {
-					m_logger.info("Found {} cks and {} diffs in song {} - pack {}", cks.size(), diffs.size(), songname, packname);
-					for (int i = 0; i < cks.size(); i++) {
-						charts.rankChart(cks.get(i), diffs.get(i), packname, songname);
-					}
-				}
-			}
-		}
-	}
-	
-	
-
 }

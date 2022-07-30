@@ -28,6 +28,9 @@ public class User {
 	@Column(name = "salt", nullable = false)
 	private String salt;
 	
+	@Column(name = "must_recalc_rating")
+	private Boolean mustRecalcRating = true;
+	
 	@OneToMany(mappedBy = "user")
 	private Set<HighScore> scores;
 	
@@ -91,6 +94,14 @@ public class User {
 
 	public void setSalt(String salt) {
 		this.salt = salt;
+	}
+
+	public Boolean getMustRecalcRating() {
+		return mustRecalcRating;
+	}
+
+	public void setMustRecalcRating(Boolean mustRecalcRating) {
+		this.mustRecalcRating = mustRecalcRating;
 	}
 
 }

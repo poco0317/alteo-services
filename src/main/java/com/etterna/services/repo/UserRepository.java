@@ -11,5 +11,6 @@ import com.etterna.services.datamodel.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	
 	public List<User> findByUsername(String username);
+	public List<User> findByMustRecalcRatingTrueOrMustRecalcRatingNull();
 
 }

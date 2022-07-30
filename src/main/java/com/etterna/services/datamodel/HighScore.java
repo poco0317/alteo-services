@@ -24,7 +24,7 @@ public class HighScore {
 	@JoinColumn(name = "chart_key", nullable = false)
 	private Chart chart;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 	

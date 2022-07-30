@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.math3.special.Erf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,5 +89,28 @@ public class CalcManager {
 				new ChartDiffValue(c, diffs.get(6).doubleValue(), Skillset.CHORDJACK),
 				new ChartDiffValue(c, diffs.get(7).doubleValue(), Skillset.TECHNICAL),
 		}));
+	}
+	
+	/**
+	 * Sigmoidal aggregation or whatever I forget the name
+	 * Given a bunch of values give a skill output
+	 * default rating = 0
+	 * default resolution = 10.24
+	 */
+	public Double aggregateSkill(List<Double> vals, double deltaMult, double resultMult, double rating, double resolution) {
+		for (int i = 0; i < 11; i++) {
+			double sum = 0.0;
+			do {
+				rating += resolution;
+				sum = 0.0;
+				for (Double v : vals) {
+					sum += Math.max(0.0, 2.0 / Erf.erfc(deltaMult * (v - rating)) - 2);
+				}
+			} while (Math.pow(2, rating * 0.1) < sum);
+			rating -= resolution;
+			resolution /= 2.0;
+		}
+		rating += resolution * 2.0;
+		return rating * resultMult;
 	}
 }

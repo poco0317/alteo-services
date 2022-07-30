@@ -1,18 +1,27 @@
 package com.etterna.services.dao;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
+import com.etterna.services.datamodel.RankedChartkey;
 import com.etterna.services.repo.ChartRepository;
 
 @Service
@@ -29,10 +38,79 @@ public class ChartDao {
 	@Autowired
 	private DiffService chartDiffs;
 	
+	private static Set<String> rankedChartkeys = ConcurrentHashMap.newKeySet();
+	private static ConcurrentHashMap<String, List<String>> packRankQueue = new ConcurrentHashMap<>();
+	
+	@Scheduled(fixedDelay = 1000L * 10L)
+	void handlePackRankQueue() {
+		if (packRankQueue.size() == 0) {
+			return;
+		}
+		m_logger.info("Handling pack ranking queue - {} to do", packRankQueue.size());
+		
+		Iterator<Entry<String, List<String>>> it = packRankQueue.entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<String, List<String>> entry = it.next();
+			m_logger.info("Ranking {}", entry.getKey());
+			rankSongDatas(entry.getValue(), entry.getKey());
+			it.remove();
+		}
+		
+		m_logger.info("Finished handling pack ranking queue");
+	}
+	
+	public void queuePackForRanking(List<String> songdatas, String packname) {
+		if (packRankQueue.containsKey(packname) || repo.findByPackName(packname).size() > 0) {
+			m_logger.warn("Attempted to rank pack already in queue or already ranked : {}", packname);
+		} else {
+			packRankQueue.put(packname, songdatas);
+			m_logger.info("Queued pack for ranking: {}", packname);
+		}
+	}
+	
+	private void rankSongDatas(List<String> songdatas, String packname) {
+		final Pattern titlepattern = Pattern.compile(";[\\s]*#TITLE:([^;]+);");
+		final Pattern ckpattern = Pattern.compile(";[\\s]*#CHARTKEY:([^;]+);");
+		final Pattern diffpattern = Pattern.compile(";[\\s]*#DIFFICULTY:([^;]+);");
+		for (String contents : songdatas) {
+			Matcher titlematch = titlepattern.matcher(contents);
+			Matcher ckmatcher = ckpattern.matcher(contents);
+			Matcher diffmatcher = diffpattern.matcher(contents);
+			
+			if (!titlematch.find()) {
+				m_logger.warn("Skipped song due to missing title in {}", packname);
+				m_logger.warn("{}", contents);
+			} else {
+				String songname = titlematch.group(1);
+				List<String> cks = new LinkedList<>();
+				while (ckmatcher.find()) {
+					cks.add(ckmatcher.group(1));
+				}
+				List<String> diffs = new LinkedList<>();
+				while (diffmatcher.find()) {
+					diffs.add(diffmatcher.group(1));
+				}
+				if (diffs.size() != cks.size()) {
+					m_logger.warn("Chartkey and Diff count is not the same!!! ck {} - diff {} - Skipped ranking {}", cks.size(), diffs.size(), songname);
+				} else {
+					m_logger.info("Found {} cks and {} diffs in song {} - pack {}", cks.size(), diffs.size(), songname, packname);
+					for (int i = 0; i < cks.size(); i++) {
+						rankChart(cks.get(i), diffs.get(i), packname, songname);
+					}
+				}
+			}
+		}
+	}
+	
 	@Transactional
 	public void init() {
 		m_logger.info("Starting Chart Difficulty Updates");
 		List<Chart> all = repo.findByCalcVersionLessThan(calc.getCalcVersion());
+		List<RankedChartkey> allRankedChartkeys = repo.findChartKeyByChartKeyNotNull();
+		if (allRankedChartkeys != null) {
+			rankedChartkeys.addAll(allRankedChartkeys.stream().map(c -> c.getChartKey()).collect(Collectors.toSet()));
+		}
+		
 		if (all != null) {
 			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), repo.count());
 			all.forEach(c -> {
@@ -49,9 +127,8 @@ public class ChartDao {
 		return repo.findById(chartkey).orElse(null);
 	}
 	
-	@Transactional
 	public boolean ranked(String chartkey) {
-		return get(chartkey) != null;
+		return rankedChartkeys.contains(chartkey);
 	}
 	
 	@Transactional
@@ -67,6 +144,7 @@ public class ChartDao {
 		c.setSongName(songname);
 		c.setCalcVersion(calc.getCalcVersion());
 		repo.save(c);
+		rankedChartkeys.add(chartkey);
 		
 		Set<ChartDiffValue> diffs = calc.calcDiffValues(c, 1.f, .93f);
 		chartDiffs.commitDiffs(c, diffs);

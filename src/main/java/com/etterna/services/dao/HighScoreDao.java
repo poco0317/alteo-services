@@ -23,6 +23,7 @@ import com.etterna.services.datamodel.User;
 import com.etterna.services.datamodel.pk.ScoreSpecificValuePk;
 import com.etterna.services.repo.HighScoreRepository;
 import com.etterna.services.repo.ScoreSpecificValueRepository;
+import com.etterna.services.repo.UserRepository;
 
 @Service
 public class HighScoreDao {
@@ -34,6 +35,9 @@ public class HighScoreDao {
 
 	@Autowired
 	private ScoreSpecificValueRepository ssrRepo;
+	
+	@Autowired
+	private UserRepository userRepo;
 
 	@Autowired
 	private ChartDao charts;
@@ -88,6 +92,13 @@ public class HighScoreDao {
 		ssrRepo.saveAll(ssrsUpdated);
 		hs.setSsrs(new HashSet<>(ssrsUpdated));
 		hsRepo.save(hs);
+		
+		User u = hs.getUser();
+		if (u != null && u.getMustRecalcRating() == null || !u.getMustRecalcRating()) {
+			u.setMustRecalcRating(true);
+			userRepo.save(u);
+		}
+		
 	}
 
 	@Transactional
