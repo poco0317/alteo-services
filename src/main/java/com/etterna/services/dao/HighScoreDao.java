@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -56,6 +57,17 @@ public class HighScoreDao {
 	public List<HighScore> getLeaderboard(String chartkey) {
 		return hsRepo.findByChartChartKey(chartkey);
 	}
+	
+	/**
+	 * Provides a list of Object[]
+	 * Each Object[] is length 2
+	 * index 0 is a HighScore
+	 * index 1 is a ScoreSpecificValue
+	 */
+	@Transactional
+	public List<Object[]> getScoresWithSkillsetValue(User u, Skillset ss) {
+		return hsRepo.findScoreWithSkillsetValue(u, calc.getCalcVersion(), ss);
+	}
 
 	/**
 	 * Return all scores either missing SSRs or having SSRs which are on an old calc version
@@ -63,7 +75,8 @@ public class HighScoreDao {
 	@Transactional
 	public List<HighScore> getScoresToCalculate() {
 		Set<HighScore> hsUncalculated = new HashSet<>();
-		hsUncalculated.addAll(hsRepo.findByCalcVersionLessThan(calc.getCalcVersion()));
+		hsUncalculated.addAll(hsRepo.findByCalcVersionLessThan(calc.getCalcVersion()).stream().filter(
+				hs -> hs.getSsrNorm() != null && hs.getManuallyInvalid() == false && hs.getNoCC() == true && hs.getMusicRate() != null).collect(Collectors.toList()));
 		return new ArrayList<>(hsUncalculated);
 	}
 

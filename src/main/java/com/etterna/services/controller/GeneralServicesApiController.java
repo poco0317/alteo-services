@@ -44,11 +44,13 @@ public class GeneralServicesApiController {
 	
 	@PostMapping("/xml/upload")
 	public void uploadXml(@RequestHeader("Authorization") String authJwt, InputStream upload) {
+		m_logger.info("API CALLED :: UploadXml");
 		xmls.intakeProfile(upload, auth(authJwt));
 	}
 	
 	@PostMapping("/rank")
 	public void rank(InputStream upload) {
+		m_logger.info("API CALLED :: Rank (rank pack)");
 		
 		ArrayList<String> songdatas = new ArrayList<>();
 		final Pattern rootnamer = Pattern.compile("([^\\\\/]*)[\\\\/]");

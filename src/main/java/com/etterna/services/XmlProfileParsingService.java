@@ -30,6 +30,7 @@ import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.User;
+import com.etterna.services.repo.HighScoreRepository;
 
 @Service
 public class XmlProfileParsingService {
@@ -44,6 +45,9 @@ public class XmlProfileParsingService {
 	
 	@Autowired
 	private UserDao users;
+	
+	@Autowired
+	private HighScoreRepository hsRepo;
 	
 	private static ConcurrentHashMap<Long, byte[]> queuedXmls = new ConcurrentHashMap<>();
 	
@@ -169,7 +173,7 @@ public class XmlProfileParsingService {
 						hs.setCalcVersion(0);
 						hs.setChart(chart);
 						hs.setDateStr(guaranteeGet(scoreElement, "DateTime"));
-						hs.setEtternaValid(nullint(guaranteeGet(scoreElement, "EtternaValid")));
+ 						hs.setEtternaValid(nullint(guaranteeGet(scoreElement, "EtternaValid")));
 						hs.setGrade(guaranteeGet(scoreElement, "Grade"));
 						hs.setGuid(guaranteeGet(scoreElement, "MachineGuid"));
 						hs.setJudgeScale(nulldouble(guaranteeGet(scoreElement, "JudgeScale")));
@@ -182,7 +186,7 @@ public class XmlProfileParsingService {
 						hs.setScoreKey(scorekey);
 						Double ssrnorm = nulldouble(guaranteeGet(scoreElement, "SSRNormPercent"));
 						if (ssrnorm != null) {
-							hs.setSsrNorm((int)(100.0 * ssrnorm));
+							hs.setSsrNorm((int)(1000000.0 * ssrnorm));
 						} else {
 							hs.setSsrNorm(null);
 						}
@@ -220,7 +224,10 @@ public class XmlProfileParsingService {
 				}
 			}
 			
-			m_logger.info("Finished parsing XML for user {} - {} ranked scores", user.getUsername(), highscores.size());
+			m_logger.info("Finished parsing XML for user {} - {} ranked scores - Saving to DB", user.getUsername(), highscores.size());
+			if (highscores.size() > 0)
+				hsRepo.saveAll(highscores);
+			m_logger.info("Saved highscores for user {} to DB", user.getUsername());
 			
 			return null; // success
 		} catch (Exception e) {
@@ -235,7 +242,14 @@ public class XmlProfileParsingService {
 			if (l != null) {
 				Node i = l.item(0);
 				if (i != null) {
-					return i.getNodeValue();
+					// ??? i do not know
+					NodeList c = i.getChildNodes();
+					if (c != null) {
+						Node ii = c.item(0);
+						if (ii != null) {
+							return ii.getNodeValue();
+						}
+					}
 				}
 			}
 		}

@@ -15,5 +15,4 @@ public interface ScoreSpecificValueRepository extends JpaRepository<ScoreSpecifi
 	
 	public List<ScoreSpecificValue> findByIdSkillsetAndCalcVersionLessThan(Skillset skillset, Integer calcVersion);
 	public List<ScoreSpecificValue> findByIdScore(HighScore score);
-	
 }

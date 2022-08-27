@@ -29,6 +29,7 @@ import com.etterna.services.controller.legacy.dto.CountryCodeDTO;
 import com.etterna.services.controller.legacy.dto.GetClientVersionResponse;
 import com.etterna.services.controller.legacy.dto.GetFavoritesResponse;
 import com.etterna.services.controller.legacy.dto.GetScoreReplayResponse;
+import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserSkillsetRanksResponse;
 import com.etterna.services.controller.legacy.dto.GetUserSkillsetRanksResponse.Ranks;
@@ -192,17 +193,30 @@ public class LegacyServicesApiController {
 	}
 	
 	@GetMapping("/user/{userName}/top/")
-	public String getOverallTop25(@PathVariable String userName) {
+	public ResponseData<List<GetSkillsetTopXDTO>> getOverallTop25(@PathVariable String userName) {
 		m_logger.info("API CALLED :: GetOverallTop25");
-		userService.getTop25();
-		return dummy();
+		List<GetSkillsetTopXDTO> dtos = userService.getTop25(userName, "Overall", 25);
+		
+		ResponseData<List<GetSkillsetTopXDTO>> r = new ResponseData<>();
+		if (dtos == null) {
+			r.error(404);
+		} else {
+			r.setData(dtos);
+		}
+		return r;
 	}
 	
 	@GetMapping("/user/{userName}/top/{skillset}/{count}")
-	public String getSkillsetTopX(@PathVariable String userName, @PathVariable String skillset, @PathVariable int count) {
+	public ResponseData<List<GetSkillsetTopXDTO>> getSkillsetTopX(@PathVariable String userName, @PathVariable String skillset, @PathVariable int count) {
 		m_logger.info("API CALLED :: GetSkillsetTopX");
-		userService.getTop25();
-		return dummy();
+		List<GetSkillsetTopXDTO> dtos = userService.getTop25(userName, skillset, count);
+		ResponseData<List<GetSkillsetTopXDTO>> r = new ResponseData<>();
+		if (dtos == null) {
+			r.error(404);
+		} else {
+			r.setData(dtos);
+		}
+		return r;
 	}
 	
 	@GetMapping("/user/{userName}")
