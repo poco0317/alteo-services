@@ -5,11 +5,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 import org.apache.commons.math3.special.Erf;
 import org.slf4j.Logger;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.jni.MinaCalcJNI;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
+import com.etterna.services.datamodel.ScoreSpecificValue;
 
 @Service
 public class CalcManager {
@@ -69,8 +73,62 @@ public class CalcManager {
 		return o;
 	}
 	
-	private void printSkillsets(List<Float> ssrs) {
+	public static void printSkillsets(List<Float> ssrs) {
 		m_logger.info("Overall {} | Stream {} | Jumpstream {} | Handstream {} | Stamina {} | JackSpeed {} | Chordjack {} | Technical {}", ssrs.get(0), ssrs.get(1), ssrs.get(2), ssrs.get(3), ssrs.get(4), ssrs.get(5), ssrs.get(6), ssrs.get(7));
+	}
+	
+	@Transactional
+	public String diffsToString(Set<ChartDiffValue> diffs, boolean inHTMLTableForm) {
+		StringBuilder sb = new StringBuilder();
+		
+		List<ChartDiffValue> zzz = new ArrayList<>(diffs);
+		Collections.sort(zzz, new Comparator<ChartDiffValue>() {
+			@Override
+			public int compare(ChartDiffValue d1, ChartDiffValue d2) {
+				return d1.getId().getSkillset().compareTo(d2.getId().getSkillset());
+			}
+		});
+		if (!inHTMLTableForm) {
+			zzz.forEach(ss -> {
+				sb.append(ss.getId().getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
+			});
+			if (zzz.size() > 0) {
+				sb.delete(sb.length() - 3, sb.length());
+			}
+		} else {
+			zzz.forEach(ss -> {
+				sb.append("<td>"+String.format("%5.2f", ss.getValue())+"</td>");
+			});
+		}
+		
+		return sb.toString();
+	}
+	
+	@Transactional
+	public String ssrsToString(Set<ScoreSpecificValue> diffs, boolean inHTMLTableForm) {
+		StringBuilder sb = new StringBuilder();
+		
+		List<ScoreSpecificValue> zzz = new ArrayList<>(diffs);
+		Collections.sort(zzz, new Comparator<ScoreSpecificValue>() {
+			@Override
+			public int compare(ScoreSpecificValue d1, ScoreSpecificValue d2) {
+				return d1.getId().getSkillset().compareTo(d2.getId().getSkillset());
+			}
+		});
+		if (!inHTMLTableForm) {
+			zzz.forEach(ss -> {
+				sb.append(ss.getId().getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
+			});
+			if (zzz.size() > 0) {
+				sb.delete(sb.length() - 3, sb.length());
+			}
+		} else {
+			zzz.forEach(ss -> {
+				sb.append("<td>"+String.format("%5.2f", ss.getValue())+"</td>");
+			});
+		}
+		
+		return sb.toString();
 	}
 	
 	/**

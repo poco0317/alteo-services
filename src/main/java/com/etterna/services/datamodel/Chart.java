@@ -33,7 +33,7 @@ public class Chart {
 
 	@OneToMany(mappedBy = "chart")
 	private Set<HighScore> scores;
-
+	
 	public String getChartKey() {
 		return chartKey;
 	}

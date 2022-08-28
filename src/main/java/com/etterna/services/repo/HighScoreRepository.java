@@ -19,4 +19,7 @@ public interface HighScoreRepository extends JpaRepository<HighScore, String> {
 	
 	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.user = :user and ssv.id.skillset = :ss")
 	List<Object[]> findScoreWithSkillsetValue(User user, Integer calcVersion, Skillset ss);
+	
+	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.user = :user")
+	List<Object[]> findScoreWithAllSkillsets(User user, Integer calcVersion);
 }

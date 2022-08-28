@@ -2,6 +2,7 @@ package com.etterna.services.dao;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.PasswordUtil;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
 import com.etterna.services.datamodel.User;
@@ -171,6 +173,113 @@ public class UserDao {
 		user.setPassword(pwsalt);
 		repo.save(user);
 		return true;
+	}
+	
+	@Transactional
+	public UserWithSkillsets getUserSkillsets(User u) {
+		List<UserSkillsetValue> ssvs = ssRepo.findByIdUser(u);
+		UserWithSkillsets o = new UserWithSkillsets();
+		o.setUser(u);
+		ssvs.forEach(ssv -> {
+			final Double v = ssv.getValue();
+			switch (ssv.getId().getSkillset()) {
+				case OVERALL:
+					o.setOverall(v);
+					break;
+				case STREAM:
+					o.setStream(v);
+					break;
+				case JUMPSTREAM:
+					o.setJumpstream(v);
+					break;
+				case HANDSTREAM:
+					o.setHandstream(v);
+					break;
+				case STAMINA:
+					o.setStamina(v);
+					break;
+				case JACKSPEED:
+					o.setJackspeed(v);
+					break;
+				case CHORDJACK:
+					o.setChordjack(v);
+					break;
+				case TECHNICAL:
+					o.setTechnical(v);
+					break;
+				default:
+					break;
+			}
+		});
+		
+		return o;
+	}
+	
+	@Transactional
+	public List<UserWithSkillsets> getUserLeaderboard(Skillset ss) {
+		// a list of [User, UserSkillsetValue]
+		// we need to compile the data structure
+		List<Object[]> usersAndSkillsets = repo.findUsersWithSkillsets();
+		
+		// users to structs
+		HashMap<String, UserWithSkillsets> usvs = new HashMap<>();
+		usersAndSkillsets.forEach(usv -> {
+			User u = (User)usv[0];
+			UserSkillsetValue ssv = (UserSkillsetValue)usv[1];
+			
+			if (!usvs.containsKey(u.getUsername())) {
+				usvs.put(u.getUsername(), new UserWithSkillsets());
+				usvs.get(u.getUsername()).setUser(u);
+			}
+			final Skillset ssvss = ssv.getId().getSkillset();
+			final Double v = ssv.getValue();
+			switch (ssvss) {
+				case OVERALL:
+					usvs.get(u.getUsername()).setOverall(v);
+				case STREAM:
+					usvs.get(u.getUsername()).setStream(v);
+				case JUMPSTREAM:
+					usvs.get(u.getUsername()).setJumpstream(v);
+				case HANDSTREAM:
+					usvs.get(u.getUsername()).setHandstream(v);
+				case STAMINA:
+					usvs.get(u.getUsername()).setStamina(v);
+				case JACKSPEED:
+					usvs.get(u.getUsername()).setJackspeed(v);
+				case CHORDJACK:
+					usvs.get(u.getUsername()).setChordjack(v);
+				case TECHNICAL:
+					usvs.get(u.getUsername()).setTechnical(v);
+				default:
+					break;
+			}
+		});
+		
+		return usvs.values().stream().sorted(new Comparator<UserWithSkillsets>() {
+			@Override
+			public int compare(UserWithSkillsets a, UserWithSkillsets b) {
+				switch (ss) {
+					case OVERALL:
+						return b.getOverall().compareTo(a.getOverall());
+					case STREAM:
+						return b.getStream().compareTo(a.getStream());
+					case JUMPSTREAM:
+						return b.getJumpstream().compareTo(a.getJumpstream());
+					case HANDSTREAM:
+						return b.getHandstream().compareTo(a.getHandstream());
+					case STAMINA:
+						return b.getStamina().compareTo(a.getStamina());
+					case JACKSPEED:
+						return b.getJackspeed().compareTo(a.getJackspeed());
+					case CHORDJACK:
+						return b.getChordjack().compareTo(a.getChordjack());
+					case TECHNICAL:
+						return b.getTechnical().compareTo(a.getTechnical());
+					default:
+						return b.getOverall().compareTo(a.getOverall());
+				}
+			}
+		}).collect(Collectors.toList());
 	}
 
 }

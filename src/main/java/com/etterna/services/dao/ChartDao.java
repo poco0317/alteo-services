@@ -1,5 +1,7 @@
 package com.etterna.services.dao;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -151,6 +153,38 @@ public class ChartDao {
 		c.setDiffValues(diffs);
 		
 		return true;
+	}
+	
+	@Transactional
+	public List<String> getAllPacks() {
+		List<String> packs = repo.findDistinctPackName();
+		Collections.sort(packs, new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				return s1.compareToIgnoreCase(s2);
+			}
+		});
+		return packs;
+	}
+	
+	@Transactional
+	public List<Chart> getChartsInPack(String pack) {
+		List<Chart> charts = repo.findByPackName(pack);
+		
+		Collections.sort(charts, new Comparator<Chart>() {
+			@Override
+			public int compare(Chart c1, Chart c2) {
+				int songname = c1.getSongName().compareToIgnoreCase(c2.getSongName());
+				if (songname == 0) {
+					int diff = c1.getDifficulty().compareToIgnoreCase(c2.getDifficulty());
+					return diff;
+				} else {
+					return songname;
+				}
+			}
+		});
+		
+		return charts;
 	}
 
 }

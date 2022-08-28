@@ -1,6 +1,8 @@
 package com.etterna.services.dao;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
+import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
@@ -55,7 +58,116 @@ public class HighScoreDao {
 	
 	@Transactional
 	public List<HighScore> getLeaderboard(String chartkey) {
-		return hsRepo.findByChartChartKey(chartkey);
+		List<HighScore> hses = hsRepo.findByChartChartKey(chartkey);
+		
+		hses.sort(new Comparator<HighScore>() {
+			@Override
+			public int compare(HighScore h1, HighScore h2) {
+				Double s1 = 0.0;
+				Double s2 = 0.0;
+				
+				for (ScoreSpecificValue ssv : h1.getSsrs()) {
+					if (ssv.getId().getSkillset() == Skillset.OVERALL) {
+						s1 = ssv.getValue();
+						break;
+					}
+				}
+				for (ScoreSpecificValue ssv : h2.getSsrs()) {
+					if (ssv.getId().getSkillset() == Skillset.OVERALL) {
+						s2 = ssv.getValue();
+						break;
+					}
+				}
+				if (s2.compareTo(s1) == 0) {
+					return h2.getSsrNorm().compareTo(h1.getSsrNorm());
+				}
+				return s2.compareTo(s1);
+			}
+		});
+		
+		return hses;
+	}
+	
+	@Transactional
+	public List<HighScore> getRateLeaderboard(String chartkey, int rate) {
+		List<HighScore> hses = hsRepo.findByChartChartKey(chartkey).stream().filter(hs -> hs.getMusicRate() == rate).collect(Collectors.toList());
+		
+		hses.sort(new Comparator<HighScore>() {
+			@Override
+			public int compare(HighScore h1, HighScore h2) {
+				return h2.getSsrNorm().compareTo(h1.getSsrNorm());
+			}
+		});
+		return hses;
+	}
+	
+	@Transactional
+	public List<HighScoreWithSkillsets> getUserScores(User u, Skillset ss) {
+		List<Object[]> hses = hsRepo.findScoreWithAllSkillsets(u, calc.getCalcVersion());
+		return sortBySkillsets(hses, ss);
+	}
+	
+	/**
+	 * Input is [HighScore, ScoreSpecificValue]
+	 */
+	private List<HighScoreWithSkillsets> sortBySkillsets(List<Object[]> obs, Skillset ss) {
+		HashMap<String, HighScoreWithSkillsets> hsvs = new HashMap<>();
+		obs.forEach(o -> {
+			HighScore hs = (HighScore)o[0];
+			ScoreSpecificValue ssv = (ScoreSpecificValue)o[1];
+			if (!hsvs.containsKey(hs.getScoreKey())) {
+				hsvs.put(hs.getScoreKey(), new HighScoreWithSkillsets());
+				hsvs.get(hs.getScoreKey()).setScore(hs);
+			}
+			final Skillset ssvss = ssv.getId().getSkillset();
+			final Double v = ssv.getValue();
+			switch (ssvss) {
+				case OVERALL:
+					hsvs.get(hs.getScoreKey()).setOverall(v);
+				case STREAM:
+					hsvs.get(hs.getScoreKey()).setStream(v);
+				case JUMPSTREAM:
+					hsvs.get(hs.getScoreKey()).setJumpstream(v);
+				case HANDSTREAM:
+					hsvs.get(hs.getScoreKey()).setHandstream(v);
+				case STAMINA:
+					hsvs.get(hs.getScoreKey()).setStamina(v);
+				case JACKSPEED:
+					hsvs.get(hs.getScoreKey()).setJackspeed(v);
+				case CHORDJACK:
+					hsvs.get(hs.getScoreKey()).setChordjack(v);
+				case TECHNICAL:
+					hsvs.get(hs.getScoreKey()).setTechnical(v);
+				default:
+					break;
+			}
+		});
+		
+		return hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
+			@Override
+			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
+				switch (ss) {
+					case OVERALL:
+						return b.getOverall().compareTo(a.getOverall());
+					case STREAM:
+						return b.getStream().compareTo(a.getStream());
+					case JUMPSTREAM:
+						return b.getJumpstream().compareTo(a.getJumpstream());
+					case HANDSTREAM:
+						return b.getHandstream().compareTo(a.getHandstream());
+					case STAMINA:
+						return b.getStamina().compareTo(a.getStamina());
+					case JACKSPEED:
+						return b.getJackspeed().compareTo(a.getJackspeed());
+					case CHORDJACK:
+						return b.getChordjack().compareTo(a.getChordjack());
+					case TECHNICAL:
+						return b.getTechnical().compareTo(a.getTechnical());
+					default:
+						return b.getOverall().compareTo(a.getOverall());
+				}
+			}
+		}).collect(Collectors.toList());
 	}
 	
 	/**

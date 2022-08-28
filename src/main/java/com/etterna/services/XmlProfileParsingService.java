@@ -148,7 +148,7 @@ public class XmlProfileParsingService {
 					Node rateNode = scoresAt.item(j);
 					Element rateElement = (Element)rateNode;
 					
-					Integer rate = (int)(100.f * Float.parseFloat(rateNode.getAttributes().getNamedItem("Rate").getNodeValue()));
+					Integer rate = Math.round(100.f * Float.parseFloat(rateNode.getAttributes().getNamedItem("Rate").getNodeValue()));
 					
 					NodeList scores = rateElement.getElementsByTagName("Score");
 					for (int k = 0; k < scores.getLength(); k++) {
@@ -186,7 +186,7 @@ public class XmlProfileParsingService {
 						hs.setScoreKey(scorekey);
 						Double ssrnorm = nulldouble(guaranteeGet(scoreElement, "SSRNormPercent"));
 						if (ssrnorm != null) {
-							hs.setSsrNorm((int)(1000000.0 * ssrnorm));
+							hs.setSsrNorm((int)Math.round(1000000.0 * ssrnorm));
 						} else {
 							hs.setSsrNorm(null);
 						}
