@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
@@ -84,11 +85,15 @@ public class CalcManager {
 		m_logger.info("Overall {} | Stream {} | Jumpstream {} | Handstream {} | Stamina {} | JackSpeed {} | Chordjack {} | Technical {}", ssrs.get(0), ssrs.get(1), ssrs.get(2), ssrs.get(3), ssrs.get(4), ssrs.get(5), ssrs.get(6), ssrs.get(7));
 	}
 	
+	/**
+	 * Outputs diff values in basic string or HTML table row form
+	 * Will only display values that are of the latest calc version
+	 */
 	@Transactional
 	public String diffsToString(Set<ChartDiffValue> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ChartDiffValue> zzz = new ArrayList<>(diffs);
+		List<ChartDiffValue> zzz = diffs.stream().filter(dv -> dv.getId().getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
 		Collections.sort(zzz, new Comparator<ChartDiffValue>() {
 			@Override
 			public int compare(ChartDiffValue d1, ChartDiffValue d2) {
@@ -115,7 +120,7 @@ public class CalcManager {
 	public String ssrsToString(Set<ScoreSpecificValue> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ScoreSpecificValue> zzz = new ArrayList<>(diffs);
+		List<ScoreSpecificValue> zzz = diffs.stream().filter(ssv -> ssv.getId().getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
 		Collections.sort(zzz, new Comparator<ScoreSpecificValue>() {
 			@Override
 			public int compare(ScoreSpecificValue d1, ScoreSpecificValue d2) {
@@ -143,16 +148,17 @@ public class CalcManager {
 	 */
 	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
 		m_logger.info("Getting MSD for file {}", c.getChartKey());
-		List<Float> diffs = getSSR(c.getChartKey(), rate, goal);
+		final List<Float> diffs = getSSR(c.getChartKey(), rate, goal);
+		final int ver = getCalcVersion();
 		return new HashSet<>(Arrays.asList(new ChartDiffValue[] {
-				new ChartDiffValue(c, diffs.get(0).doubleValue(), Skillset.OVERALL),
-				new ChartDiffValue(c, diffs.get(1).doubleValue(), Skillset.STREAM),
-				new ChartDiffValue(c, diffs.get(2).doubleValue(), Skillset.JUMPSTREAM),
-				new ChartDiffValue(c, diffs.get(3).doubleValue(), Skillset.HANDSTREAM),
-				new ChartDiffValue(c, diffs.get(4).doubleValue(), Skillset.STAMINA),
-				new ChartDiffValue(c, diffs.get(5).doubleValue(), Skillset.JACKSPEED),
-				new ChartDiffValue(c, diffs.get(6).doubleValue(), Skillset.CHORDJACK),
-				new ChartDiffValue(c, diffs.get(7).doubleValue(), Skillset.TECHNICAL),
+				new ChartDiffValue(c, diffs.get(0).doubleValue(), Skillset.OVERALL, ver),
+				new ChartDiffValue(c, diffs.get(1).doubleValue(), Skillset.STREAM, ver),
+				new ChartDiffValue(c, diffs.get(2).doubleValue(), Skillset.JUMPSTREAM, ver),
+				new ChartDiffValue(c, diffs.get(3).doubleValue(), Skillset.HANDSTREAM, ver),
+				new ChartDiffValue(c, diffs.get(4).doubleValue(), Skillset.STAMINA, ver),
+				new ChartDiffValue(c, diffs.get(5).doubleValue(), Skillset.JACKSPEED, ver),
+				new ChartDiffValue(c, diffs.get(6).doubleValue(), Skillset.CHORDJACK, ver),
+				new ChartDiffValue(c, diffs.get(7).doubleValue(), Skillset.TECHNICAL, ver),
 		}));
 	}
 	

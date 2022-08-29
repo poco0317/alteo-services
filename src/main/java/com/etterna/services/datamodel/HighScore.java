@@ -77,7 +77,7 @@ public class HighScore {
 	private Boolean noCC;
 	
 	@Column(name = "calc_vers")
-	private Integer calcVersion;
+	private Integer calcVersion = 0;
 	@Column(name = "wife_vers")
 	private Integer wifeVersion;
 	@Column(name = "top_score")

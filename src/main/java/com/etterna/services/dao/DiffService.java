@@ -45,7 +45,6 @@ public class DiffService {
 
 	@Transactional
 	public void commitDiffs(Chart c, Set<ChartDiffValue> diffs) {
-		chartDiffs.deleteByIdChart(c);
 		chartDiffs.saveAll(diffs);
 	}
 

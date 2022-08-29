@@ -52,11 +52,19 @@ public class ScoreService {
 	
 	private ExecutorService bulkSsrExecutor = Executors.newWorkStealingPool();
 	
+	private static final boolean DELETE_OLD_SSRS = false;
+	
 	@Scheduled(fixedDelay = 30L * 1000L)
 	private void updateSSRs() {
 		List<HighScore> scores = highScores.getScoresToCalculate();
 		if (scores.size() > 0) {
 			m_logger.info("Updating queued scores: {} scores", scores.size());
+			
+			if (DELETE_OLD_SSRS) {
+				m_logger.info("Deleting SSRs on old calc version...");
+				long deleted = highScores.deleteSsrsOlderThan(calc.getCalcVersion());
+				m_logger.info("Deleted {} SSRs on old calc versions", deleted);
+			}
 			
 			// chartkeys to scores
 			ConcurrentHashMap<String, List<HighScore>> organizedScores = new ConcurrentHashMap<>();

@@ -66,11 +66,11 @@ public class LegacyServicesApiController {
 	
 	private static final String GAME_VERSION = "0.71.2";
 	
-	private String dummy() {
+	private static String dummy() {
 		return "{\"errors\":[{\"status\":404}]}";
 	}
 	
-	private String auth(String bearer) {
+	private static String auth(String bearer) {
 		return bearer.replace("Bearer ","");
 	}
 	

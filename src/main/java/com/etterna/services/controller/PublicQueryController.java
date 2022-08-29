@@ -3,7 +3,6 @@ package com.etterna.services.controller;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;

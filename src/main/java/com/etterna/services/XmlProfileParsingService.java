@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -120,11 +119,6 @@ public class XmlProfileParsingService {
 			 */
 			
 			List<HighScore> highscores = new LinkedList<>();
-			
-			int total = doc.getElementsByTagName("Score").getLength();
-			int cnt = 0;
-			int percents = 0;
-			
 			NodeList chartNodes = doc.getElementsByTagName("Chart");
 			for (int i = 0; i < chartNodes.getLength(); i++) {
 				Node chartNode = chartNodes.item(i);
@@ -138,7 +132,6 @@ public class XmlProfileParsingService {
 						skipped += ((Element)sa.item(l)).getElementsByTagName("Score").getLength();
 					}
 					m_logger.info("Chartkey {} is not ranked - Skipped {} scores", chartkey, skipped);
-					cnt += skipped;
 					continue;
 				}
 				
@@ -152,16 +145,6 @@ public class XmlProfileParsingService {
 					
 					NodeList scores = rateElement.getElementsByTagName("Score");
 					for (int k = 0; k < scores.getLength(); k++) {
-						cnt++;
-						if (cnt > total / 5) {
-							int intervals = 1;
-							while (cnt > total / 5) {
-								cnt -= total / 5;
-								intervals++;
-							}
-							percents += intervals;
-							m_logger.info("User {} XML Progress {}%", user.getUsername(), percents * 5);
-						}
 						
 						Node scoreNode = scores.item(k);
 						Element scoreElement = (Element)scoreNode;

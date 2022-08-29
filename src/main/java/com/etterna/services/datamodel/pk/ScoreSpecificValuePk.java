@@ -23,11 +23,15 @@ public class ScoreSpecificValuePk implements Serializable {
 	@Column(name = "skillset", nullable = false)
 	private Skillset skillset;
 	
+	@Column(name = "calc_version", nullable = false)
+	private Integer calcVersion;
+	
 	public ScoreSpecificValuePk() {}
 	
-	public ScoreSpecificValuePk(HighScore chart, Skillset skillset) {
+	public ScoreSpecificValuePk(HighScore chart, Skillset skillset, Integer calcVersion) {
 		this.score = chart;
 		this.skillset = skillset;
+		this.calcVersion = calcVersion;
 	}
 	
 	public HighScore getScore() {
@@ -46,9 +50,17 @@ public class ScoreSpecificValuePk implements Serializable {
 		this.skillset = skillset;
 	}
 
+	public Integer getCalcVersion() {
+		return calcVersion;
+	}
+
+	public void setCalcVersion(Integer calcVersion) {
+		this.calcVersion = calcVersion;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(score, skillset);
+		return Objects.hash(calcVersion, score, skillset);
 	}
 
 	@Override
@@ -60,6 +72,8 @@ public class ScoreSpecificValuePk implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ScoreSpecificValuePk other = (ScoreSpecificValuePk) obj;
-		return Objects.equals(score, other.score) && Objects.equals(skillset, other.skillset);
+		return Objects.equals(calcVersion, other.calcVersion) && Objects.equals(score, other.score)
+				&& skillset == other.skillset;
 	}
+
 }

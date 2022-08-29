@@ -22,8 +22,8 @@ public class ChartDiffValue {
 	private Double value;
 	
 	public ChartDiffValue() {}
-	public ChartDiffValue(Chart c, Double value, Skillset ss) {
-		this.id = new ChartDiffValuePk(c, ss);
+	public ChartDiffValue(Chart c, Double value, Skillset ss, Integer calcVersion) {
+		this.id = new ChartDiffValuePk(c, ss, calcVersion);
 		this.value = value;
 	}
 

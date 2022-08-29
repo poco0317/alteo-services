@@ -1,12 +1,10 @@
 package com.etterna.services.dao;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -183,13 +181,17 @@ public class HighScoreDao {
 
 	/**
 	 * Return all scores either missing SSRs or having SSRs which are on an old calc version
+	 * Will skip a score which: is invalid by site, is cc on, is missing ssr/rate
+	 * Currently does not care if the xml/game invalidates the score
 	 */
 	@Transactional
 	public List<HighScore> getScoresToCalculate() {
-		Set<HighScore> hsUncalculated = new HashSet<>();
-		hsUncalculated.addAll(hsRepo.findByCalcVersionLessThan(calc.getCalcVersion()).stream().filter(
-				hs -> hs.getSsrNorm() != null && hs.getManuallyInvalid() == false && hs.getNoCC() == true && hs.getMusicRate() != null).collect(Collectors.toList()));
-		return new ArrayList<>(hsUncalculated);
+		return hsRepo.findRecalculableScores(calc.getCalcVersion());
+	}
+	
+	@Transactional
+	public Long deleteSsrsOlderThan(Integer calcVersion) {
+		return ssrRepo.deleteByIdCalcVersionLessThan(calcVersion);
 	}
 
 	@Transactional
@@ -204,13 +206,12 @@ public class HighScoreDao {
 		
 		List<ScoreSpecificValue> ssrsUpdated = new LinkedList<>();
 		for(Skillset ss : Skillset.values()) {
-			ScoreSpecificValuePk id = new ScoreSpecificValuePk(hs, ss);
+			ScoreSpecificValuePk id = new ScoreSpecificValuePk(hs, ss, calc.getCalcVersion());
 			ScoreSpecificValue ssr = ssrRepo.findById(id).orElse(null);
 			if (ssr == null) {
 				ssr = new ScoreSpecificValue();
 				ssr.setId(id);
 			}
-			ssr.setCalcVersion(calc.getCalcVersion());
 			ssr.setValue(ssrs.get(ss.ordinal()).doubleValue());
 			ssrsUpdated.add(ssr);
 		}

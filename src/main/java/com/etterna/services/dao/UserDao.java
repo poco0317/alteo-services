@@ -70,7 +70,7 @@ public class UserDao {
 					if (hs.getCalcVersion() < calc.getCalcVersion()) {
 						continue;
 					}
-					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScore(hs);
+					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScoreAndIdCalcVersion(hs, calc.getCalcVersion());
 					for (ScoreSpecificValue ssr : ssrs) {
 						Skillset ss = ssr.getId().getSkillset();
 						switch (ss) {

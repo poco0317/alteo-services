@@ -16,17 +16,6 @@ public class ScoreSpecificValue {
 	
 	@Column(name = "value", nullable = false)
 	private Double value;
-	
-	@Column(name = "calc_version", nullable = false)
-	private Integer calcVersion;
-
-	public Integer getCalcVersion() {
-		return calcVersion;
-	}
-
-	public void setCalcVersion(Integer calcVersion) {
-		this.calcVersion = calcVersion;
-	}
 
 	public ScoreSpecificValuePk getId() {
 		return id;

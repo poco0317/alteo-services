@@ -22,12 +22,16 @@ public class ChartDiffValuePk implements Serializable {
 	
 	@Column(name = "skillset", nullable = false)
 	private Skillset skillset;
+
+	@Column(name = "calc_version", nullable = false)
+	private Integer calcVersion;
 	
 	public ChartDiffValuePk() {}
 	
-	public ChartDiffValuePk(Chart chart, Skillset skillset) {
+	public ChartDiffValuePk(Chart chart, Skillset skillset, Integer calcVersion) {
 		this.chart = chart;
 		this.skillset = skillset;
+		this.calcVersion = calcVersion;
 	}
 
 	public Chart getChart() {
@@ -46,9 +50,17 @@ public class ChartDiffValuePk implements Serializable {
 		this.skillset = skillset;
 	}
 
+	public Integer getCalcVersion() {
+		return calcVersion;
+	}
+
+	public void setCalcVersion(Integer calcVersion) {
+		this.calcVersion = calcVersion;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(chart, skillset);
+		return Objects.hash(calcVersion, chart, skillset);
 	}
 
 	@Override
@@ -60,6 +72,8 @@ public class ChartDiffValuePk implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ChartDiffValuePk other = (ChartDiffValuePk) obj;
-		return Objects.equals(chart, other.chart) && Objects.equals(skillset, other.skillset);
+		return Objects.equals(calcVersion, other.calcVersion) && Objects.equals(chart, other.chart)
+				&& skillset == other.skillset;
 	}
+
 }
