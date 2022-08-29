@@ -30,14 +30,14 @@ public class CalcManager {
 	
 	private static final Logger m_logger = LoggerFactory.getLogger(CalcManager.class);
 	
-	private static MinaCalcJNI minacalc;
+	private static ThreadLocal<MinaCalcJNI> minacalc = new ThreadLocal<>();
 	
 	@Value("${etterna.note-info-folder-path}")
 	private String noteInfoFolder;
 	
 	@PostConstruct
 	private void init() {
-		minacalc = new MinaCalcJNI();
+		minacalc.set(new MinaCalcJNI());
 	}
 	
 	/**
@@ -47,8 +47,15 @@ public class CalcManager {
 		return Paths.get(noteInfoFolder, chartKey + ".cache");
 	}
 	
+	private MinaCalcJNI calc() {
+		if (minacalc.get() == null) {
+			minacalc.set(new MinaCalcJNI());
+		}
+		return minacalc.get();
+	}
+	
 	public int getCalcVersion() {
-		return Integer.parseInt(minacalc.getCalcVersion());
+		return Integer.parseInt(calc().getCalcVersion());
 	}
 	
 	/**
@@ -64,7 +71,7 @@ public class CalcManager {
 		}
 		
 		m_logger.info("Calculating SSR - {} - {}x - {}%", chartkey, rate, goal * 100);
-		float[] ssrs = minacalc.minaSDCalc(path.toString(), rate, goal);
+		float[] ssrs = calc().minaSDCalc(path.toString(), rate, goal);
 		List<Float> o = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
 			o.add(f);

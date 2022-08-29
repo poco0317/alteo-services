@@ -14,8 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +29,6 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
-import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
 import com.etterna.services.datamodel.User;
@@ -53,7 +50,7 @@ public class ScoreService {
 	@Autowired
 	private SessionService sessions;
 	
-	private ExecutorService bulkSsrExecutor = Executors.newCachedThreadPool();
+	private ExecutorService bulkSsrExecutor = Executors.newWorkStealingPool();
 	
 	@Scheduled(fixedDelay = 30L * 1000L)
 	private void updateSSRs() {
@@ -70,7 +67,6 @@ public class ScoreService {
 				}
 				organizedScores.get(ck).add(hs);
 			});
-			
 			
 			List<Future<HashMap<HighScore, List<Float>>>> futures = new LinkedList<>();
 			for (Entry<String, List<HighScore>> entry : organizedScores.entrySet()) {
