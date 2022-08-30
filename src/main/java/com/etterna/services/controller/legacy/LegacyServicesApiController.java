@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.etterna.services.MiscService;
 import com.etterna.services.PackService;
 import com.etterna.services.ScoreService;
+import com.etterna.services.ScuffedPacklist;
 import com.etterna.services.SessionService;
 import com.etterna.services.UserService;
 import com.etterna.services.controller.legacy.dto.AddFavoriteRequest;
@@ -183,6 +184,12 @@ public class LegacyServicesApiController {
 		ResponseData<List<CoreBundleDTO>> r = new ResponseData<>();
 		r.error(404);
 		return r;
+	}
+	
+	@GetMapping("/packs")
+	public String getPacklist() {
+		m_logger.info("API CALLED :: GetPacklist");
+		return ScuffedPacklist.get();
 	}
 	
 	@GetMapping("/client/version")

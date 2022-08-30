@@ -45,6 +45,8 @@ public class PublicQueryController {
 	@Autowired
 	private UserDao users;
 	
+	private static final String NAV = "<a href='/query'>All Packs</a><br><a href='/query/users'>User Leaderboard</a><br><br>";
+	
 	@GetMapping("")
 	public String getRanked() {
 		m_logger.info("QUERY API CALLED :: Base Url");
@@ -57,7 +59,7 @@ public class PublicQueryController {
 			sb.append("<a href='/query/pack/"+pn+"'>"+s+"</a><br>");
 		});
 		
-		return "ALL RANKED PACKS<br><br>"+sb.toString();
+		return NAV+"ALL RANKED PACKS<br><br>"+sb.toString();
 	}
 	
 	@GetMapping("/")
@@ -73,7 +75,7 @@ public class PublicQueryController {
 		List<Chart> results = charts.getChartsInPack(pack);
 		StringBuilder sb = new StringBuilder();
 		if (results.size() == 0) {
-			return "there is nothing here.";
+			return NAV+"there is nothing here.";
 		}
 		
 		sb.append("<table>");
@@ -91,7 +93,7 @@ public class PublicQueryController {
 		});
 		sb.append("</table>");
 		
-		return "SONGS IN PACK "+pack+"<br><br>"+sb.toString();
+		return NAV+"SONGS IN PACK "+pack+"<br><br>"+sb.toString();
 	}
 	
 	@GetMapping("/chart/{chartkey}")
@@ -102,7 +104,7 @@ public class PublicQueryController {
 		
 		List<HighScore> leaderboard = scores.getLeaderboard(chartkey);
 		if (leaderboard.size() == 0) {
-			return "there is nothing here.";
+			return NAV+"there is nothing here.";
 		}
 		
 		sb.append("<table>");
@@ -123,7 +125,7 @@ public class PublicQueryController {
 		sb.append("</table>");
 		
 		Chart chart = charts.get(chartkey);
-		return "ALL RATES LEADERBOARD - "+chart.getSongName() + " - "+chart.getDifficulty()+ " - " + leaderboard.size() + " scores<br><br>"+sb.toString();
+		return NAV+"ALL RATES LEADERBOARD - "+chart.getSongName() + " - "+chart.getDifficulty()+ " - " + leaderboard.size() + " scores<br><br>"+sb.toString();
 	}
 	
 	@GetMapping("/score/{scorekey}")
@@ -132,7 +134,7 @@ public class PublicQueryController {
 		HighScore score = scores.get(scorekey);
 		
 		if (score == null) {
-			return "there is nothing here.";
+			return NAV+"there is nothing here.";
 		}
 		StringBuilder sb = new StringBuilder();
 		String uname = score.getUser().getUsername();
@@ -165,7 +167,7 @@ public class PublicQueryController {
 		sb.append(score.getNerfMultiplier() + " manual nerf multiplier<br>");
 		sb.append(score.getNoCC() + " nocc flag<br>");
 		
-		return sb.toString();
+		return NAV+sb.toString();
 	}
 	
 	@GetMapping("/users")
@@ -180,12 +182,12 @@ public class PublicQueryController {
 		List<UserWithSkillsets> result = users.getUserLeaderboard(ss);
 		
 		if (result.isEmpty()) {
-			return "there is nothing here.";
+			return NAV+"there is nothing here.";
 		}
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("LEADERBOARD BY OVERALL<br><br>");
+		sb.append("LEADERBOARD BY "+ss.name()+"<br><br>");
 		
 		sb.append("<table>");
 		sb.append("<tr><th>.</th><th>Username</th>");
@@ -218,7 +220,7 @@ public class PublicQueryController {
 		
 		sb.append("</table>");
 		
-		return sb.toString();
+		return NAV+sb.toString();
 	}
 	
 	@GetMapping("/user/{username}")
@@ -235,7 +237,7 @@ public class PublicQueryController {
 		
 		User user = users.get(username);
 		if (user == null) {
-			return "there is nothing here.";
+			return NAV+"there is nothing here.";
 		}
 		
 		sb.append("USER PAGE - "+user.getUsername()+"<br><br>");
@@ -295,7 +297,7 @@ public class PublicQueryController {
 		}
 		
 		
-		return sb.toString();
+		return NAV+sb.toString();
 	}
 	
 }
