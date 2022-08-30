@@ -56,9 +56,10 @@ public class UserDao {
 		List<User> users = repo.findByMustRecalcRatingTrueOrMustRecalcRatingNull();
 		if (!users.isEmpty()) {
 			m_logger.info("Updating user skillset ratings for {} users", users.size());
+			final int calcVer = calc.getCalcVersion();
 			
 			for (User user : users) {
-				List<UserSkillsetValue> ssvals = ssRepo.findByIdUser(user);
+				List<UserSkillsetValue> ssvals = ssRepo.findByIdUserAndIdCalcVersion(user, calcVer);
 				List<HighScore> userScores = scoreRepo.findByUser(user);
 				if (ssvals != null) {
 					ssRepo.deleteAll(ssvals);
@@ -70,7 +71,7 @@ public class UserDao {
 					if (hs.getCalcVersion() < calc.getCalcVersion()) {
 						continue;
 					}
-					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScoreAndIdCalcVersion(hs, calc.getCalcVersion());
+					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScoreAndIdCalcVersion(hs, calcVer);
 					for (ScoreSpecificValue ssr : ssrs) {
 						Skillset ss = ssr.getId().getSkillset();
 						switch (ss) {
@@ -102,7 +103,7 @@ public class UserDao {
 					switch (ss) {
 						case OVERALL:
 						{
-							newssvals.add(new UserSkillsetValue(user, ss, 0.0));
+							newssvals.add(new UserSkillsetValue(user, ss, 0.0, calcVer));
 							break;
 						}
 						case STREAM:
@@ -116,9 +117,9 @@ public class UserDao {
 							if (skillsetSSRs.containsKey(ss)) {
 								Collections.sort(skillsetSSRs.get(ss), Collections.reverseOrder());
 								Double v = calc.aggregateSkill(skillsetSSRs.get(ss), 0.1, 1.05, 0.0, 10.24);
-								newssvals.add(new UserSkillsetValue(user, ss, v));
+								newssvals.add(new UserSkillsetValue(user, ss, v, calcVer));
 							} else {
-								newssvals.add(new UserSkillsetValue(user, ss, 0.0));
+								newssvals.add(new UserSkillsetValue(user, ss, 0.0, calcVer));
 							}
 							break;
 						}
@@ -177,7 +178,7 @@ public class UserDao {
 	
 	@Transactional
 	public UserWithSkillsets getUserSkillsets(User u) {
-		List<UserSkillsetValue> ssvs = ssRepo.findByIdUser(u);
+		List<UserSkillsetValue> ssvs = ssRepo.findByIdUserAndIdCalcVersion(u, calc.getCalcVersion());
 		UserWithSkillsets o = new UserWithSkillsets();
 		o.setUser(u);
 		ssvs.forEach(ssv -> {

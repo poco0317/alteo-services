@@ -19,8 +19,8 @@ public class UserSkillsetValue {
 	private Double value;
 	
 	public UserSkillsetValue() {}
-	public UserSkillsetValue(User u, Skillset ss, Double val) {
-		this.id = new UserSkillsetValuePk(u, ss);
+	public UserSkillsetValue(User u, Skillset ss, Double val, Integer calcVersion) {
+		this.id = new UserSkillsetValuePk(u, ss, calcVersion);
 		this.value = val;
 	}
 

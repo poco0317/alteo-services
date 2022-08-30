@@ -4,6 +4,8 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,8 @@ import com.etterna.services.repo.ChartRepository;
 @Service
 public class DiffService {
 	
+	private static final Logger m_logger = LoggerFactory.getLogger(DiffService.class);
+	
 	@Autowired
 	private ChartRepository charts;
 	
@@ -25,21 +29,27 @@ public class DiffService {
 	@Autowired
 	private CalcManager calc;
 	
-	@Transactional
-	public void updateDiffValues(Chart c) {
+	private static final boolean DELETE_OLD_DIFFS = false;
+	
+	/**
+	 * The way this is usually used, Transactional is not necessary
+	 */
+	public void updateDiffValues(Chart c, Set<ChartDiffValue> newDiffs) {
 		Set<ChartDiffValue> diffs = c.getDiffValues();
 		if (diffs != null && c.getCalcVersion() < calc.getCalcVersion()) {
-			diffs.forEach(diff -> {
-				chartDiffs.delete(diff);
-			});
-			chartDiffs.flush();
+			m_logger.debug("Updating diffs for {}", c.getChartKey());
+			
+			if (DELETE_OLD_DIFFS) {
+				diffs.forEach(diff -> {
+					chartDiffs.delete(diff);
+				});
+			}
+			
 			c.setDiffValues(null);
 			charts.save(c);
-			diffs = calc.calcDiffValues(c, 1.f,.93f);
-			c.setDiffValues(diffs);
+			c.setDiffValues(newDiffs);
 			c.setCalcVersion(calc.getCalcVersion());
-			chartDiffs.saveAll(diffs);
-			charts.save(c);
+			chartDiffs.saveAll(newDiffs);
 		}
 	}
 

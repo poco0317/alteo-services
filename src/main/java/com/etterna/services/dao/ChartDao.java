@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -104,6 +108,7 @@ public class ChartDao {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Transactional
 	public void init() {
 		m_logger.info("Starting Chart Difficulty Updates");
@@ -115,9 +120,34 @@ public class ChartDao {
 		
 		if (all != null) {
 			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), repo.count());
+			
+			ExecutorService bulkCalc = Executors.newWorkStealingPool();
+			// Object[] is [Chart, Set<ChartDiffValue>]
+			List<Future<Object[]>> futures = new LinkedList<>();
 			all.forEach(c -> {
-				chartDiffs.updateDiffValues(c);
+				futures.add(bulkCalc.submit(() -> {
+					return new Object[] {c, calc.calcDiffValues(c, 1.f,.93f)};
+				}));
 			});
+			
+			while (!futures.isEmpty()) {
+				Iterator<Future<Object[]>> it = futures.iterator();
+				while (it.hasNext()) {
+					Future<Object[]> f = it.next();
+					if (f.isCancelled()) {
+						m_logger.warn("Found cancelled task, removed from queue");
+						it.remove();
+					} else if (f.isDone()) {
+						try {
+							chartDiffs.updateDiffValues((Chart)f.get()[0], (Set<ChartDiffValue>)f.get()[1]);
+						} catch (InterruptedException | ExecutionException e) {
+							m_logger.error("Error finishing task " + e.getMessage(), e);
+						} finally {
+							it.remove();
+						}
+					}
+				}
+			}
 		} else {
 			m_logger.info("Found no charts to update and no ranked charts.");
 		}

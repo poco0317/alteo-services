@@ -23,11 +23,15 @@ public class UserSkillsetValuePk implements Serializable {
 	@Column(name = "skillset", nullable = false)
 	private Skillset skillset;
 	
+	@Column(name = "calc_version", nullable = false)
+	private Integer calcVersion;
+	
 	public UserSkillsetValuePk() {}
 	
-	public UserSkillsetValuePk(User user, Skillset skillset) {
+	public UserSkillsetValuePk(User user, Skillset skillset, Integer calcVersion) {
 		this.user = user;
 		this.skillset = skillset;
+		this.calcVersion = calcVersion;
 	}
 
 	public Skillset getSkillset() {
@@ -46,9 +50,17 @@ public class UserSkillsetValuePk implements Serializable {
 		this.user = user;
 	}
 
+	public Integer getCalcVersion() {
+		return calcVersion;
+	}
+
+	public void setCalcVersion(Integer calcVersion) {
+		this.calcVersion = calcVersion;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(user, skillset);
+		return Objects.hash(calcVersion, skillset, user);
 	}
 
 	@Override
@@ -60,6 +72,8 @@ public class UserSkillsetValuePk implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		UserSkillsetValuePk other = (UserSkillsetValuePk) obj;
-		return Objects.equals(user, other.user) && Objects.equals(skillset, other.skillset);
+		return Objects.equals(calcVersion, other.calcVersion) && skillset == other.skillset
+				&& Objects.equals(user, other.user);
 	}
+	
 }

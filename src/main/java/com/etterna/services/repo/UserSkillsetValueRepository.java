@@ -12,6 +12,6 @@ import com.etterna.services.datamodel.pk.UserSkillsetValuePk;
 @Repository
 public interface UserSkillsetValueRepository extends JpaRepository<UserSkillsetValue, UserSkillsetValuePk> {
 	
-	public List<UserSkillsetValue> findByIdUser(User user);
+	public List<UserSkillsetValue> findByIdUserAndIdCalcVersion(User user, Integer calcVersion);
 
 }

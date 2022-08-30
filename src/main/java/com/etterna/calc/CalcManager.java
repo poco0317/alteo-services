@@ -71,7 +71,7 @@ public class CalcManager {
 			return null;
 		}
 		
-		m_logger.info("Calculating SSR - {} - {}x - {}%", chartkey, rate, goal * 100);
+		m_logger.debug("Calculating SSR - {} - {}x - {}%", chartkey, rate, goal * 100);
 		float[] ssrs = calc().minaSDCalc(path.toString(), rate, goal);
 		List<Float> o = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
@@ -82,7 +82,15 @@ public class CalcManager {
 	}
 	
 	public static void printSkillsets(List<Float> ssrs) {
-		m_logger.info("Overall {} | Stream {} | Jumpstream {} | Handstream {} | Stamina {} | JackSpeed {} | Chordjack {} | Technical {}", ssrs.get(0), ssrs.get(1), ssrs.get(2), ssrs.get(3), ssrs.get(4), ssrs.get(5), ssrs.get(6), ssrs.get(7));
+		m_logger.debug("Overall {} | Stream {} | Jumpstream {} | Handstream {} | Stamina {} | JackSpeed {} | Chordjack {} | Technical {}",
+				String.format("%5.2f", ssrs.get(0)),
+				String.format("%5.2f", ssrs.get(1)),
+				String.format("%5.2f", ssrs.get(2)),
+				String.format("%5.2f", ssrs.get(3)),
+				String.format("%5.2f", ssrs.get(4)),
+				String.format("%5.2f", ssrs.get(5)),
+				String.format("%5.2f", ssrs.get(6)),
+				String.format("%5.2f", ssrs.get(7)));
 	}
 	
 	/**
@@ -147,7 +155,7 @@ public class CalcManager {
 	 * Will return calc diff values for a chart
 	 */
 	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
-		m_logger.info("Getting MSD for file {}", c.getChartKey());
+		m_logger.debug("Getting MSD for file {}", c.getChartKey());
 		final List<Float> diffs = getSSR(c.getChartKey(), rate, goal);
 		final int ver = getCalcVersion();
 		return new HashSet<>(Arrays.asList(new ChartDiffValue[] {

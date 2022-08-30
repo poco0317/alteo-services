@@ -201,7 +201,7 @@ public class HighScoreDao {
 			return;
 		}
 		
-		m_logger.info("Updating SSRS : {} : {}", hs.getScoreKey(), ssrs);
+		m_logger.debug("Updating SSRS : {} : {}", hs.getScoreKey(), ssrs);
 		hs.setCalcVersion(calc.getCalcVersion());
 		
 		List<ScoreSpecificValue> ssrsUpdated = new LinkedList<>();
