@@ -139,7 +139,7 @@ public class PublicQueryController {
 		StringBuilder sb = new StringBuilder();
 		String uname = score.getUser().getUsername();
 		
-		sb.append(score.getChart().getSongName() + " - " +score.getChart().getDifficulty() + " - "+String.format("%5.2f", score.getMusicRate().doubleValue()/100)+"x<br><br>");
+		sb.append(score.getChart().getSongName() + " - " +score.getChart().getDifficulty() + " - "+String.format("%5.2f", score.getMusicRate().doubleValue()/100)+"x - "+score.getChart().getPackName()+"<br><br>");
 		sb.append("<a href='/query/user/"+uname+"'>"+uname+"</a>'s score ("+scorekey+")<br><br>");
 		sb.append(score.getDateStr() + "<br>");
 		sb.append(String.format("%5.4f", score.getSsrNorm().doubleValue()/10000)+"%<br>");
