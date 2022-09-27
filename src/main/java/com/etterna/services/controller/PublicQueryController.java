@@ -28,7 +28,7 @@ import com.etterna.services.datamodel.User;
  * Abomination
  */
 @RestController
-@RequestMapping("query")
+@RequestMapping("/query")
 public class PublicQueryController {
 
 	private static final Logger m_logger = LoggerFactory.getLogger(PublicQueryController.class);
