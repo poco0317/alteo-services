@@ -25,9 +25,6 @@ public class User {
 	@Column(name = "password", nullable = false)
 	private String password;
 	
-	@Column(name = "salt", nullable = false)
-	private String salt;
-	
 	@Column(name = "must_recalc_rating")
 	private Boolean mustRecalcRating = true;
 	
@@ -86,14 +83,6 @@ public class User {
 
 	public void setLoginSessions(Set<LoginSession> loginSessions) {
 		this.loginSessions = loginSessions;
-	}
-
-	public String getSalt() {
-		return salt;
-	}
-
-	public void setSalt(String salt) {
-		this.salt = salt;
 	}
 
 	public Boolean getMustRecalcRating() {

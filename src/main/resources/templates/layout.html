@@ -41,10 +41,16 @@
 
 		<div class="collapse navbar-collapse" id="navbar">
 			<ul class="navbar-nav ml-auto">
-				<li class="nav-item"><a class="nav-link" th:href="@{/query}">Link2</a></li>
+				<li class="nav-item"><a class="nav-link" th:href="@{/query/users}">Leaderboard</a></li>
+				<li class="nav-item"><a class="nav-link" th:href="@{/query}">Packs</a></li>
 				<li class="nav-item"><a class="nav-link" href="https://etternaonline.com">Real EO</a></li>
+				<li class="nav-item" sec:authorize="isAuthenticated()">
+					<a class="nav-link" 
+						th:href="@{/user/{username}(username=${#authentication.getPrincipal().getUsername()})}"
+						th:text="${#authentication.getPrincipal().getUsername()}"></a>
+				</li>
 				
-				<li sec:authorize="!isAuthenticated()"><a class="nav-link" th:href="@{/login}">Log In</a></li>
+				<li class="nav-item" sec:authorize="!isAuthenticated()"><a class="nav-link" th:href="@{/login}">Log In</a></li>
 				<li sec:authorize="isAuthenticated()">
 					<form th:action="@{/logout}" method="post">
 						<input class="btn btn-link" type="submit" value="Log Out"/>
@@ -55,7 +61,7 @@
 	</nav>
 
 	<!-- Content Section -->
-	<div class="container" style="margin-top: 12px;">
+	<div class="container-fluid" style="margin-top: 12px;">
 		<section layout:fragment="content">
 			<p>you shouldn't be able to see this...</p>
 		</section>

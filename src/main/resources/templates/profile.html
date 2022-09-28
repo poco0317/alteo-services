@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1 th:object="${user}" th:text="${user.username}"></h1>
+					<h4 sec:authorize="isAuthenticated()" th:if="${#authentication.getPrincipal().getUsername() == user.username}">this is u</h4>
+					<h6 th:object="${skillsets}" th:text="${'Overall: ' + #numbers.formatDecimal(skillsets.overall, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Stream: ' + #numbers.formatDecimal(skillsets.stream, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Jumpstream: ' + #numbers.formatDecimal(skillsets.jumpstream, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Handstream: ' + #numbers.formatDecimal(skillsets.handstream, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Stamina: ' + #numbers.formatDecimal(skillsets.stamina, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Jackspeed: ' + #numbers.formatDecimal(skillsets.jackspeed, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Chordjack: ' + #numbers.formatDecimal(skillsets.chordjack, 2, 2)}"></h6>
+					<h6 th:object="${skillsets}" th:text="${'Technical: ' + #numbers.formatDecimal(skillsets.technical, 2, 2)}"></h6>
+				</div>
+			</div>
+			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
+				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm">
+				
+				<!-- header -->
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Song Name</th>
+						<th scope="col">Difficulty</th>
+						<th scope="col">Rate</th>
+						<th scope="col">Percent</th>
+						<th scope="col">Date</th>
+						<th scope="col">Overall</th>
+						<th scope="col">Stream</th>
+						<th scope="col">Jumpstream</th>
+						<th scope="col">Handstream</th>
+						<th scope="col">Stamina</th>
+						<th scope="col">Jackspeed</th>
+						<th scope="col">Chordjack</th>
+						<th scope="col">Technical</th>
+					</tr>
+				</thead>
+				
+				<!-- The Business. -->
+				<tbody>
+					<tr th:each="score, stat: ${scores}">
+						<th scope="row" th:text="${stat.index + 1}"></th>
+						<td th:text="${score.score.chart.songName}"></td>
+						<td th:text="${score.score.chart.difficulty}"></td>
+						<td th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
+						<td th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></td>
+						<td th:text="${score.score.dateStr}"></td>
+						<td th:text="${#numbers.formatDecimal(score.overall, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.stream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.jumpstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.handstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.stamina, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.jackspeed, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.chordjack, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.technical, 2, 2)}"></td>
+					</tr>
+				</tbody>
+				
+				</table>
+				<div class="container"  th:unless="${#lists.size(scores) > 0}">
+					<h3>There are no scores...</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>

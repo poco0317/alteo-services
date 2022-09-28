@@ -16,11 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
-import com.etterna.services.PasswordUtil;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
@@ -50,6 +50,9 @@ public class UserDao {
 	
 	@Autowired
 	private CalcManager calc;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	@Scheduled(fixedDelay = 1000L * 30L)
 	void maintainUserSkillsetRatings() {
@@ -167,12 +170,16 @@ public class UserDao {
 		m_logger.info("Created new user {}", username);
 		User user = new User();
 		user.setUsername(username);
-		String salt = PasswordUtil.getSalt();
-		String pwsalt = PasswordUtil.hashPassword(password, salt);
-		
-		user.setSalt(salt);
-		user.setPassword(pwsalt);
+		user.setPassword(passwordEncoder.encode(password));
 		repo.save(user);
+		return true;
+	}
+	
+	@Transactional
+	public boolean resetPassword(User u) {
+		u.setPassword(passwordEncoder.encode("password"));
+		repo.save(u);
+		m_logger.info("Reset user password - {}", u.getUsername());
 		return true;
 	}
 	

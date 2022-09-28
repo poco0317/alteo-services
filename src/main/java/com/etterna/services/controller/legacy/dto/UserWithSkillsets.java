@@ -6,14 +6,14 @@ public class UserWithSkillsets {
 	
 	private User user;
 	
-	private Double overall;
-	private Double stream;
-	private Double jumpstream;
-	private Double handstream;
-	private Double stamina;
-	private Double jackspeed;
-	private Double chordjack;
-	private Double technical;
+	private Double overall = 0.0;
+	private Double stream = 0.0;
+	private Double jumpstream = 0.0;
+	private Double handstream = 0.0;
+	private Double stamina = 0.0;
+	private Double jackspeed = 0.0;
+	private Double chordjack = 0.0;
+	private Double technical = 0.0;
 	
 	public Double getChordjack() {
 		return chordjack;
