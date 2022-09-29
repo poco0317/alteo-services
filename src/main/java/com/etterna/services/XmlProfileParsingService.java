@@ -60,7 +60,15 @@ public class XmlProfileParsingService {
 			m_logger.warn("User attempted to upload xml without authorization - Token {}", authToken);
 			return "Not a valid user";
 		}
-		
+		return intakeProfile(in, user);
+	}
+	
+	@Transactional
+	public String intakeProfile(InputStream in, User user) {
+		if (user == null) {
+			m_logger.warn("User attempted to upload xml without being a user?");
+			return "Unknown failure";
+		}
 		return add(in, user.getUserId());
 	}
 	

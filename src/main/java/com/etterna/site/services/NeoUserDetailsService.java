@@ -19,7 +19,7 @@ public class NeoUserDetailsService implements UserDetailsService {
 	private UserRepository users;
 	
 	private User get(String username) {
-		List<User> us = users.findByUsername(username);
+		List<User> us = users.findByUsernameIgnoreCase(username);
 		if (us == null || us.isEmpty()) {
 			return null;
 		}

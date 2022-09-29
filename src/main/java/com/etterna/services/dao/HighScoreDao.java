@@ -106,6 +106,30 @@ public class HighScoreDao {
 	}
 	
 	/**
+	 * These scores are eligible to be recalculated and will be taken care of by the batch job
+	 */
+	@Transactional
+	public int countUncalculatedScores(User u) {
+		List<HighScore> hses = hsRepo.findUserRecalculableScores(u, calc.getCalcVersion());
+		if (hses == null) {
+			return 0;
+		}
+		return hses.size();
+	}
+	
+	/**
+	 * These scores may be eligible to be recalculated but are not worth it, due to cc on or invalidation
+	 */
+	@Transactional
+	public int countIncalculableScores(User u) {
+		List<HighScore> hses = hsRepo.findUserIncalculableScores(u, calc.getCalcVersion());
+		if (hses == null) {
+			return 0;
+		}
+		return hses.size();
+	}
+	
+	/**
 	 * Input is [HighScore, ScoreSpecificValue]
 	 */
 	private List<HighScoreWithSkillsets> sortBySkillsets(List<Object[]> obs, Skillset ss) {

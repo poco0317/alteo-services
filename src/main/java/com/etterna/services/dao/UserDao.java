@@ -150,7 +150,7 @@ public class UserDao {
 
 	@Transactional
 	public User get(String username) {
-		List<User> users = repo.findByUsername(username);
+		List<User> users = repo.findByUsernameIgnoreCase(username);
 		if (users == null || users.isEmpty()) {
 			return null;
 		}

@@ -25,4 +25,10 @@ public interface HighScoreRepository extends JpaRepository<HighScore, String> {
 	
 	@Query("SELECT hs FROM HighScore hs WHERE hs.calcVersion <> :calcVersion and hs.manuallyInvalid = false and hs.noCC = true and hs.ssrNorm is not null and hs.musicRate is not null")
 	List<HighScore> findRecalculableScores(Integer calcVersion);
+	
+	@Query("SELECT hs FROM HighScore hs WHERE hs.calcVersion <> :calcVersion and hs.manuallyInvalid = false and hs.noCC = true and hs.ssrNorm is not null and hs.musicRate is not null and hs.user = :user")
+	List<HighScore> findUserRecalculableScores(User user, Integer calcVersion);
+	
+	@Query("SELECT hs FROM HighScore hs WHERE hs.calcVersion <> :calcVersion and (hs.manuallyInvalid = true or hs.noCC = false or hs.ssrNorm is null or hs.musicRate is null) and hs.user = :user")
+	List<HighScore> findUserIncalculableScores(User user, Integer calcVersion);
 }

@@ -11,7 +11,7 @@ import com.etterna.services.datamodel.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 	
-	public List<User> findByUsername(String username);
+	public List<User> findByUsernameIgnoreCase(String username);
 	public List<User> findByMustRecalcRatingTrueOrMustRecalcRatingNull();
 	
 	@Query("SELECT user, ssv FROM User user, UserSkillsetValue ssv WHERE ssv.id.user = user")

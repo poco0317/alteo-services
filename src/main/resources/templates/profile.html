@@ -15,7 +15,8 @@
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<h1 th:object="${user}" th:text="${user.username}"></h1>
-					<h4 sec:authorize="isAuthenticated()" th:if="${#authentication.getPrincipal().getUsername() == user.username}">this is u</h4>
+					
+					<h4 sec:authorize="isAuthenticated()" th:if="${#authentication.getPrincipal().getUsername() == user.username}">(this is you)</h4>
 					<h6 th:object="${skillsets}" th:text="${'Overall: ' + #numbers.formatDecimal(skillsets.overall, 2, 2)}"></h6>
 					<h6 th:object="${skillsets}" th:text="${'Stream: ' + #numbers.formatDecimal(skillsets.stream, 2, 2)}"></h6>
 					<h6 th:object="${skillsets}" th:text="${'Jumpstream: ' + #numbers.formatDecimal(skillsets.jumpstream, 2, 2)}"></h6>
@@ -25,6 +26,23 @@
 					<h6 th:object="${skillsets}" th:text="${'Chordjack: ' + #numbers.formatDecimal(skillsets.chordjack, 2, 2)}"></h6>
 					<h6 th:object="${skillsets}" th:text="${'Technical: ' + #numbers.formatDecimal(skillsets.technical, 2, 2)}"></h6>
 				</div>
+			</div>
+
+			<div class="container" style="margin-top: 2vh;" sec:authorize="isAuthenticated()"
+				th:if="${#authentication.getPrincipal().getUsername() == user.username}">
+				<h6 th:if="${param.uploaded}">Xml Uploaded! Refresh to see scores update in real time.</h6>
+				<form th:unless="${param.uploaded}"
+					method="post" th:action="@{/user/{username}/xml(username=${#authentication.getPrincipal().getUsername()})}"
+					enctype="multipart/form-data">
+					<div class="form-group">
+						<h6>Upload xml here</h6>
+						<input type="file" name="xml" accept=".xml"
+							class="form-control-file">
+					</div>
+					<button type="submit" class="btn btn-secondary btn-sm">Upload XML</button>
+				</form>
+				<h6 th:object="${uncalculatedScores}" th:if="${uncalculatedScores > -1}" th:text="${'You have ' + uncalculatedScores + ' uncalculated and eligible scores uploaded. Wait for a bit and refresh to see if they update.'}"></h6>
+				<h6 th:object="${incalculableScores}" th:if="${incalculableScores > 0}" th:text="${'You have ' + incalculableScores + ' scores that can''t be updated. They may be invalidated or malformed.'}"></h6>
 			</div>
 			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
 				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm">

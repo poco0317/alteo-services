@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1>Top Secret Admin Page</h1>
+				</div>
+			</div>
+			<div class="row" style="margin-top: 10vh;">
+				<p>This site is very much a work in progress. Have a look around.</p>
+			</div>
+			
+			<h6 th:object="${rankedcharts}" th:text="${'There are currently ' + rankedcharts + ' unique ranked charts.'}"></h6>
+			<h6 th:object="${pendingpacks}" th:text="${'There are currently ' + pendingpacks + ' packs in the queue to be ranked.'}"></h6>
+			
+			<div>
+				<h6 th:if="${param.packsuploaded}">Packs Uploaded! They are queued for ranking. It will take a short while to clean the queue.</h6>
+				<div class="container">
+					<form method="post" th:action="@{/admin/rankpacks}"
+						enctype="multipart/form-data">
+						<div class="form-group">
+							<h6>Upload pack zips to rank here</h6>
+							<input type="file" name="packs" accept=".zip" multiple class="form-control-file">
+						</div>
+						<button type="submit" class="btn btn-secondary btn-sm">Upload Packs</button>
+					</form>
+				</div>
+			</div>
+			
+		</div>
+	</div>
+
+	
+</body>
+</html>

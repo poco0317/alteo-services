@@ -74,6 +74,14 @@ public class ChartDao {
 		}
 	}
 	
+	public int getPackQueueSize() {
+		return packRankQueue.size();
+	}
+	
+	public int getTotalRankedCharts() {
+		return rankedChartkeys.size();
+	}
+	
 	private void rankSongDatas(List<String> songdatas, String packname) {
 		final Pattern titlepattern = Pattern.compile(";[\\s]*#TITLE:([^;]+);");
 		final Pattern ckpattern = Pattern.compile(";[\\s]*#CHARTKEY:([^;]+);");

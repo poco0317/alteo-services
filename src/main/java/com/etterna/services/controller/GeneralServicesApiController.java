@@ -42,6 +42,7 @@ public class GeneralServicesApiController {
 		return bearer.replace("Bearer ","");
 	}
 	
+	// handler for jwt authenticated xml upload
 	@PostMapping("/xml/upload")
 	public void uploadXml(@RequestHeader("Authorization") String authJwt, InputStream upload) {
 		m_logger.info("API CALLED :: UploadXml");

@@ -27,8 +27,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.addFilterAfter(new RedirectingFilter(), UsernamePasswordAuthenticationFilter.class)
 			.authorizeRequests()
 				.antMatchers("/", "/home", "/register").permitAll() // base site access to public
-				.antMatchers("/login").not().authenticated()
-				.anyRequest().authenticated()
+				.antMatchers("/user/*", "/packs*", "/leaderboard*").permitAll() // front end nav
+				.antMatchers("/user/*/*").authenticated() // front end post protected
+				.antMatchers("/login").not().authenticated() // cant login twice
+				.anyRequest().authenticated() // everything else
 				.and()
 			.formLogin()
 				.loginPage("/login")
