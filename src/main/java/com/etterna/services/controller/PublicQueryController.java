@@ -24,6 +24,7 @@ import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.ProfileSort;
 
 /**
  * Abomination
@@ -231,8 +232,8 @@ public class PublicQueryController {
 	
 	@GetMapping("/user/{username}/{skillset}")
 	public String getUserPage(@PathVariable String username, @PathVariable String skillset) {
-		Skillset ss = Skillset.fromEttString(skillset);
-		m_logger.info("QUERY API CALLED :: Get User Page {} - Skillset {}", username, ss.name());
+		ProfileSort ps = ProfileSort.fromString(skillset);
+		m_logger.info("QUERY API CALLED :: Get User Page {} - Skillset {}", username, ps.name());
 		
 		StringBuilder sb = new StringBuilder();
 		
@@ -244,7 +245,7 @@ public class PublicQueryController {
 		sb.append("USER PAGE - "+user.getUsername()+"<br><br>");
 		
 		UserWithSkillsets skillsets = users.getUserSkillsets(user);
-		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(user, ss, 1, 9999999);
+		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(user, ps, 1, 9999999);
 		List<HighScoreWithSkillsets> hs = hspage.getHss();
 		
 		if (skillsets != null) {

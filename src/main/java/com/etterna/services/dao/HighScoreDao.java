@@ -1,6 +1,9 @@
 package com.etterna.services.dao;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -27,6 +30,7 @@ import com.etterna.services.datamodel.pk.ScoreSpecificValuePk;
 import com.etterna.services.repo.HighScoreRepository;
 import com.etterna.services.repo.ScoreSpecificValueRepository;
 import com.etterna.services.repo.UserRepository;
+import com.etterna.site.dto.ProfileSort;
 
 @Service
 public class HighScoreDao {
@@ -101,9 +105,9 @@ public class HighScoreDao {
 	}
 	
 	@Transactional
-	public HighScoreWithSkillsetsPagination getUserScores(User u, Skillset ss, int page, int perpage) {
+	public HighScoreWithSkillsetsPagination getUserScores(User u, ProfileSort ps, int page, int perpage) {
 		List<Object[]> hses = hsRepo.findScoreWithAllSkillsets(u, calc.getCalcVersion());
-		return sortBySkillsets(hses, ss, page, perpage);
+		return sortBySkillsets(hses, ps, page, perpage);
 	}
 	
 	/**
@@ -133,7 +137,7 @@ public class HighScoreDao {
 	/**
 	 * Input is [HighScore, ScoreSpecificValue]
 	 */
-	private HighScoreWithSkillsetsPagination sortBySkillsets(List<Object[]> obs, Skillset ss, int page, int itemsPerPage) {
+	private HighScoreWithSkillsetsPagination sortBySkillsets(List<Object[]> obs, ProfileSort ps, int page, int itemsPerPage) {
 		HashMap<String, HighScoreWithSkillsets> hsvs = new HashMap<>();
 		obs.forEach(o -> {
 			HighScore hs = (HighScore)o[0];
@@ -173,25 +177,94 @@ public class HighScoreDao {
 		return new HighScoreWithSkillsetsPagination(hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
 			@Override
 			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
-				switch (ss) {
+				switch (ps) {
 					case OVERALL:
-						return b.getOverall().compareTo(a.getOverall());
 					case STREAM:
-						return b.getStream().compareTo(a.getStream());
 					case JUMPSTREAM:
-						return b.getJumpstream().compareTo(a.getJumpstream());
 					case HANDSTREAM:
-						return b.getHandstream().compareTo(a.getHandstream());
 					case STAMINA:
-						return b.getStamina().compareTo(a.getStamina());
 					case JACKSPEED:
-						return b.getJackspeed().compareTo(a.getJackspeed());
 					case CHORDJACK:
-						return b.getChordjack().compareTo(a.getChordjack());
 					case TECHNICAL:
-						return b.getTechnical().compareTo(a.getTechnical());
-					default:
-						return b.getOverall().compareTo(a.getOverall());
+					{
+						Double av = 0.0;
+						Double bv = 0.0;
+						switch(ps) {
+							case OVERALL:
+								av = a.getOverall();
+								bv = b.getOverall();
+								break;
+							case STREAM:
+								av = a.getStream();
+								bv = b.getStream();
+								break;
+							case JUMPSTREAM:
+								av = a.getJumpstream();
+								bv = b.getJumpstream();
+								break;
+							case HANDSTREAM:
+								av = a.getHandstream();
+								bv = b.getHandstream();
+								break;
+							case STAMINA:
+								av = a.getStamina();
+								bv = b.getStamina();
+								break;
+							case JACKSPEED:
+								av = a.getJackspeed();
+								bv = b.getJackspeed();
+								break;
+							case CHORDJACK:
+								av = a.getChordjack();
+								bv = b.getChordjack();
+								break;
+							case TECHNICAL:
+								av = a.getTechnical();
+								bv = b.getTechnical();
+								break;
+							default:
+								break;
+						}
+						if (av == bv) {
+							return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
+						} else {
+							return bv.compareTo(av);
+						}
+					}
+					case SONG:
+					{
+						String an = a.getScore().getChart().getSongName();
+						String bn = b.getScore().getChart().getSongName();
+						// opposite direction sort vs the others
+						int o = an.compareToIgnoreCase(bn);
+						if (o != 0) {
+							return o;
+						}
+						// fall through
+					}
+					case PERCENT:
+					{
+						Integer as = a.getScore().getSsrNorm();
+						Integer bs = b.getScore().getSsrNorm();
+						int o = bs.compareTo(as);
+						if (o != 0) {
+							return o;
+						}
+						// fall through
+					}
+					case DATE:
+					default: {
+						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						String ads = a.getScore().getDateStr();
+						String bds = b.getScore().getDateStr();
+						try {
+							Date ad = f.parse(ads);
+							Date bd = f.parse(bds);
+							return bd.compareTo(ad);
+						} catch (ParseException e) {
+							return bds.compareToIgnoreCase(ads);
+						}
+					}
 				}
 			}
 		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)));

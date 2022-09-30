@@ -49,24 +49,24 @@
 				<ul th:if="${#lists.size(scores) > 0}" th:object="${user}" class="pagination justify-content-end">
 					<li th:if="${maxPage > 1 && currentPage > 1}" class="page-item">
 						<a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=1, skillset=${sortedSkillset})}">First</a>
+						th:href="@{/user/{username}(username=${user.username}, page=1, sort=${currentSort})}">First</a>
 					</li>
 					<li th:if="${maxPage > 1 && currentPage > 1}"
 						class="page-item"><a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${currentPage - 1}, skillset=${sortedSkillset})}">Prev</a>
+						th:href="@{/user/{username}(username=${user.username}, page=${currentPage - 1}, sort=${currentSort})}">Prev</a>
 					</li>
 					<li th:each="page: ${pageRange}" class="page-item"
 						th:classappend="${page == currentPage} ? active"><a
 						class="page-link" th:text="${page}"
-						th:href="@{/user/{username}(username=${user.username}, page=${page}, skillset=${sortedSkillset})}"></a>
+						th:href="@{/user/{username}(username=${user.username}, page=${page}, sort=${currentSort})}"></a>
 					</li>
 					<li th:if="${maxPage != currentPage}" class="page-item"><a
 						class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${currentPage + 1}, skillset=${sortedSkillset})}">Next</a>
+						th:href="@{/user/{username}(username=${user.username}, page=${currentPage + 1}, sort=${currentSort})}">Next</a>
 					</li>
 					<li th:if="${maxPage > 1 && maxPage != currentPage}"
 						class="page-item"><a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${maxPage}, skillset=${sortedSkillset})}">Last</a>
+						th:href="@{/user/{username}(username=${user.username}, page=${maxPage}, sort=${currentSort})}">Last</a>
 					</li>
 				</ul>
 				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm">
@@ -75,19 +75,19 @@
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col">Song Name</th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='SONG')}">Song Name</a></th>
 						<th scope="col">Difficulty</th>
 						<th scope="col">Rate</th>
-						<th scope="col">Percent</th>
-						<th scope="col">Date</th>
-						<th scope="col">Overall</th>
-						<th scope="col">Stream</th>
-						<th scope="col">Jumpstream</th>
-						<th scope="col">Handstream</th>
-						<th scope="col">Stamina</th>
-						<th scope="col">Jackspeed</th>
-						<th scope="col">Chordjack</th>
-						<th scope="col">Technical</th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='PERCENT')}">Percent</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='DATE')}">Date</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='OVERALL')}">Overall</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='STREAM')}">Stream</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='JUMPSTREAM')}">Jumpstream</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='HANDSTREAM')}">Handstream</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='STAMINA')}">Stamina</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='JACKSPEED')}">Jackspeed</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='CHORDJACK')}">Chordjack</a></th>
+						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='TECHNICAL')}">Technical</a></th>
 					</tr>
 				</thead>
 				

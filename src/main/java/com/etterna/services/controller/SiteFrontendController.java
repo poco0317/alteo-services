@@ -41,6 +41,7 @@ import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.User;
 import com.etterna.site.dto.NeoUserPrincipal;
+import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
 
 @Controller
@@ -95,7 +96,7 @@ public class SiteFrontendController {
 	}
 	
 	@GetMapping("/user/{username}")
-	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username, @RequestParam("page") Optional<Integer> page, @RequestParam("skillset") Optional<String> skillset) {
+	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
 		User u = users.get(username);
 		if (u == null) {
 			return "home";
@@ -103,11 +104,11 @@ public class SiteFrontendController {
 		m_logger.info("FRONTEND API :: User Page {}", username);
 		
 		int currentPage = page.orElse(1);
-		Skillset ss = Skillset.fromEttString(skillset.orElse("overall"));
+		ProfileSort ps = ProfileSort.fromString(sort.orElse("date"));
 		final int directionaldistance = 2;
 		final int itemsperpage = 200;
 		
-		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(u, ss, currentPage, itemsperpage);
+		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(u, ps, currentPage, itemsperpage);
 		int actualcurrentpage = hspage.getCurrentPage();
 		int maxpage = hspage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
@@ -118,7 +119,7 @@ public class SiteFrontendController {
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
 		model.addAttribute("maxPage", maxpage);
-		model.addAttribute("sortedSkillset", ss);
+		model.addAttribute("currentSort", ps.name());
 		model.addAttribute("uncalculatedScores", scores.countUncalculatedScores(u));
 		model.addAttribute("incalculableScores", scores.countIncalculableScores(u));
 		
