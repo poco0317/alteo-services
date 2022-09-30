@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
+import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.datamodel.Chart;
@@ -100,9 +101,9 @@ public class HighScoreDao {
 	}
 	
 	@Transactional
-	public List<HighScoreWithSkillsets> getUserScores(User u, Skillset ss) {
+	public HighScoreWithSkillsetsPagination getUserScores(User u, Skillset ss, int page, int perpage) {
 		List<Object[]> hses = hsRepo.findScoreWithAllSkillsets(u, calc.getCalcVersion());
-		return sortBySkillsets(hses, ss);
+		return sortBySkillsets(hses, ss, page, perpage);
 	}
 	
 	/**
@@ -132,7 +133,7 @@ public class HighScoreDao {
 	/**
 	 * Input is [HighScore, ScoreSpecificValue]
 	 */
-	private List<HighScoreWithSkillsets> sortBySkillsets(List<Object[]> obs, Skillset ss) {
+	private HighScoreWithSkillsetsPagination sortBySkillsets(List<Object[]> obs, Skillset ss, int page, int itemsPerPage) {
 		HashMap<String, HighScoreWithSkillsets> hsvs = new HashMap<>();
 		obs.forEach(o -> {
 			HighScore hs = (HighScore)o[0];
@@ -165,7 +166,11 @@ public class HighScoreDao {
 			}
 		});
 		
-		return hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
+		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
+		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
+		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
+		
+		return new HighScoreWithSkillsetsPagination(hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
 			@Override
 			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
 				switch (ss) {
@@ -189,7 +194,7 @@ public class HighScoreDao {
 						return b.getOverall().compareTo(a.getOverall());
 				}
 			}
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)));
 	}
 	
 	/**

@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -31,6 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.etterna.calc.Skillset;
 import com.etterna.services.XmlProfileParsingService;
+import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
@@ -90,16 +95,30 @@ public class SiteFrontendController {
 	}
 	
 	@GetMapping("/user/{username}")
-	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username) {
+	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username, @RequestParam("page") Optional<Integer> page, @RequestParam("skillset") Optional<String> skillset) {
 		User u = users.get(username);
 		if (u == null) {
 			return "home";
 		}
 		m_logger.info("FRONTEND API :: User Page {}", username);
 		
+		int currentPage = page.orElse(1);
+		Skillset ss = Skillset.fromEttString(skillset.orElse("overall"));
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(u, ss, currentPage, itemsperpage);
+		int actualcurrentpage = hspage.getCurrentPage();
+		int maxpage = hspage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
 		model.addAttribute("user", u);
 		model.addAttribute("skillsets", users.getUserSkillsets(u));
-		model.addAttribute("scores", scores.getUserScores(u, Skillset.OVERALL));
+		model.addAttribute("scores", hspage.getHss());
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("sortedSkillset", ss);
 		model.addAttribute("uncalculatedScores", scores.countUncalculatedScores(u));
 		model.addAttribute("incalculableScores", scores.countIncalculableScores(u));
 		

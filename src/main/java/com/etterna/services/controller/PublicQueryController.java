@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
+import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
@@ -243,7 +244,8 @@ public class PublicQueryController {
 		sb.append("USER PAGE - "+user.getUsername()+"<br><br>");
 		
 		UserWithSkillsets skillsets = users.getUserSkillsets(user);
-		List<HighScoreWithSkillsets> hs = scores.getUserScores(user, ss);
+		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(user, ss, 1, 9999999);
+		List<HighScoreWithSkillsets> hs = hspage.getHss();
 		
 		if (skillsets != null) {
 			sb.append("Overall - "+String.format("%5.2f", skillsets.getOverall())+"<br>");

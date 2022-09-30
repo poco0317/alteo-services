@@ -45,6 +45,30 @@
 				<h6 th:object="${incalculableScores}" th:if="${incalculableScores > 0}" th:text="${'You have ' + incalculableScores + ' scores that can''t be updated. They may be invalidated or malformed.'}"></h6>
 			</div>
 			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
+			
+				<ul th:if="${#lists.size(scores) > 0}" th:object="${user}" class="pagination justify-content-end">
+					<li th:if="${maxPage > 1 && currentPage > 1}" class="page-item">
+						<a class="page-link"
+						th:href="@{/user/{username}(username=${user.username}, page=1, skillset=${sortedSkillset})}">First</a>
+					</li>
+					<li th:if="${maxPage > 1 && currentPage > 1}"
+						class="page-item"><a class="page-link"
+						th:href="@{/user/{username}(username=${user.username}, page=${currentPage - 1}, skillset=${sortedSkillset})}">Prev</a>
+					</li>
+					<li th:each="page: ${pageRange}" class="page-item"
+						th:classappend="${page == currentPage} ? active"><a
+						class="page-link" th:text="${page}"
+						th:href="@{/user/{username}(username=${user.username}, page=${page}, skillset=${sortedSkillset})}"></a>
+					</li>
+					<li th:if="${maxPage != currentPage}" class="page-item"><a
+						class="page-link"
+						th:href="@{/user/{username}(username=${user.username}, page=${currentPage + 1}, skillset=${sortedSkillset})}">Next</a>
+					</li>
+					<li th:if="${maxPage > 1 && maxPage != currentPage}"
+						class="page-item"><a class="page-link"
+						th:href="@{/user/{username}(username=${user.username}, page=${maxPage}, skillset=${sortedSkillset})}">Last</a>
+					</li>
+				</ul>
 				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm">
 				
 				<!-- header -->
@@ -70,7 +94,7 @@
 				<!-- The Business. -->
 				<tbody>
 					<tr th:each="score, stat: ${scores}">
-						<th scope="row" th:text="${stat.index + 1}"></th>
+						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
 						<td th:text="${score.score.chart.songName}"></td>
 						<td th:text="${score.score.chart.difficulty}"></td>
 						<td th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
