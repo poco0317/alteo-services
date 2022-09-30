@@ -174,6 +174,10 @@ public class HighScoreDao {
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
 		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
 		
+		if (hsvs.size() == 0) {
+			return new HighScoreWithSkillsetsPagination(hsvs.values().stream().collect(Collectors.toList()), 1, 1);
+		}
+		
 		return new HighScoreWithSkillsetsPagination(hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
 			@Override
 			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {

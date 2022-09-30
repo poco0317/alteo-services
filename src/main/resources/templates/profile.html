@@ -46,12 +46,12 @@
 			</div>
 			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
 			
-				<ul th:if="${#lists.size(scores) > 0}" th:object="${user}" class="pagination justify-content-end">
-					<li th:if="${maxPage > 1 && currentPage > 1}" class="page-item">
+				<ul th:if="${maxPage > 1}" th:object="${user}" class="pagination justify-content-end">
+					<li th:if="${currentPage > 1}" class="page-item">
 						<a class="page-link"
 						th:href="@{/user/{username}(username=${user.username}, page=1, sort=${currentSort})}">First</a>
 					</li>
-					<li th:if="${maxPage > 1 && currentPage > 1}"
+					<li th:if="${currentPage > 1}"
 						class="page-item"><a class="page-link"
 						th:href="@{/user/{username}(username=${user.username}, page=${currentPage - 1}, sort=${currentSort})}">Prev</a>
 					</li>
@@ -64,7 +64,7 @@
 						class="page-link"
 						th:href="@{/user/{username}(username=${user.username}, page=${currentPage + 1}, sort=${currentSort})}">Next</a>
 					</li>
-					<li th:if="${maxPage > 1 && maxPage != currentPage}"
+					<li th:if="${maxPage != currentPage}"
 						class="page-item"><a class="page-link"
 						th:href="@{/user/{username}(username=${user.username}, page=${maxPage}, sort=${currentSort})}">Last</a>
 					</li>

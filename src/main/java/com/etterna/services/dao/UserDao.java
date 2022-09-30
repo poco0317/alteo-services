@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
 import com.etterna.services.datamodel.User;
@@ -30,6 +31,7 @@ import com.etterna.services.repo.HighScoreRepository;
 import com.etterna.services.repo.ScoreSpecificValueRepository;
 import com.etterna.services.repo.UserRepository;
 import com.etterna.services.repo.UserSkillsetValueRepository;
+import com.etterna.site.dto.LeaderboardSort;
 
 @Service
 public class UserDao {
@@ -224,7 +226,7 @@ public class UserDao {
 	}
 	
 	@Transactional
-	public List<UserWithSkillsets> getUserLeaderboard(Skillset ss) {
+	public UserWithSkillsetsPagination getUserLeaderboard(LeaderboardSort ls, int page, int itemsPerPage) {
 		// a list of [User, UserSkillsetValue]
 		// we need to compile the data structure
 		List<Object[]> usersAndSkillsets = repo.findUsersWithSkillsets();
@@ -263,31 +265,86 @@ public class UserDao {
 			}
 		});
 		
-		return usvs.values().stream().sorted(new Comparator<UserWithSkillsets>() {
+		int sliceStart = Math.min(itemsPerPage * (page-1), usvs.size()-1);
+		int sliceEnd = Math.min(itemsPerPage * page, usvs.size());
+		m_logger.debug("{} {} {}", sliceStart, sliceEnd, usvs.size());
+		
+		if (usvs.size() == 0) {
+			return new UserWithSkillsetsPagination(usvs.values().stream().collect(Collectors.toList()), 1, 1);
+		}
+		
+		return new UserWithSkillsetsPagination(usvs.values().stream().sorted(new Comparator<UserWithSkillsets>() {
 			@Override
 			public int compare(UserWithSkillsets a, UserWithSkillsets b) {
-				switch (ss) {
-					case OVERALL:
-						return b.getOverall().compareTo(a.getOverall());
-					case STREAM:
-						return b.getStream().compareTo(a.getStream());
-					case JUMPSTREAM:
-						return b.getJumpstream().compareTo(a.getJumpstream());
-					case HANDSTREAM:
-						return b.getHandstream().compareTo(a.getHandstream());
-					case STAMINA:
-						return b.getStamina().compareTo(a.getStamina());
-					case JACKSPEED:
-						return b.getJackspeed().compareTo(a.getJackspeed());
-					case CHORDJACK:
-						return b.getChordjack().compareTo(a.getChordjack());
-					case TECHNICAL:
-						return b.getTechnical().compareTo(a.getTechnical());
-					default:
-						return b.getOverall().compareTo(a.getOverall());
+				switch (ls) {
+				case OVERALL:
+				case STREAM:
+				case JUMPSTREAM:
+				case HANDSTREAM:
+				case STAMINA:
+				case JACKSPEED:
+				case CHORDJACK:
+				case TECHNICAL:
+				{
+					Double av = 0.0;
+					Double bv = 0.0;
+					switch (ls) {
+						case OVERALL:
+							av = a.getOverall();
+							bv = b.getOverall();
+							break;
+						case STREAM:
+							av = a.getStream();
+							bv = b.getStream();
+							break;
+						case JUMPSTREAM:
+							av = a.getJumpstream();
+							bv = b.getJumpstream();
+							break;
+						case HANDSTREAM:
+							av = a.getHandstream();
+							bv = b.getHandstream();
+							break;
+						case STAMINA:
+							av = a.getStamina();
+							bv = b.getStamina();
+							break;
+						case JACKSPEED:
+							av = a.getJackspeed();
+							bv = b.getJackspeed();
+							break;
+						case CHORDJACK:
+							av = a.getChordjack();
+							bv = b.getChordjack();
+							break;
+						case TECHNICAL:
+							av = a.getTechnical();
+							bv = b.getTechnical();
+							break;
+						default:
+							break;
+					}
+					if (av == bv) {
+						// reverse sort when doing by name
+						return a.getUser().getUsername().compareToIgnoreCase(b.getUser().getUsername());
+					} else {
+						return bv.compareTo(av);
+					}
+				}
+				case NAME:
+				default:
+					{
+						// reverse sort when doing by name
+						int o = a.getUser().getUsername().compareToIgnoreCase(b.getUser().getUsername());
+						if (o == 0) {
+							return b.getOverall().compareTo(a.getOverall());
+						} else {
+							return o;
+						}
+					}
 				}
 			}
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toList()), page, Math.max(1, (int)Math.ceil(usvs.size() / (float)itemsPerPage)));
 	}
 
 }

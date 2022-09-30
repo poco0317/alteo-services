@@ -24,6 +24,7 @@ import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
 
 /**
@@ -179,9 +180,9 @@ public class PublicQueryController {
 	
 	@GetMapping("/users/{skillset}")
 	public String getUserLeaderboard(@PathVariable String skillset) {
-		Skillset ss = Skillset.fromEttString(skillset);
+		LeaderboardSort ss = LeaderboardSort.fromString(skillset);
 		m_logger.info("QUERY API CALLED :: Get User Leaderboard {}", ss.name());
-		List<UserWithSkillsets> result = users.getUserLeaderboard(ss);
+		List<UserWithSkillsets> result = users.getUserLeaderboard(ss, 1, 9999999).getUss();
 		
 		if (result.isEmpty()) {
 			return NAV+"there is nothing here.";

@@ -33,13 +33,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.etterna.calc.Skillset;
 import com.etterna.services.XmlProfileParsingService;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.NeoUserPrincipal;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
@@ -152,6 +153,29 @@ public class SiteFrontendController {
 		xmls.intakeProfile(file.getInputStream(), user.getUser());
 		
 		return new ModelAndView("redirect:/user/"+username+"?uploaded");
+	}
+	
+	@GetMapping("/leaderboard")
+	public String getLeaderboard(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
+		m_logger.info("FRONTEND API :: Leaderboard");
+		
+		int currentPage = page.orElse(1);
+		LeaderboardSort ls = LeaderboardSort.fromString(sort.orElse("overall"));
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		UserWithSkillsetsPagination uspage = users.getUserLeaderboard(ls, currentPage, itemsperpage);
+		int actualcurrentpage = uspage.getCurrentPage();
+		int maxpage = uspage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
+		model.addAttribute("users", uspage.getUss());
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("currentSort", ls.name());
+		
+		return "leaderboard";
 	}
 	
 	@GetMapping("/admin")
