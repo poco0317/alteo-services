@@ -1,5 +1,6 @@
 package com.etterna.services.dao;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -29,6 +30,10 @@ import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
 import com.etterna.services.datamodel.RankedChartkey;
 import com.etterna.services.repo.ChartRepository;
+import com.etterna.site.dto.ChartWithCount;
+import com.etterna.site.dto.ChartWithSkillsets;
+import com.etterna.site.dto.ChartsInPackPagination;
+import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
@@ -253,6 +258,79 @@ public class ChartDao {
 		});
 		
 		return charts;
+	}
+	
+	@Transactional
+	public ChartsInPackPagination getChartsInPackPagination(String pack, PackContentSort ps, int page, int itemsPerPage) {
+		List<ChartWithCount> cwc = repo.getChartsAndScoreCounts(pack);
+		cwc.addAll(repo.getChartsWithNoScores(pack));
+		
+		int sliceStart = Math.min(itemsPerPage * (page-1), cwc.size()-1);
+		int sliceEnd = Math.min(itemsPerPage * page, cwc.size());
+		m_logger.debug("{} {} {}", sliceStart, sliceEnd, cwc.size());
+		
+		if (cwc.size() == 0) {
+			return new ChartsInPackPagination(new ArrayList<>(), 1, 1);
+		}
+		
+		List<ChartWithSkillsets> cip = cwc.stream().map(c -> new ChartWithSkillsets(c.getChart(), c.getCount().intValue())).collect(Collectors.toList());
+		
+		Collections.sort(cip, new Comparator<ChartWithSkillsets>() {
+			@Override
+			public int compare(ChartWithSkillsets a, ChartWithSkillsets b) {
+				int o = 0;
+				switch (ps) {
+					case SCORES:
+						o = b.getScoreCount().compareTo(a.getScoreCount());
+						break;
+					case OVERALL:
+						o = b.getOverall().compareTo(a.getOverall());
+						break;
+					case STREAM:
+						o = b.getStream().compareTo(a.getStream());
+						break;
+					case JUMPSTREAM:
+						o = b.getJumpstream().compareTo(a.getJumpstream());
+						break;
+					case HANDSTREAM:
+						o = b.getHandstream().compareTo(a.getHandstream());
+						break;
+					case STAMINA:
+						o = b.getStamina().compareTo(a.getStamina());
+						break;
+					case JACKSPEED:
+						o = b.getJackspeed().compareTo(a.getJackspeed());
+						break;
+					case CHORDJACK:
+						o = b.getChordjack().compareTo(a.getChordjack());
+						break;
+					case TECHNICAL:
+						o = b.getTechnical().compareTo(a.getTechnical());
+						break;
+					case NAME:
+					default: {
+						int oo = a.getChart().getSongName().compareToIgnoreCase(b.getChart().getSongName());
+						if (oo == 0) {
+							return a.getChart().getDifficulty().compareToIgnoreCase(b.getChart().getDifficulty());
+						} else {
+							return oo;
+						}
+					}
+				}
+				if (o == 0) {
+					int oo = a.getChart().getSongName().compareToIgnoreCase(b.getChart().getSongName());
+					if (oo == 0) {
+						return a.getChart().getDifficulty().compareToIgnoreCase(b.getChart().getDifficulty());
+					} else {
+						return oo;
+					}
+				} else {
+					return o;
+				}
+			}
+		});
+		
+		return new ChartsInPackPagination(cip.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(cip.size() / (float)itemsPerPage)));
 	}
 
 }

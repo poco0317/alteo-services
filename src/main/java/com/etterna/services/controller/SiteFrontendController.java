@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,9 +42,10 @@ import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.ChartsInPackPagination;
 import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.NeoUserPrincipal;
-import com.etterna.site.dto.PackNameWithChartCount;
+import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
 import com.etterna.site.dto.ProfileSort;
@@ -202,6 +205,31 @@ public class SiteFrontendController {
 		model.addAttribute("currentSort", ps.name());
 		
 		return "packs";
+	}
+	
+	@GetMapping("/packs/{pack}")
+	public String getPackContents(Model model, @PathVariable("pack") String pack, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
+		pack = URLDecoder.decode(pack, StandardCharsets.UTF_8);
+		m_logger.info("FRONTEND API :: Pack Contents {}", pack);
+		
+		int currentPage = page.orElse(1);
+		PackContentSort ps = PackContentSort.fromString(sort.orElse("name"));
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		ChartsInPackPagination ppage = charts.getChartsInPackPagination(pack, ps, currentPage, itemsperpage);
+		int actualcurrentpage = ppage.getCurrentPage();
+		int maxpage = ppage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
+		model.addAttribute("charts", ppage.getCwss());
+		model.addAttribute("pack", URLEncoder.encode(pack, StandardCharsets.UTF_8));
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("currentSort", ps.name());
+		
+		return "packContent";
 	}
 	
 	@GetMapping("/admin")

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.RankedChartkey;
+import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.PackNameWithChartCount;
 
 @Repository
@@ -22,4 +23,10 @@ public interface ChartRepository extends JpaRepository<Chart, String> {
 	
 	@Query("select new com.etterna.site.dto.PackNameWithChartCount(a.packName, count(*)) from Chart a group by a.packName")
 	List<PackNameWithChartCount> getPackNamesWithChartCounts();
+	
+	@Query("select new com.etterna.site.dto.ChartWithCount(a, count(*)) from Chart a, HighScore s where s.chart = a and a.packName = :packName group by a.chartKey")
+	List<ChartWithCount> getChartsAndScoreCounts(String packName);
+	
+	@Query("select new com.etterna.site.dto.ChartWithCount(a, 0L) from Chart a where a.packName = :packName and not exists (select s from HighScore s where s.chart = a)")
+	List<ChartWithCount> getChartsWithNoScores(String packName);
 }

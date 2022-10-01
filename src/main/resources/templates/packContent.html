@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1>Pack Contents</h1>
+					<h3 th:text="${name}"></h3>
+				</div>
+			</div>
+			
+			<div class="row" style="margin-top: 5vh;">
+			
+				<ul th:if="${maxPage > 1}" class="pagination justify-content-end">
+					<li th:if="${currentPage > 1}" class="page-item">
+						<a class="page-link"
+						th:href="@{/packs/{pack}(pack=${pack}, page=1, sort=${currentSort})}">First</a>
+					</li>
+					<li th:if="${currentPage > 1}"
+						class="page-item"><a class="page-link"
+						th:href="@{/packs/{pack}(pack=${pack}, page=${currentPage - 1}, sort=${currentSort})}">Prev</a>
+					</li>
+					<li th:each="page: ${pageRange}" class="page-item"
+						th:classappend="${page == currentPage} ? active"><a
+						class="page-link" th:text="${page}"
+						th:href="@{/packs/{pack}(pack=${pack}, page=${page}, sort=${currentSort})}"></a>
+					</li>
+					<li th:if="${maxPage != currentPage}" class="page-item"><a
+						class="page-link"
+						th:href="@{/packs/{pack}(pack=${pack}, page=${currentPage + 1}, sort=${currentSort})}">Next</a>
+					</li>
+					<li th:if="${maxPage != currentPage}"
+						class="page-item"><a class="page-link"
+						th:href="@{/packs/{pack}(pack=${pack}, page=${maxPage}, sort=${currentSort})}">Last</a>
+					</li>
+				</ul>
+				<table th:if="${#lists.size(charts) > 0}" class="table table-hover table-sm">
+				
+				<!-- header -->
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='NAME')}">Song Name</a></th>
+						<th scope="col"><a>Difficulty</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='OVERALL')}">Overall</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='STREAM')}">Stream</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='JUMPSTREAM')}">Jumpstream</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='HANDSTREAM')}">Handstream</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='STAMINA')}">Stamina</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='JACKSPEED')}">Jackspeed</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='CHORDJACK')}">Chordjack</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='TECHNICAL')}">Technical</a></th>
+						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='SCORES')}">Total Scores</a></th>
+					</tr>
+				</thead>
+				
+				<!-- The Business. -->
+				<tbody>
+					<tr th:each="chart, stat: ${charts}">
+						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
+						<td><a th:text="${chart.chart.songName}" th:href="@{/chart/{chart}(chart=${chart.chart.chartKey})}"></a></td>
+						<td th:text="${chart.chart.difficulty}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.overall, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.stream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.jumpstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.handstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.stamina, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.jackspeed, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.chordjack, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.technical, 2, 2)}"></td>
+						<td th:text="${chart.scoreCount}"></td>
+					</tr>
+				</tbody>
+				
+				</table>
+				<div class="container"  th:unless="${#lists.size(charts) > 0}">
+					<h3>There are no charts...</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>
