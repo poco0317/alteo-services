@@ -42,6 +42,9 @@ import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.ChartLeaderboardPagination;
+import com.etterna.site.dto.ChartLeaderboardSort;
+import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.ChartsInPackPagination;
 import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.NeoUserPrincipal;
@@ -71,6 +74,19 @@ public class SiteFrontendController {
 	
 	@Autowired
 	private ChartDao charts;
+	
+	private int parseRate(Optional<String> rate) {
+		String rt = rate.orElse("-1");
+		
+		try {
+			Float d = Float.parseFloat(rt);
+			return Math.round(d);
+		} catch (Exception e) {
+			// if it cant be parsed it isnt worth caring about
+			return -1;
+		}
+		
+	}
 	
 	@GetMapping("/register")
 	public String getRegisterModel(Model model) {
@@ -230,6 +246,37 @@ public class SiteFrontendController {
 		model.addAttribute("currentSort", ps.name());
 		
 		return "packContent";
+	}
+	
+	@GetMapping("/chart/{chartkey}")
+	public String getChartLeaderboard(Model model,
+			@PathVariable("chartkey") String chartkey,
+			@RequestParam("page") Optional<Integer> page,
+			@RequestParam("sort") Optional<String> sort,
+			@RequestParam("rate") Optional<String> rate) {
+		m_logger.info("FRONTEND API :: Chart Leaderboard {}", chartkey);
+		
+		int currentPage = page.orElse(1);
+		ChartLeaderboardSort ls = ChartLeaderboardSort.fromString(sort.orElse("overall"));
+		int selectedrate = parseRate(rate); // -1 if "all rates" leaderboard, 100 if 1.0x leaderboard
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		ChartLeaderboardPagination ppage = scores.getChartLeaderboardPagination(chartkey, selectedrate, ls, currentPage, itemsperpage);
+		int actualcurrentpage = ppage.getCurrentPage();
+		int maxpage = ppage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
+		model.addAttribute("chart", new ChartWithSkillsets(ppage.getChart(), 0));
+		model.addAttribute("scores", ppage.getScores());
+		model.addAttribute("currentRate", ppage.getRate());
+		model.addAttribute("rates", ppage.getRates());
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("currentSort", ls.name());
+		
+		return "chart";
 	}
 	
 	@GetMapping("/admin")

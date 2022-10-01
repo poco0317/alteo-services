@@ -176,13 +176,13 @@ public class ChartDao {
 		return repo.findById(chartkey).orElse(null);
 	}
 	
-	public boolean ranked(String chartkey) {
+	public boolean isRanked(String chartkey) {
 		return rankedChartkeys.contains(chartkey);
 	}
 	
 	@Transactional
 	public boolean rankChart(String chartkey, String diffname, String packname, String songname) {
-		if (ranked(chartkey))
+		if (isRanked(chartkey))
 			return false;
 		
 		m_logger.info("Ranking chart {}", chartkey);

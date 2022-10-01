@@ -141,7 +141,7 @@ public class ScoreService {
 		
 		User user = sessions.sessionToUser(auth);
 		
-		if (user != null && charts.ranked(chartkey)) {
+		if (user != null && charts.isRanked(chartkey)) {
 			queue(req, user);
 			return 200;
 		} else {

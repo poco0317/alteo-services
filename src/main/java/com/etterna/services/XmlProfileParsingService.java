@@ -133,7 +133,7 @@ public class XmlProfileParsingService {
 				Element chartElement = (Element)chartNode;
 				
 				String chartkey = chartNode.getAttributes().getNamedItem("Key").getNodeValue();
-				if (!charts.ranked(chartkey)) {
+				if (!charts.isRanked(chartkey)) {
 					int skipped = 0;
 					NodeList sa = chartElement.getElementsByTagName("ScoresAt");
 					for (int l = 0; l < sa.getLength(); l++) {
