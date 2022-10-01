@@ -95,7 +95,7 @@
 				<tbody>
 					<tr th:each="score, stat: ${scores}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td th:text="${score.score.chart.songName}"></td>
+						<td><a th:text="${score.score.chart.songName}" th:href="@{/chart/{chartkey}(chartkey=${score.score.chart.chartKey})}"></a></td>
 						<td th:text="${score.score.chart.difficulty}"></td>
 						<td th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
 						<td th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></td>
