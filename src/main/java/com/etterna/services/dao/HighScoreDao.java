@@ -214,10 +214,10 @@ public class HighScoreDao {
 							default:
 								break;
 						}
-						if (av == bv) {
+						if (av.equals(bv)) {
 							Integer ar = a.getScore().getMusicRate();
 							Integer br = b.getScore().getMusicRate();
-							if (ar == br || ar == null || br == null) {
+							if (ar == null || br == null || ar.equals(br)) {
 								return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
 							} else {
 								return br.compareTo(ar);
@@ -239,6 +239,16 @@ public class HighScoreDao {
 							return bds.compareToIgnoreCase(ads);
 						}
 					}
+					case RATE:
+					{
+						Integer ar = a.getScore().getMusicRate();
+						Integer br = b.getScore().getMusicRate();
+						if (ar == null || br == null || ar.equals(br)) {
+							return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
+						} else {
+							return br.compareTo(ar);
+						}
+					}
 					case PLAYER:
 					{
 						String an = a.getScore().getUser().getUsername();
@@ -250,7 +260,6 @@ public class HighScoreDao {
 						}
 						// fall through
 					}
-
 					default:
 					case PERCENT:
 					{

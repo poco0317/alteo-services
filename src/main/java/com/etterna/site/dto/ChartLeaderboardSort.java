@@ -4,6 +4,7 @@ public enum ChartLeaderboardSort {
 	
 	PLAYER,
 	PERCENT,
+	RATE,
 	DATE,
 	OVERALL, // default
 	STREAM,
@@ -21,6 +22,8 @@ public enum ChartLeaderboardSort {
 				return PLAYER;
 			case "percent":
 				return PERCENT;
+			case "rate":
+				return RATE;
 			case "date":
 				return DATE;
 			case "overall":
