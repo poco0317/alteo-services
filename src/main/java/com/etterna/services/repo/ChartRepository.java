@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.RankedChartkey;
+import com.etterna.site.dto.PackNameWithChartCount;
 
 @Repository
 public interface ChartRepository extends JpaRepository<Chart, String> {
@@ -18,4 +19,7 @@ public interface ChartRepository extends JpaRepository<Chart, String> {
 	
 	@Query("select distinct a.packName from Chart a")
 	List<String> findDistinctPackName();
+	
+	@Query("select new com.etterna.site.dto.PackNameWithChartCount(a.packName, count(*)) from Chart a group by a.packName")
+	List<PackNameWithChartCount> getPackNamesWithChartCounts();
 }

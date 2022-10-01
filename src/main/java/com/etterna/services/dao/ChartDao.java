@@ -29,6 +29,9 @@ import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
 import com.etterna.services.datamodel.RankedChartkey;
 import com.etterna.services.repo.ChartRepository;
+import com.etterna.site.dto.PackNameWithChartCount;
+import com.etterna.site.dto.PackNameWithChartCountPagination;
+import com.etterna.site.dto.PacksSort;
 
 @Service
 public class ChartDao {
@@ -203,6 +206,33 @@ public class ChartDao {
 			}
 		});
 		return packs;
+	}
+	
+	@Transactional
+	public PackNameWithChartCountPagination getPacksAndChartCounts(PacksSort ps, int page, int itemsPerPage) {
+		List<PackNameWithChartCount> pncc = repo.getPackNamesWithChartCounts();
+		
+		int sliceStart = Math.min(itemsPerPage * (page-1), pncc.size()-1);
+		int sliceEnd = Math.min(itemsPerPage * page, pncc.size());
+		m_logger.debug("{} {} {}", sliceStart, sliceEnd, pncc.size());
+		
+		if (pncc.size() == 0) {
+			return new PackNameWithChartCountPagination(pncc, 1, 1);
+		}
+		
+		Collections.sort(pncc, new Comparator<PackNameWithChartCount>() {
+			@Override
+			public int compare(PackNameWithChartCount a, PackNameWithChartCount b) {
+				switch (ps) {
+					case COUNT:
+						return b.getCount().compareTo(a.getCount());
+					case NAME:
+					default:
+						return a.getPack().compareToIgnoreCase(b.getPack());
+				}
+			}
+		});
+		return new PackNameWithChartCountPagination(pncc.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(pncc.size() / (float)itemsPerPage)));
 	}
 	
 	@Transactional

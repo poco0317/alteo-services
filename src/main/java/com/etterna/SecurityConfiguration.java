@@ -30,7 +30,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers("/user/*", "/packs*", "/leaderboard*").permitAll() // front end nav
 				.antMatchers("/user/*/*").authenticated() // front end post protected
 				.antMatchers("/login").not().authenticated() // cant login twice
-				.anyRequest().authenticated() // everything else
+				//.anyRequest().authenticated() // everything else
+				.anyRequest().permitAll()
 				.and()
 			.formLogin()
 				.loginPage("/login")

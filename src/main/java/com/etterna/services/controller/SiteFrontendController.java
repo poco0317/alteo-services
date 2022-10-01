@@ -42,6 +42,9 @@ import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.User;
 import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.NeoUserPrincipal;
+import com.etterna.site.dto.PackNameWithChartCount;
+import com.etterna.site.dto.PackNameWithChartCountPagination;
+import com.etterna.site.dto.PacksSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
 
@@ -176,6 +179,29 @@ public class SiteFrontendController {
 		model.addAttribute("currentSort", ls.name());
 		
 		return "leaderboard";
+	}
+	
+	@GetMapping("/packs")
+	public String getPacks(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
+		m_logger.info("FRONTEND API :: Packs");
+		
+		int currentPage = page.orElse(1);
+		PacksSort ps = PacksSort.fromString(sort.orElse("name"));
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		PackNameWithChartCountPagination ppage = charts.getPacksAndChartCounts(ps, currentPage, itemsperpage);
+		int actualcurrentpage = ppage.getCurrentPage();
+		int maxpage = ppage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
+		model.addAttribute("packs", ppage.getPwcc());
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("currentSort", ps.name());
+		
+		return "packs";
 	}
 	
 	@GetMapping("/admin")

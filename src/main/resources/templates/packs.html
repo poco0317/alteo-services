@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1>Song Packs</h1>
+				</div>
+			</div>
+			
+			<div th:object="${packs}" class="row" style="margin-top: 5vh;">
+			
+				<ul th:if="${maxPage > 1}" th:object="${user}" class="pagination justify-content-end">
+					<li th:if="${currentPage > 1}" class="page-item">
+						<a class="page-link"
+						th:href="@{/packs(page=1, sort=${currentSort})}">First</a>
+					</li>
+					<li th:if="${currentPage > 1}"
+						class="page-item"><a class="page-link"
+						th:href="@{/packs(page=${currentPage - 1}, sort=${currentSort})}">Prev</a>
+					</li>
+					<li th:each="page: ${pageRange}" class="page-item"
+						th:classappend="${page == currentPage} ? active"><a
+						class="page-link" th:text="${page}"
+						th:href="@{/packs(page=${page}, sort=${currentSort})}"></a>
+					</li>
+					<li th:if="${maxPage != currentPage}" class="page-item"><a
+						class="page-link"
+						th:href="@{/packs(page=${currentPage + 1}, sort=${currentSort})}">Next</a>
+					</li>
+					<li th:if="${maxPage != currentPage}"
+						class="page-item"><a class="page-link"
+						th:href="@{/packs(page=${maxPage}, sort=${currentSort})}">Last</a>
+					</li>
+				</ul>
+				<table th:if="${#lists.size(packs) > 0}" class="table table-hover table-sm">
+				
+				<!-- header -->
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col"><a th:href="@{/packs(page=1, sort='NAME')}">Name</a></th>
+						<th scope="col"><a th:href="@{/packs(page=1, sort='COUNT')}">Charts In Pack</a></th>
+					</tr>
+				</thead>
+				
+				<!-- The Business. -->
+				<tbody>
+					<tr th:each="pack, stat: ${packs}">
+						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
+						<td><a th:text="${pack.pack}" th:href="@{/packs/{pack}(pack=${pack.pack})}"></a></td>
+						<td th:text="${pack.count}"></td>
+					</tr>
+				</tbody>
+				
+				</table>
+				<div class="container"  th:unless="${#lists.size(packs) > 0}">
+					<h3>There are no packs...</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>
