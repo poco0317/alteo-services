@@ -51,6 +51,7 @@
 						<th scope="col">#</th>
 						<th scope="col"><a th:href="@{/packs(page=1, sort='NAME')}">Name</a></th>
 						<th scope="col"><a th:href="@{/packs(page=1, sort='COUNT')}">Charts In Pack</a></th>
+						<th scope="col"><a th:href="@{/packs(page=1, sort='SCORES')}">Scores In Pack</a></th>
 					</tr>
 				</thead>
 				
@@ -60,6 +61,7 @@
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
 						<td><a th:text="${pack.pack}" th:href="@{/packs/{pack}(pack=${pack.pack})}"></a></td>
 						<td th:text="${pack.count}"></td>
+						<td th:text="${pack.scoreCount}"></td>
 					</tr>
 				</tbody>
 				

@@ -1,6 +1,8 @@
 package com.etterna.services.repo;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +12,7 @@ import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.RankedChartkey;
 import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.PackNameWithChartCount;
+import com.etterna.site.dto.PackNameWithScoreCount;
 
 @Repository
 public interface ChartRepository extends JpaRepository<Chart, String> {
@@ -23,6 +26,13 @@ public interface ChartRepository extends JpaRepository<Chart, String> {
 	
 	@Query("select new com.etterna.site.dto.PackNameWithChartCount(a.packName, count(*)) from Chart a group by a.packName")
 	List<PackNameWithChartCount> getPackNamesWithChartCounts();
+	
+	@Query("select new com.etterna.site.dto.PackNameWithScoreCount(a.packName, count(*)) from Chart a, HighScore s where a = s.chart group by a.packName")
+	List<PackNameWithScoreCount> getPackNamesWithScoreCounts();
+	
+	default Map<String, Integer> getPackNamesWithScoreCountsMap() {
+		return getPackNamesWithScoreCounts().stream().collect(Collectors.toMap(PackNameWithScoreCount::getPack, PackNameWithScoreCount::getCount));
+	}
 	
 	@Query("select new com.etterna.site.dto.ChartWithCount(a, count(*)) from Chart a, HighScore s where s.chart = a and a.packName = :packName group by a.chartKey")
 	List<ChartWithCount> getChartsAndScoreCounts(String packName);

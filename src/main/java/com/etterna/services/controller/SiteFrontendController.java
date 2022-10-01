@@ -223,7 +223,7 @@ public class SiteFrontendController {
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
 		
 		model.addAttribute("charts", ppage.getCwss());
-		model.addAttribute("pack", URLEncoder.encode(pack, StandardCharsets.UTF_8));
+		model.addAttribute("pack", pack);
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
 		model.addAttribute("maxPage", maxpage);

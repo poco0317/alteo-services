@@ -4,6 +4,7 @@ public class PackNameWithChartCount {
 	
 	private String pack = "";
 	private Integer count = 0;
+	private Integer scoreCount = 0;
 	
 	public PackNameWithChartCount(String pack, Integer count) {
 		this.pack = pack;
@@ -26,6 +27,12 @@ public class PackNameWithChartCount {
 	}
 	public void setCount(Integer count) {
 		this.count = count;
+	}
+	public Integer getScoreCount() {
+		return scoreCount;
+	}
+	public void setScoreCount(Integer scoreCount) {
+		this.scoreCount = scoreCount;
 	}
 
 }

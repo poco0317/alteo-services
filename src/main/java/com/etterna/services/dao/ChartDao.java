@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -225,12 +226,33 @@ public class ChartDao {
 			return new PackNameWithChartCountPagination(pncc, 1, 1);
 		}
 		
+		Map<String, Integer> packScoreCounts = repo.getPackNamesWithScoreCountsMap();
+		pncc.forEach(c -> {
+			c.setScoreCount(packScoreCounts.getOrDefault(c.getPack(), 0));
+		});
+		
 		Collections.sort(pncc, new Comparator<PackNameWithChartCount>() {
 			@Override
 			public int compare(PackNameWithChartCount a, PackNameWithChartCount b) {
 				switch (ps) {
 					case COUNT:
-						return b.getCount().compareTo(a.getCount());
+					case SCORES:
+					{
+						int o = 0;
+						switch (ps) {
+							default:
+							case COUNT:
+								o = b.getCount().compareTo(a.getCount());
+								break;
+							case SCORES:
+								o = b.getScoreCount().compareTo(a.getScoreCount());
+								break;
+						}
+						if (o != 0) {
+							return o;
+						}
+						// fallthrough to compare by name if equal counts
+					}
 					case NAME:
 					default:
 						return a.getPack().compareToIgnoreCase(b.getPack());

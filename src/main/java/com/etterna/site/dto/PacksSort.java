@@ -3,7 +3,8 @@ package com.etterna.site.dto;
 public enum PacksSort {
 	
 	NAME, // default
-	COUNT;
+	COUNT,
+	SCORES;
 
 	public static PacksSort fromString(String s) {
 		switch (s.toLowerCase()) {
@@ -12,6 +13,8 @@ public enum PacksSort {
 				return NAME;
 			case "count":
 				return COUNT;
+			case "scores":
+				return SCORES;
 		}
 	}
 }
