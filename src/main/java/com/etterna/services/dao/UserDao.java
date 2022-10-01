@@ -324,7 +324,7 @@ public class UserDao {
 						default:
 							break;
 					}
-					if (av == bv) {
+					if (av.equals(bv)) {
 						// reverse sort when doing by name
 						return a.getUser().getUsername().compareToIgnoreCase(b.getUser().getUsername());
 					} else {

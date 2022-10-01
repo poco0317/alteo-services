@@ -365,7 +365,7 @@ public class HighScoreDao {
 							default:
 								break;
 						}
-						if (av == bv) {
+						if (av.equals(bv)) {
 							return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
 						} else {
 							return bv.compareTo(av);
