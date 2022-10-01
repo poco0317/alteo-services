@@ -344,7 +344,7 @@ public class UserDao {
 					}
 				}
 			}
-		}).collect(Collectors.toList()), page, Math.max(1, (int)Math.ceil(usvs.size() / (float)itemsPerPage)));
+		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(usvs.size() / (float)itemsPerPage)));
 	}
 
 }
