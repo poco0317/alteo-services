@@ -165,6 +165,7 @@ public class ChartDao {
 					}
 				}
 			}
+			bulkCalc.shutdown();
 		} else {
 			m_logger.info("Found no charts to update and no ranked charts.");
 		}

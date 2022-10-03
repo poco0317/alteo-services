@@ -60,6 +60,10 @@ public class ScoreService {
 		if (scores.size() > 0) {
 			m_logger.info("Updating queued scores: {} scores", scores.size());
 			
+			if (bulkSsrExecutor.isShutdown()) {
+				bulkSsrExecutor = Executors.newWorkStealingPool();
+			}
+			
 			if (DELETE_OLD_SSRS) {
 				m_logger.info("Deleting SSRs on old calc version...");
 				long deleted = highScores.deleteSsrsOlderThan(calc.getCalcVersion());
@@ -121,6 +125,11 @@ public class ScoreService {
 			}
 			
 			m_logger.info("Finished updating queued scores");
+		} else {
+			if (!bulkSsrExecutor.isShutdown()) {
+				m_logger.info("Shutting down BulkSSRExecutor to release unused resources");
+				bulkSsrExecutor.shutdown();
+			}
 		}
 	}
 	
