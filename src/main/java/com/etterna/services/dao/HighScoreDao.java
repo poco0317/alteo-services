@@ -110,7 +110,7 @@ public class HighScoreDao {
 	
 	@Transactional
 	public HighScoreWithSkillsetsPagination getUserScores(User u, ProfileSort ps, int page, int perpage) {
-		List<Object[]> hses = hsRepo.findScoreWithAllSkillsets(u, calc.getCalcVersion());
+		List<Object[]> hses = hsRepo.findUserScoresWithSkillsets(u, calc.getCalcVersion());
 		return sortBySkillsets(hses, ps, page, perpage);
 	}
 	
@@ -427,7 +427,56 @@ public class HighScoreDao {
 	 */
 	@Transactional
 	public List<Object[]> getScoresWithSkillsetValue(User u, Skillset ss) {
-		return hsRepo.findScoreWithSkillsetValue(u, calc.getCalcVersion(), ss);
+		return hsRepo.findUserScoresWithSpecificSkillsetValue(u, calc.getCalcVersion(), ss);
+	}
+	
+	@Transactional
+	public HighScoreWithSkillsets getScoreWithSkillsets(String scorekey) {
+		HighScoreWithSkillsets o = new HighScoreWithSkillsets();
+		
+		// [HighScore, ScoreSpecificValue]
+		List<Object[]> obs = hsRepo.findScoreWithSkillsets(scorekey, calc.getCalcVersion());
+		if (obs == null || obs.size() == 0) {
+			HighScore hs = hsRepo.findById(scorekey).orElse(null);
+			o.setScore(hs);
+		} else {
+			obs.forEach(ob -> {
+				HighScore hs = (HighScore)ob[0];
+				o.setScore(hs);
+				ScoreSpecificValue ssv = (ScoreSpecificValue)ob[1];
+				Double v = ssv.getValue();
+				switch (ssv.getId().getSkillset()) {
+					case OVERALL:
+						o.setOverall(v);
+						break;
+					case STREAM:
+						o.setStream(v);
+						break;
+					case JUMPSTREAM:
+						o.setJumpstream(v);
+						break;
+					case HANDSTREAM:
+						o.setHandstream(v);
+						break;
+					case STAMINA:
+						o.setStamina(v);
+						break;
+					case JACKSPEED:
+						o.setJackspeed(v);
+						break;
+					case CHORDJACK:
+						o.setChordjack(v);
+						break;
+					case TECHNICAL:
+						o.setTechnical(v);
+						break;
+					default:
+						break;
+				}
+			});
+		}
+		
+		return o;
 	}
 
 	/**
@@ -500,6 +549,7 @@ public class HighScoreDao {
 		hs.setHeldCount(Integer.parseInt(req.getHeld()));
 		hs.setHitMineCount(Integer.parseInt(req.getHitmine()));
 		hs.setJudgeScale(Double.parseDouble(req.getJudgeScale()));
+		hs.setLetgoCount(Integer.parseInt(req.getLetgo()));
 		hs.setMarvCount(Integer.parseInt(req.getMarv()));
 		hs.setMaxCombo(Integer.parseInt(req.getMax_combo()));
 		hs.setMissCount(Integer.parseInt(req.getMiss()));

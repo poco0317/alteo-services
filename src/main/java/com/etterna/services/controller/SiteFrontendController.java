@@ -279,6 +279,15 @@ public class SiteFrontendController {
 		return "chart";
 	}
 	
+	@GetMapping("/score/{scorekey}")
+	public String getScorePage(Model model, @PathVariable("scorekey") String scorekey) {
+		m_logger.info("FRONTEND API :: Score Page {}", scorekey);
+		
+		model.addAttribute("score", scores.getScoreWithSkillsets(scorekey));
+		
+		return "score";
+	}
+	
 	@GetMapping("/admin")
 	public String adminPage(Model model) {
 		

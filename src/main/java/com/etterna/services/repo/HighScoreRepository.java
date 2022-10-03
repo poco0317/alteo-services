@@ -32,10 +32,13 @@ public interface HighScoreRepository extends JpaRepository<HighScore, String> {
 	List<Object[]> findScoresByChartOnRate(Chart chart, Integer rate, Integer calcVersion);
 	
 	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.id.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.user = :user and ssv.id.skillset = :ss")
-	List<Object[]> findScoreWithSkillsetValue(User user, Integer calcVersion, Skillset ss);
+	List<Object[]> findUserScoresWithSpecificSkillsetValue(User user, Integer calcVersion, Skillset ss);
 	
 	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.id.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.user = :user")
-	List<Object[]> findScoreWithAllSkillsets(User user, Integer calcVersion);
+	List<Object[]> findUserScoresWithSkillsets(User user, Integer calcVersion);
+	
+	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.id.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.scoreKey = :scoreKey")
+	List<Object[]> findScoreWithSkillsets(String scoreKey, Integer calcVersion);
 	
 	@Query("SELECT hs FROM HighScore hs WHERE hs.calcVersion <> :calcVersion and hs.manuallyInvalid = false and hs.noCC = true and hs.ssrNorm is not null and hs.musicRate is not null")
 	List<HighScore> findRecalculableScores(Integer calcVersion);

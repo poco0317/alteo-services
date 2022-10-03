@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1 th:text="${score.score.chart.songName + ' - ' + score.score.chart.difficulty}"></h1>
+					<h2 th:text="${score.score.chart.packName}"></h2>
+					<h3 th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></h3>
+					<h5 th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></h5>
+					<h6 th:text="${'By: ' + score.score.user.username}"></h6>
+					<h6 th:text="${'Date: ' + score.score.dateStr}"></h6>
+					<h6 th:text="${'Mods: ' + score.score.modString}"></h6>
+				</div>
+			</div>
+
+			<div class="row" style="margin-top: 5vh;">
+				<div class="col-md-12 text-center">
+					<h6 th:text="${'Overall: ' + #numbers.formatDecimal(score.overall, 2, 2)}"></h6>
+					<h6 th:text="${'Stream: ' + #numbers.formatDecimal(score.stream, 2, 2)}"></h6>
+					<h6 th:text="${'Jumpstream: ' + #numbers.formatDecimal(score.jumpstream, 2, 2)}"></h6>
+					<h6 th:text="${'Handstream: ' + #numbers.formatDecimal(score.handstream, 2, 2)}"></h6>
+					<h6 th:text="${'Stamina: ' + #numbers.formatDecimal(score.stamina, 2, 2)}"></h6>
+					<h6 th:text="${'Jackspeed: ' + #numbers.formatDecimal(score.jackspeed, 2, 2)}"></h6>
+					<h6 th:text="${'Chordjack: ' + #numbers.formatDecimal(score.chordjack, 2, 2)}"></h6>
+					<h6 th:text="${'Technical: ' + #numbers.formatDecimal(score.technical, 2, 2)}"></h6>
+				</div>
+			</div>
+			
+			<div class="row" style="margin-top: 2vh;">
+				<div class="container">
+				
+					<h5>Judgments</h5>
+					<a th:text="${'Marvelous: '+score.score.marvCount}"></a><br>
+					<a th:text="${'Perfect: '+score.score.perfCount}"></a><br>
+					<a th:text="${'Great: '+score.score.greatCount}"></a><br>
+					<a th:text="${'Good: '+score.score.goodCount}"></a><br>
+					<a th:text="${'Bad: '+score.score.badCount}"></a><br>
+					<a th:text="${'Miss: '+score.score.missCount}"></a><br>
+					
+					<br>
+					<a th:text="${'Holds Held: '+score.score.heldCount}"></a><br>
+					<a th:text="${'Holds Dropped: '+score.score.letgoCount}"></a><br>
+					<a th:text="${'Holds Missed: '+score.score.ngCount}"></a><br>
+					
+					<br>
+					<a th:text="${'Mines Hit: '+score.score.hitMineCount}"></a><br>
+					
+					<br><br>
+					
+					<h5>Extra Info</h5>
+					<a th:text="${'Max Combo: '+score.score.maxCombo}"></a><br>
+					<a th:text="${'Grade: '+score.score.grade}"></a><br>
+					<a th:text="${'WifeGrade: '+score.score.wifeGrade}"></a><br>
+					<a th:text="${'WifeVersion: '+score.score.wifeVersion}"></a><br>
+					<a th:text="${'WifePoints: '+score.score.wifePoints}"></a><br>
+					<a th:text="${'Original WifePercent: '+score.score.wifePercent}"></a><br>
+					<a th:text="${'Judge Scale: '+score.score.judgeScale}"></a><br>
+					<a th:text="${'TopScore: '+score.score.topScore}"></a><br>
+					<a th:text="${'EtternaValid: '+score.score.etternaValid}"></a><br>
+					<a th:text="${'NegBPM: '+score.score.negBpm}"></a><br>
+					<a th:text="${'NoCC: '+score.score.noCC}"></a><br>
+					
+					<br><br>
+					
+					<div sec:authorize="isAuthenticated()">
+						<h5>Secret Info</h5>
+						<a th:text="${'Brittle Key: '+score.score.brittleKey}"></a><br>
+						<a th:text="${'GUID: '+score.score.guid}"></a><br>
+						<a th:text="${'Nerf Multiplier: '+score.score.nerfMultiplier}"></a><br>
+						<a th:text="${'Admin Invalidation: '+score.score.manuallyInvalid}"></a><br>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>

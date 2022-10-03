@@ -202,13 +202,15 @@ public class XmlProfileParsingService {
 						Integer ng = nullint(guaranteeGet(hns, "MissedHold"));
 						Integer lg = nullint(guaranteeGet(hns, "LetGo"));
 						int ngcount = 0;
+						int lgcount = 0;
 						if (ng != null) {
 							ngcount += ng;
 						}
 						if (lg != null) {
-							ngcount += lg;
+							lgcount += lg;
 						}
 						hs.setNgCount(ngcount);
+						hs.setLetgoCount(lgcount);
 						
 						highscores.add(hs);
 					}

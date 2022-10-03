@@ -68,6 +68,8 @@ public class HighScore {
 	private Integer heldCount;
 	@Column(name = "ng_cnt")
 	private Integer ngCount;
+	@Column(name = "letgo_cnt")
+	private Integer letgoCount;
 	@Column(name = "date_str")
 	private String dateStr;
 	
@@ -296,6 +298,12 @@ public class HighScore {
 	}
 	public void setNerfMultiplier(Double nerfMultiplier) {
 		this.nerfMultiplier = nerfMultiplier;
+	}
+	public Integer getLetgoCount() {
+		return letgoCount;
+	}
+	public void setLetgoCount(Integer letgoCount) {
+		this.letgoCount = letgoCount;
 	}
 	@Override
 	public int hashCode() {

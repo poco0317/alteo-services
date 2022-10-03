@@ -78,7 +78,7 @@
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
 						<td><a th:text="${score.score.user.username}" th:href="@{/user/{username}(username=${score.score.user.username})}"></a></td>
 						<td th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
-						<td th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></td>
+						<td><a th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}" th:href="@{/score/{scorekey}(scorekey=${score.score.scoreKey})}"></a></td>
 						<td th:text="${score.score.dateStr}"></td>
 						<td th:text="${#numbers.formatDecimal(score.overall, 2, 2)}"></td>
 						<td th:text="${#numbers.formatDecimal(score.stream, 2, 2)}"></td>
