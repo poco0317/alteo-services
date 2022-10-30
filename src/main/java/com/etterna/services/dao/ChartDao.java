@@ -237,6 +237,7 @@ public class ChartDao {
 			public int compare(PackNameWithChartCount a, PackNameWithChartCount b) {
 				switch (ps) {
 					case COUNT:
+					case AVG:
 					case SCORES:
 					{
 						int o = 0;
@@ -247,6 +248,9 @@ public class ChartDao {
 								break;
 							case SCORES:
 								o = b.getScoreCount().compareTo(a.getScoreCount());
+								break;
+							case AVG:
+								o = b.getAverageScores().compareTo(a.getAverageScores());
 								break;
 						}
 						if (o != 0) {

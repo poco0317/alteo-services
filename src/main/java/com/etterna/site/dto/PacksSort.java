@@ -4,7 +4,8 @@ public enum PacksSort {
 	
 	NAME, // default
 	COUNT,
-	SCORES;
+	SCORES,
+	AVG; // average scores per chart
 
 	public static PacksSort fromString(String s) {
 		switch (s.toLowerCase()) {
@@ -15,6 +16,8 @@ public enum PacksSort {
 				return COUNT;
 			case "scores":
 				return SCORES;
+			case "avg":
+				return AVG;
 		}
 	}
 }
