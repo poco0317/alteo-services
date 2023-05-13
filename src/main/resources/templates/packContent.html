@@ -15,7 +15,7 @@
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<h1>Pack Contents</h1>
-					<h3 th:text="${pack}"></h3>
+					<h3 th:text="${packObj.displayName}"></h3>
 				</div>
 			</div>
 			
@@ -68,7 +68,7 @@
 				<tbody>
 					<tr th:each="chart, stat: ${charts}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${chart.chart.songName}" th:href="@{/chart/{chart}(chart=${chart.chart.chartKey})}"></a></td>
+						<td><a th:text="${chart.chart.title}" th:href="@{/chart/{chart}(chart=${chart.chart.chartKey})}"></a></td>
 						<td th:text="${chart.chart.difficulty}"></td>
 						<td th:text="${#numbers.formatDecimal(chart.overall, 2, 2)}"></td>
 						<td th:text="${#numbers.formatDecimal(chart.stream, 2, 2)}"></td>

@@ -14,16 +14,17 @@
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-12 text-center">
-					<h1 th:text="${chart.chart.songName + ' - ' + chart.chart.difficulty}"></h1>
-					<h2 th:text="${chart.chart.packName}"></h2>
-					<h6 th:text="${'Overall: ' + #numbers.formatDecimal(chart.overall, 2, 2)}"></h6>
-					<h6 th:text="${'Stream: ' + #numbers.formatDecimal(chart.stream, 2, 2)}"></h6>
-					<h6 th:text="${'Jumpstream: ' + #numbers.formatDecimal(chart.jumpstream, 2, 2)}"></h6>
-					<h6 th:text="${'Handstream: ' + #numbers.formatDecimal(chart.handstream, 2, 2)}"></h6>
-					<h6 th:text="${'Stamina: ' + #numbers.formatDecimal(chart.stamina, 2, 2)}"></h6>
-					<h6 th:text="${'Jackspeed: ' + #numbers.formatDecimal(chart.jackspeed, 2, 2)}"></h6>
-					<h6 th:text="${'Chordjack: ' + #numbers.formatDecimal(chart.chordjack, 2, 2)}"></h6>
-					<h6 th:text="${'Technical: ' + #numbers.formatDecimal(chart.technical, 2, 2)}"></h6>
+					<h1 th:text="${chart.chart.title + ' - ' + chart.chart.difficulty}"></h1>
+					<h5 th:text="${'Overall: ' + #numbers.formatDecimal(chart.overall, 2, 2)}"></h5>
+					<h5 th:text="${'Stream: ' + #numbers.formatDecimal(chart.stream, 2, 2)}"></h5>
+					<h5 th:text="${'Jumpstream: ' + #numbers.formatDecimal(chart.jumpstream, 2, 2)}"></h5>
+					<h5 th:text="${'Handstream: ' + #numbers.formatDecimal(chart.handstream, 2, 2)}"></h5>
+					<h5 th:text="${'Stamina: ' + #numbers.formatDecimal(chart.stamina, 2, 2)}"></h5>
+					<h5 th:text="${'Jackspeed: ' + #numbers.formatDecimal(chart.jackspeed, 2, 2)}"></h5>
+					<h5 th:text="${'Chordjack: ' + #numbers.formatDecimal(chart.chordjack, 2, 2)}"></h5>
+					<h5 th:text="${'Technical: ' + #numbers.formatDecimal(chart.technical, 2, 2)}"></h5>
+					<h3>Packs:</h3>
+					<h5 th:each="pack, stat: ${chart.chart.packs}"><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.name})}"></a></h5>
 				</div>
 			</div>
 

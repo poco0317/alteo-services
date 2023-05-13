@@ -40,7 +40,9 @@ import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPaginati
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
+import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.UserDao;
+import com.etterna.services.datamodel.Pack;
 import com.etterna.services.datamodel.User;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
@@ -74,6 +76,9 @@ public class SiteFrontendController {
 	
 	@Autowired
 	private ChartDao charts;
+	
+	@Autowired
+	private PackDao packs;
 	
 	private int parseRate(Optional<String> rate) {
 		String rt = rate.orElse("-1");
@@ -233,6 +238,7 @@ public class SiteFrontendController {
 		final int directionaldistance = 2;
 		final int itemsperpage = 200;
 		
+		Pack packObj = packs.get(pack);
 		ChartsInPackPagination ppage = charts.getChartsInPackPagination(pack, ps, currentPage, itemsperpage);
 		int actualcurrentpage = ppage.getCurrentPage();
 		int maxpage = ppage.getTotalPages();
@@ -240,6 +246,7 @@ public class SiteFrontendController {
 		
 		model.addAttribute("charts", ppage.getCwss());
 		model.addAttribute("pack", pack);
+		model.addAttribute("packObj", packObj);
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
 		model.addAttribute("maxPage", maxpage);

@@ -16,9 +16,9 @@ import com.etterna.services.repo.ChartDiffValueRepository;
 import com.etterna.services.repo.ChartRepository;
 
 @Service
-public class DiffService {
+public class DiffDao {
 	
-	private static final Logger m_logger = LoggerFactory.getLogger(DiffService.class);
+	private static final Logger m_logger = LoggerFactory.getLogger(DiffDao.class);
 	
 	@Autowired
 	private ChartRepository charts;
@@ -34,12 +34,13 @@ public class DiffService {
 	/**
 	 * The way this is usually used, Transactional is not necessary
 	 */
+	@SuppressWarnings("unused")
 	public void updateDiffValues(Chart c, Set<ChartDiffValue> newDiffs) {
 		Set<ChartDiffValue> diffs = c.getDiffValues();
-		if (diffs != null && c.getCalcVersion() < calc.getCalcVersion()) {
+		if (c.getCalcVersion() < calc.getCalcVersion()) {
 			m_logger.debug("Updating diffs for {}", c.getChartKey());
 			
-			if (DELETE_OLD_DIFFS) {
+			if (DELETE_OLD_DIFFS && diffs != null) {
 				diffs.forEach(diff -> {
 					chartDiffs.delete(diff);
 				});

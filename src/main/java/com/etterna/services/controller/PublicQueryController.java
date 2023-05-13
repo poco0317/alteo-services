@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
+import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
@@ -40,6 +40,9 @@ public class PublicQueryController {
 	private ChartDao charts;
 	
 	@Autowired
+	private PackDao packs;
+	
+	@Autowired
 	private CalcManager calc;
 	
 	@Autowired
@@ -54,10 +57,10 @@ public class PublicQueryController {
 	public String getRanked() {
 		m_logger.info("QUERY API CALLED :: Base Url");
 		
-		List<String> packs = charts.getAllPacks();
+		List<String> packnames = packs.getAllNames();
 		
 		StringBuilder sb = new StringBuilder();
-		packs.forEach(s -> {
+		packnames.forEach(s -> {
 			final String pn = URLEncoder.encode(s, StandardCharsets.UTF_8);
 			sb.append("<a href='/query/pack/"+pn+"'>"+s+"</a><br>");
 		});
@@ -88,7 +91,7 @@ public class PublicQueryController {
 			// skip charts with no difficulty
 			if (c.getDiffValues().iterator().next().getValue() > 0.01) {
 				sb.append("<tr>");
-				sb.append("<td><a href='/query/chart/"+c.getChartKey()+"'>"+c.getSongName()+"</a></td>");
+				sb.append("<td><a href='/query/chart/"+c.getChartKey()+"'>"+c.getTitle()+"</a></td>");
 				sb.append("<td>"+c.getDifficulty()+"</td>");
 				sb.append(calc.diffsToString(c.getDiffValues(), true));
 				sb.append("</tr>");
@@ -128,7 +131,7 @@ public class PublicQueryController {
 		sb.append("</table>");
 		
 		Chart chart = charts.get(chartkey);
-		return NAV+"ALL RATES LEADERBOARD - "+chart.getSongName() + " - "+chart.getDifficulty()+ " - " + leaderboard.size() + " scores<br><br>"+sb.toString();
+		return NAV+"ALL RATES LEADERBOARD - "+chart.getTitle() + " - "+chart.getDifficulty()+ " - " + leaderboard.size() + " scores<br><br>"+sb.toString();
 	}
 	
 	@GetMapping("/score/{scorekey}")
@@ -142,7 +145,7 @@ public class PublicQueryController {
 		StringBuilder sb = new StringBuilder();
 		String uname = score.getUser().getUsername();
 		
-		sb.append(score.getChart().getSongName() + " - " +score.getChart().getDifficulty() + " - "+String.format("%5.2f", score.getMusicRate().doubleValue()/100)+"x - "+score.getChart().getPackName()+"<br><br>");
+		sb.append(score.getChart().getTitle() + " - " +score.getChart().getDifficulty() + " - "+String.format("%5.2f", score.getMusicRate().doubleValue()/100)+"x - "+score.getChart().getPacks().iterator().next().getDisplayName()+"<br><br>");
 		sb.append("<a href='/query/user/"+uname+"'>"+uname+"</a>'s score ("+scorekey+")<br><br>");
 		sb.append(score.getDateStr() + "<br>");
 		sb.append(String.format("%5.4f", score.getSsrNorm().doubleValue()/10000)+"%<br>");
@@ -279,7 +282,7 @@ public class PublicQueryController {
 			for (int i = 0; i < hs.size() && i < 200; i++) {
 				final HighScoreWithSkillsets h = hs.get(i);
 				sb.append("<tr>");
-				sb.append("<td><a href='/query/score/"+h.getScore().getScoreKey()+"'>"+h.getScore().getChart().getSongName()+"</a></td>");
+				sb.append("<td><a href='/query/score/"+h.getScore().getScoreKey()+"'>"+h.getScore().getChart().getTitle()+"</a></td>");
 				sb.append("<td>"+h.getScore().getChart().getDifficulty()+"</td>");
 				sb.append("<td>"+String.format("%5.2fx", h.getScore().getMusicRate().doubleValue()/100)+"</td>");
 				sb.append("<td>"+String.format("%5.4f%%", h.getScore().getSsrNorm().doubleValue()/10000)+"</td>");

@@ -3,6 +3,7 @@ package com.etterna.services.dao;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,8 +15,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -27,8 +26,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
+import com.etterna.services.dao.SongCacheData.ChartCacheData;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
+import com.etterna.services.datamodel.Pack;
 import com.etterna.services.datamodel.RankedChartkey;
 import com.etterna.services.repo.ChartRepository;
 import com.etterna.site.dto.ChartWithCount;
@@ -45,13 +46,16 @@ public class ChartDao {
 	private static final Logger m_logger = LoggerFactory.getLogger(ChartDao.class);
 	
 	@Autowired
-	private ChartRepository repo;
+	private ChartRepository charts;
+	
+	@Autowired
+	private PackDao packs;
 	
 	@Autowired
 	private CalcManager calc;
 	
 	@Autowired
-	private DiffService chartDiffs;
+	private DiffDao chartDiffs;
 	
 	private static Set<String> rankedChartkeys = ConcurrentHashMap.newKeySet();
 	private static ConcurrentHashMap<String, List<String>> packRankQueue = new ConcurrentHashMap<>();
@@ -70,12 +74,13 @@ public class ChartDao {
 			rankSongDatas(entry.getValue(), entry.getKey());
 			it.remove();
 		}
+		init();
 		
 		m_logger.info("Finished handling pack ranking queue");
 	}
 	
 	public void queuePackForRanking(List<String> songdatas, String packname) {
-		if (packRankQueue.containsKey(packname) || repo.findByPackName(packname).size() > 0) {
+		if (packRankQueue.containsKey(packname) || packs.isRanked(packname)) {
 			m_logger.warn("Attempted to rank pack already in queue or already ranked : {}", packname);
 		} else {
 			packRankQueue.put(packname, songdatas);
@@ -92,34 +97,20 @@ public class ChartDao {
 	}
 	
 	private void rankSongDatas(List<String> songdatas, String packname) {
-		final Pattern titlepattern = Pattern.compile(";[\\s]*#TITLE:([^;]+);");
-		final Pattern ckpattern = Pattern.compile(";[\\s]*#CHARTKEY:([^;]+);");
-		final Pattern diffpattern = Pattern.compile(";[\\s]*#DIFFICULTY:([^;]+);");
 		for (String contents : songdatas) {
-			Matcher titlematch = titlepattern.matcher(contents);
-			Matcher ckmatcher = ckpattern.matcher(contents);
-			Matcher diffmatcher = diffpattern.matcher(contents);
+			SongCacheData cacheData = new SongCacheData(contents);
 			
-			if (!titlematch.find()) {
+			if (cacheData.getTitle() == null) {
 				m_logger.warn("Skipped song due to missing title in {}", packname);
 				m_logger.warn("{}", contents);
 			} else {
-				String songname = titlematch.group(1);
-				List<String> cks = new LinkedList<>();
-				while (ckmatcher.find()) {
-					cks.add(ckmatcher.group(1));
-				}
-				List<String> diffs = new LinkedList<>();
-				while (diffmatcher.find()) {
-					diffs.add(diffmatcher.group(1));
-				}
-				if (diffs.size() != cks.size()) {
-					m_logger.warn("Chartkey and Diff count is not the same!!! ck {} - diff {} - Skipped ranking {}", cks.size(), diffs.size(), songname);
+				if (cacheData.getCharts().isEmpty()) {
+					m_logger.warn("Chartkey and Diff count is not the same!!! Skipped ranking {}", cacheData.getTitle());
 				} else {
-					m_logger.info("Found {} cks and {} diffs in song {} - pack {}", cks.size(), diffs.size(), songname, packname);
-					for (int i = 0; i < cks.size(); i++) {
-						rankChart(cks.get(i), diffs.get(i), packname, songname);
-					}
+					m_logger.info("Found {} charts in song {} - pack {}", cacheData.getCharts().size(), cacheData.getTitle(), packname);
+					cacheData.getCharts().forEach(c -> {
+						rankChart(packname, cacheData, c);
+					});
 				}
 			}
 		}
@@ -129,14 +120,14 @@ public class ChartDao {
 	@Transactional
 	public void init() {
 		m_logger.info("Starting Chart Difficulty Updates");
-		List<Chart> all = repo.findByCalcVersionLessThan(calc.getCalcVersion());
-		List<RankedChartkey> allRankedChartkeys = repo.findChartKeyByChartKeyNotNull();
+		List<Chart> all = charts.findByCalcVersionLessThan(calc.getCalcVersion());
+		List<RankedChartkey> allRankedChartkeys = charts.findChartKeyByChartKeyNotNull();
 		if (allRankedChartkeys != null) {
 			rankedChartkeys.addAll(allRankedChartkeys.stream().map(c -> c.getChartKey()).collect(Collectors.toSet()));
 		}
 		
 		if (all != null) {
-			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), repo.count());
+			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), charts.count());
 			
 			ExecutorService bulkCalc = Executors.newWorkStealingPool();
 			// Object[] is [Chart, Set<ChartDiffValue>]
@@ -174,7 +165,7 @@ public class ChartDao {
 
 	@Transactional
 	public Chart get(String chartkey) {
-		return repo.findById(chartkey).orElse(null);
+		return charts.findById(chartkey).orElse(null);
 	}
 	
 	public boolean isRanked(String chartkey) {
@@ -182,52 +173,52 @@ public class ChartDao {
 	}
 	
 	@Transactional
-	public boolean rankChart(String chartkey, String diffname, String packname, String songname) {
-		if (isRanked(chartkey))
-			return false;
+	public boolean rankChart(String packname, SongCacheData songCache, ChartCacheData chartCache) {
+		Pack pack = packs.getNewPackByName(packname, true);
+		m_logger.info("Ranking chart {} - {}", chartCache.getChartkey(), songCache.getTitle());
+		Chart c = get(chartCache.getChartkey());
+		if (c == null) {
+			c = new Chart();
+			c.setChartKey(chartCache.getChartkey());
+			c.setDifficulty(chartCache.getDifficulty());
+			//c.setCalcVersion(calc.getCalcVersion());
+			c.setPacks(new HashSet<>());
+			c.setArtist(songCache.getArtist());
+			c.setCredit(songCache.getCredit());
+			c.setSubtitle(songCache.getSubtitle());
+			c.setTitle(songCache.getTitle());
+			c.setTranslitArtist(songCache.getTranslitArtist());
+			c.setTranslitSubtitle(songCache.getTranslitSubtitle());
+			c.setTranslitTitle(songCache.getTranslitTitle());
+		}
+		c.getPacks().add(pack);
+		pack.getCharts().add(c);
 		
-		m_logger.info("Ranking chart {}", chartkey);
-		Chart c = new Chart();
-		c.setChartKey(chartkey);
-		c.setDifficulty(diffname);
-		c.setPackName(packname);
-		c.setSongName(songname);
-		c.setCalcVersion(calc.getCalcVersion());
-		repo.save(c);
-		rankedChartkeys.add(chartkey);
+		charts.save(c);
+		rankedChartkeys.add(chartCache.getChartkey());
 		
+		/*
 		Set<ChartDiffValue> diffs = calc.calcDiffValues(c, 1.f, .93f);
 		chartDiffs.commitDiffs(c, diffs);
 		c.setDiffValues(diffs);
+		*/
 		
 		return true;
 	}
 	
 	@Transactional
-	public List<String> getAllPacks() {
-		List<String> packs = repo.findDistinctPackName();
-		Collections.sort(packs, new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return s1.compareToIgnoreCase(s2);
-			}
-		});
-		return packs;
-	}
-	
-	@Transactional
 	public PackNameWithChartCountPagination getPacksAndChartCounts(PacksSort ps, int page, int itemsPerPage) {
-		List<PackNameWithChartCount> pncc = repo.getPackNamesWithChartCounts();
+		List<PackNameWithChartCount> pncc = charts.getPackNamesWithChartCounts();
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), pncc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, pncc.size());
-		m_logger.debug("{} {} {}", sliceStart, sliceEnd, pncc.size());
+		m_logger.debug("pncc {} {} {}", sliceStart, sliceEnd, pncc.size());
 		
 		if (pncc.size() == 0) {
 			return new PackNameWithChartCountPagination(pncc, 1, 1);
 		}
 		
-		Map<String, Integer> packScoreCounts = repo.getPackNamesWithScoreCountsMap();
+		Map<String, Integer> packScoreCounts = charts.getPackNamesWithScoreCountsMap();
 		pncc.forEach(c -> {
 			c.setScoreCount(packScoreCounts.getOrDefault(c.getPack(), 0));
 		});
@@ -268,33 +259,26 @@ public class ChartDao {
 	}
 	
 	@Transactional
-	public List<Chart> getChartsInPack(String pack) {
-		List<Chart> charts = repo.findByPackName(pack);
+	public List<Chart> getChartsInPack(String packName) {
+		Pack pack = packs.get(packName);
+		if (pack == null) {
+			return new ArrayList<>();
+		}
 		
-		Collections.sort(charts, new Comparator<Chart>() {
-			@Override
-			public int compare(Chart c1, Chart c2) {
-				int songname = c1.getSongName().compareToIgnoreCase(c2.getSongName());
-				if (songname == 0) {
-					int diff = c1.getDifficulty().compareToIgnoreCase(c2.getDifficulty());
-					return diff;
-				} else {
-					return songname;
-				}
-			}
-		});
+		List<Chart> chartList = packs.orderedChartList(pack);
 		
-		return charts;
+		return chartList;
 	}
 	
 	@Transactional
 	public ChartsInPackPagination getChartsInPackPagination(String pack, PackContentSort ps, int page, int itemsPerPage) {
-		List<ChartWithCount> cwc = repo.getChartsAndScoreCounts(pack);
-		cwc.addAll(repo.getChartsWithNoScores(pack));
+		Set<String> chartkeys = charts.getChartKeysInPack(packs.get(pack));
+		List<ChartWithCount> cwc = charts.getChartsAndScoreCounts(chartkeys);
+		cwc.addAll(charts.getChartsWithNoScores(chartkeys));
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), cwc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, cwc.size());
-		m_logger.debug("{} {} {}", sliceStart, sliceEnd, cwc.size());
+		m_logger.debug("cwc {} {} {}", sliceStart, sliceEnd, cwc.size());
 		
 		if (cwc.size() == 0) {
 			return new ChartsInPackPagination(new ArrayList<>(), 1, 1);
@@ -336,7 +320,7 @@ public class ChartDao {
 						break;
 					case NAME:
 					default: {
-						int oo = a.getChart().getSongName().compareToIgnoreCase(b.getChart().getSongName());
+						int oo = a.getChart().getTitle().compareToIgnoreCase(b.getChart().getTitle());
 						if (oo == 0) {
 							return a.getChart().getDifficulty().compareToIgnoreCase(b.getChart().getDifficulty());
 						} else {
@@ -345,7 +329,7 @@ public class ChartDao {
 					}
 				}
 				if (o == 0) {
-					int oo = a.getChart().getSongName().compareToIgnoreCase(b.getChart().getSongName());
+					int oo = a.getChart().getTitle().compareToIgnoreCase(b.getChart().getTitle());
 					if (oo == 0) {
 						return a.getChart().getDifficulty().compareToIgnoreCase(b.getChart().getDifficulty());
 					} else {

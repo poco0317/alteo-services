@@ -129,7 +129,7 @@ public class UserService {
 			scoreDTO.setDifficulty(hs.getChart().getDifficulty());
 			scoreDTO.setOverall(ssv.getValue().floatValue()); // THIS IS WRONG
 			scoreDTO.setRate(hs.getMusicRate().floatValue() / 100.f);
-			scoreDTO.setSongName(hs.getChart().getSongName());
+			scoreDTO.setSongName(hs.getChart().getTitle());
 			scoreDTO.setWife(hs.getWifePercent().floatValue() * 100);
 			scoreDTO.setSkillsets(skillsetDTO);
 			dto.setAttributes(scoreDTO);
