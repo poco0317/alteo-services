@@ -9,7 +9,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +34,7 @@ public class RedirectingFilter extends GenericFilterBean {
 		
 		if (isAuthenticated() && ("/register".equals(req.getRequestURI()) || "/login".equals(req.getRequestURI()))) {
 			String redir = resp.encodeRedirectURL(req.getContextPath() + "/home");
-			resp.setStatus(HttpStatus.SC_TEMPORARY_REDIRECT);
+			resp.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
 			resp.setHeader("Location",  redir);
 		}
 		
