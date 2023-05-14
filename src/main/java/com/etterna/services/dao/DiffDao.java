@@ -44,18 +44,19 @@ public class DiffDao {
 				diffs.forEach(diff -> {
 					chartDiffs.delete(diff);
 				});
+				c.setDiffValues(null);
+				charts.save(c);
 			}
 			
-			c.setDiffValues(null);
-			charts.save(c);
 			c.setDiffValues(newDiffs);
 			c.setCalcVersion(calc.getCalcVersion());
 			chartDiffs.saveAll(newDiffs);
+			charts.save(c);
 		}
 	}
 
 	@Transactional
-	public void commitDiffs(Chart c, Set<ChartDiffValue> diffs) {
+	public void commitDiffs(Set<ChartDiffValue> diffs) {
 		chartDiffs.saveAll(diffs);
 	}
 

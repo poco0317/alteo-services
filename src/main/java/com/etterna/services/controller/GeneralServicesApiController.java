@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.etterna.services.XmlProfileParsingService;
-import com.etterna.services.dao.ChartDao;
+import com.etterna.services.dao.RankingDao;
 
 @RestController
 @RequestMapping("core")
@@ -33,7 +33,7 @@ public class GeneralServicesApiController {
 	private String rootNoteinfoPath;
 	
 	@Autowired
-	private ChartDao charts;
+	private RankingDao chartRanking;
 	
 	@Autowired
 	private XmlProfileParsingService xmls;
@@ -99,6 +99,6 @@ public class GeneralServicesApiController {
 			m_logger.warn("Attempted to parse upload and failed. {}", e);
 		}
 		
-		charts.queuePackForRanking(songdatas, packname);
+		chartRanking.queuePackForRanking(songdatas, packname);
 	}
 }

@@ -1,6 +1,7 @@
 package com.etterna.services.datamodel;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -66,6 +67,21 @@ public class Pack {
 	}
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(name);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pack other = (Pack) obj;
+		return Objects.equals(name, other.name);
 	}
 
 }

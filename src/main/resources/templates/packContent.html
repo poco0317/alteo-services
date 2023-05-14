@@ -52,6 +52,7 @@
 						<th scope="col">#</th>
 						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='NAME')}">Song Name</a></th>
 						<th scope="col"><a>Difficulty</a></th>
+						<th scope="col"><a>Keycount</a></th>
 						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='OVERALL')}">Overall</a></th>
 						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='STREAM')}">Stream</a></th>
 						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='JUMPSTREAM')}">Jumpstream</a></th>
@@ -70,6 +71,7 @@
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
 						<td><a th:text="${chart.chart.title}" th:href="@{/chart/{chart}(chart=${chart.chart.chartKey})}"></a></td>
 						<td th:text="${chart.chart.difficulty}"></td>
+						<td th:with="columnCount=${T(com.etterna.util.EtternaUtil).stepsTypeToColumnCount(chart.chart.stepsType)}" th:text="${columnCount}"></td>
 						<td th:text="${#numbers.formatDecimal(chart.overall, 2, 2)}"></td>
 						<td th:text="${#numbers.formatDecimal(chart.stream, 2, 2)}"></td>
 						<td th:text="${#numbers.formatDecimal(chart.jumpstream, 2, 2)}"></td>

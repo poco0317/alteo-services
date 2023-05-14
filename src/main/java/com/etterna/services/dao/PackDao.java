@@ -28,7 +28,11 @@ public class PackDao {
 
 	@Transactional
 	public Pack get(String name) {
-		return repo.findById(name.toLowerCase()).orElse(null);
+		if (repo.existsById(name.toLowerCase())) {
+			return repo.getById(name);
+		} else {
+			return repo.findById(name.toLowerCase()).orElse(null);
+		}
 	}
 	
 	@Transactional
@@ -50,6 +54,7 @@ public class PackDao {
 			p.setName(name.toLowerCase());
 			p.setRanked(new Date());
 			p.setCharts(new HashSet<>());
+			repo.save(p);
 		}
 		if (initCharts) {
 			Hibernate.initialize(p.getCharts());

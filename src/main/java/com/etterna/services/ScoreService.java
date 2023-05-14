@@ -27,8 +27,8 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardSkillsetDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardUserDTO;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
-import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
+import com.etterna.services.dao.RankingDao;
 import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
 import com.etterna.services.datamodel.User;
@@ -42,7 +42,7 @@ public class ScoreService {
 	private HighScoreDao highScores;
 	
 	@Autowired
-	private ChartDao charts;
+	private RankingDao chartRanking;
 	
 	@Autowired
 	private CalcManager calc;
@@ -150,7 +150,7 @@ public class ScoreService {
 		
 		User user = sessions.sessionToUser(auth);
 		
-		if (user != null && charts.isRanked(chartkey)) {
+		if (user != null && chartRanking.isRanked(chartkey)) {
 			queue(req, user);
 			return 200;
 		} else {

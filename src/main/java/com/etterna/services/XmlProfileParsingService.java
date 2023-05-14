@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.etterna.services.dao.ChartDao;
+import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.HighScore;
@@ -41,6 +42,9 @@ public class XmlProfileParsingService {
 	
 	@Autowired
 	private ChartDao charts;
+	
+	@Autowired
+	private RankingDao chartRanking;
 	
 	@Autowired
 	private UserDao users;
@@ -133,7 +137,7 @@ public class XmlProfileParsingService {
 				Element chartElement = (Element)chartNode;
 				
 				String chartkey = chartNode.getAttributes().getNamedItem("Key").getNodeValue();
-				if (!charts.isRanked(chartkey)) {
+				if (!chartRanking.isRanked(chartkey)) {
 					int skipped = 0;
 					NodeList sa = chartElement.getElementsByTagName("ScoresAt");
 					for (int l = 0; l < sa.getLength(); l++) {

@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +40,7 @@ import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.PackDao;
+import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Pack;
 import com.etterna.services.datamodel.User;
@@ -76,6 +76,9 @@ public class SiteFrontendController {
 	
 	@Autowired
 	private ChartDao charts;
+	
+	@Autowired
+	private RankingDao chartRanking;
 	
 	@Autowired
 	private PackDao packs;
@@ -298,8 +301,8 @@ public class SiteFrontendController {
 	@GetMapping("/admin")
 	public String adminPage(Model model) {
 		
-		model.addAttribute("rankedcharts", charts.getTotalRankedCharts());
-		model.addAttribute("pendingpacks", charts.getPackQueueSize());
+		model.addAttribute("rankedcharts", chartRanking.getTotalRankedCharts());
+		model.addAttribute("pendingpacks", chartRanking.getPackQueueSize());
 		
 		return "admin";
 	}
@@ -353,7 +356,7 @@ public class SiteFrontendController {
 				m_logger.warn("Attempted to parse upload and failed. {}", e);
 			}
 			
-			charts.queuePackForRanking(songdatas, packname);
+			chartRanking.queuePackForRanking(songdatas, packname);
 		}
 		m_logger.info("Finished queueing {} packs to rank", packs.length);
 		

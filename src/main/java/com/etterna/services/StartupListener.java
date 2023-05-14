@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import com.etterna.services.dao.ChartDao;
+import com.etterna.services.dao.RankingDao;
 
 @Component
 public class StartupListener implements ApplicationListener<ContextRefreshedEvent> {
@@ -15,13 +15,13 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	private static final Logger m_logger = LoggerFactory.getLogger(StartupListener.class);
 	
 	@Autowired
-	private ChartDao charts;
+	private RankingDao chartRanking;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		m_logger.info("Beginning Application Init");
 		
-		charts.init();
+		chartRanking.init();
 		
 		m_logger.info("Finished Application Init");
 	}
