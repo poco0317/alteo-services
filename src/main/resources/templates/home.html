@@ -11,7 +11,7 @@
 <body>
 
 	<div layout:fragment="content">
-		<div class="container">
+		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<h1>Welcome to not Etterna Online</h1>
@@ -20,7 +20,33 @@
 				</div>
 			</div>
 			<div class="row" style="margin-top: 10vh;">
-				<p>This site is very much a work in progress. Have a look around.</p>
+				<h6>This site is very much a work in progress. Have a look around.</h6>
+			</div>
+	
+			<div th:object="${multiPlayers}" class="row" style="margin-top: 4vh;">
+				<h5>Currently online players:</h5>
+				<table th:if="${#lists.size(multiPlayers) > 0}" class="table table-hover table-sm">
+				
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Player</th>
+							<th scope="col">Lobby</th>
+							<th scope="col">State</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="player, stat: ${multiPlayers}">
+							<th scope="row" th:text="${stat.index + 1}"></th>
+							<th scope="row" th:text="${player.name}"></th>
+							<th scope="row" th:text="${player.lobby}"></th>
+							<th scope="row" th:text="${player.state}"></th>
+						</tr>
+					</tbody>
+				</table>
+				<div class="container" th:unless="${#lists.size(multiPlayers) > 0}">
+					<h6>There is nobody playing multiplayer</h6>
+				</div>
 			</div>
 		</div>
 	</div>
