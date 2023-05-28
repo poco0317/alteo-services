@@ -10,8 +10,12 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "users")
+@Getter @Setter
 public class User {
 	
 	@Id
@@ -36,61 +40,5 @@ public class User {
 	
 	@OneToMany(mappedBy = "id.user")
 	private Set<UserSkillsetValue> skillsetValues;
-
-	public Set<UserSkillsetValue> getSkillsetValues() {
-		return skillsetValues;
-	}
-
-	public void setSkillsetValues(Set<UserSkillsetValue> skillsetValues) {
-		this.skillsetValues = skillsetValues;
-	}
-
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public Set<HighScore> getScores() {
-		return scores;
-	}
-
-	public void setScores(Set<HighScore> scores) {
-		this.scores = scores;
-	}
-
-	public Set<LoginSession> getLoginSessions() {
-		return loginSessions;
-	}
-
-	public void setLoginSessions(Set<LoginSession> loginSessions) {
-		this.loginSessions = loginSessions;
-	}
-
-	public Boolean getMustRecalcRating() {
-		return mustRecalcRating;
-	}
-
-	public void setMustRecalcRating(Boolean mustRecalcRating) {
-		this.mustRecalcRating = mustRecalcRating;
-	}
 
 }

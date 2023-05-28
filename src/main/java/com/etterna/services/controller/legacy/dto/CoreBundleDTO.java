@@ -2,49 +2,22 @@ package com.etterna.services.controller.legacy.dto;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class CoreBundleDTO {
 	
 	private String id;
 	private BundleData attributes;
-	
-	public String getId() {
-		return id;
-	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public BundleData getAttributes() {
-		return attributes;
-	}
-
-	public void setAttributes(BundleData attributes) {
-		this.attributes = attributes;
-	}
-
+	@Getter @Setter
 	public class BundleData {
 		private List<PackData> packs;
-		
-		public List<PackData> getPacks() {
-			return packs;
-		}
 
-		public void setPacks(List<PackData> packs) {
-			this.packs = packs;
-		}
-
+		@Getter @Setter
 		public class PackData {
 			private String packname;
-
-			public String getPackname() {
-				return packname;
-			}
-
-			public void setPackname(String packname) {
-				this.packname = packname;
-			}
 		}
 	}
-
 }

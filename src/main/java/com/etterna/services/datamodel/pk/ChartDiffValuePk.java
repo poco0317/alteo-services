@@ -12,7 +12,11 @@ import javax.persistence.ManyToOne;
 import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.Chart;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Embeddable
+@Getter @Setter
 public class ChartDiffValuePk implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -31,30 +35,6 @@ public class ChartDiffValuePk implements Serializable {
 	public ChartDiffValuePk(Chart chart, Skillset skillset, Integer calcVersion) {
 		this.chart = chart;
 		this.skillset = skillset;
-		this.calcVersion = calcVersion;
-	}
-
-	public Chart getChart() {
-		return chart;
-	}
-
-	public void setChart(Chart chart) {
-		this.chart = chart;
-	}
-
-	public Skillset getSkillset() {
-		return skillset;
-	}
-
-	public void setSkillset(Skillset skillset) {
-		this.skillset = skillset;
-	}
-
-	public Integer getCalcVersion() {
-		return calcVersion;
-	}
-
-	public void setCalcVersion(Integer calcVersion) {
 		this.calcVersion = calcVersion;
 	}
 

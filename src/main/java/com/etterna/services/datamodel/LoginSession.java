@@ -10,8 +10,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "sessions")
+@Getter @Setter
 public class LoginSession {
 	
 	@Id
@@ -24,30 +28,6 @@ public class LoginSession {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-
-	public String getSessionJwt() {
-		return sessionJwt;
-	}
-
-	public void setSessionJwt(String sessionJwt) {
-		this.sessionJwt = sessionJwt;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
 	
 
 }

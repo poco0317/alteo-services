@@ -7,20 +7,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.etterna.services.datamodel.User;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class NeoUserPrincipal implements UserDetails {
 	private static final long serialVersionUID = 1L;
 	
 	private User user;
 	
 	public NeoUserPrincipal(User user) {
-		this.user = user;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
 		this.user = user;
 	}
 

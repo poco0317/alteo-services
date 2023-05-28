@@ -8,11 +8,15 @@ import javax.persistence.Table;
 import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.pk.ChartDiffValuePk;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * DiffValues represent the 93% SSR of a file, its base difficulty
  */
 @Entity
 @Table(name = "chart_diff_values")
+@Getter @Setter
 public class ChartDiffValue {
 	
 	@EmbeddedId
@@ -24,22 +28,6 @@ public class ChartDiffValue {
 	public ChartDiffValue() {}
 	public ChartDiffValue(Chart c, Double value, Skillset ss, Integer calcVersion) {
 		this.id = new ChartDiffValuePk(c, ss, calcVersion);
-		this.value = value;
-	}
-
-	public ChartDiffValuePk getId() {
-		return id;
-	}
-
-	public void setId(ChartDiffValuePk id) {
-		this.id = id;
-	}
-
-	public Double getValue() {
-		return value;
-	}
-
-	public void setValue(Double value) {
 		this.value = value;
 	}
 

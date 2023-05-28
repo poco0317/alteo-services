@@ -1,5 +1,9 @@
 package com.etterna.services.controller.legacy.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class GetClientVersionResponse {
 	
 	private VersionDTO attributes;
@@ -9,25 +13,9 @@ public class GetClientVersionResponse {
 		attributes = new VersionDTO();
 		attributes.setVersion(version);
 	}
-	
-	public VersionDTO getAttributes() {
-		return attributes;
-	}
 
-	public void setAttributes(VersionDTO attributes) {
-		this.attributes = attributes;
-	}
-
+	@Getter @Setter
 	public static class VersionDTO {
 		private String version;
-
-		public String getVersion() {
-			return version;
-		}
-
-		public void setVersion(String version) {
-			this.version = version;
-		}
 	}
-
 }

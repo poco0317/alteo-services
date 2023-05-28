@@ -7,8 +7,12 @@ import javax.persistence.Table;
 
 import com.etterna.services.datamodel.pk.ScoreSpecificValuePk;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "score_specific_values")
+@Getter @Setter
 public class ScoreSpecificValue {
 
 	@EmbeddedId
@@ -16,21 +20,5 @@ public class ScoreSpecificValue {
 	
 	@Column(name = "value", nullable = false)
 	private Double value;
-
-	public ScoreSpecificValuePk getId() {
-		return id;
-	}
-
-	public void setId(ScoreSpecificValuePk id) {
-		this.id = id;
-	}
-
-	public Double getValue() {
-		return value;
-	}
-
-	public void setValue(Double value) {
-		this.value = value;
-	}
 
 }

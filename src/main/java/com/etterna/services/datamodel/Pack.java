@@ -14,8 +14,12 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "packs")
+@Getter @Setter
 public class Pack {
 	
 	@Id
@@ -38,36 +42,6 @@ public class Pack {
 	@Column(name = "released")
 	private Date released;
 	
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public Set<Chart> getCharts() {
-		return charts;
-	}
-	public void setCharts(Set<Chart> charts) {
-		this.charts = charts;
-	}
-	public Date getRanked() {
-		return ranked;
-	}
-	public void setRanked(Date ranked) {
-		this.ranked = ranked;
-	}
-	public Date getReleased() {
-		return released;
-	}
-	public void setReleased(Date released) {
-		this.released = released;
-	}
-	public String getDisplayName() {
-		return displayName;
-	}
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
 	@Override
 	public int hashCode() {
 		return Objects.hash(name);

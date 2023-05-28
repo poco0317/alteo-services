@@ -8,8 +8,12 @@ import javax.persistence.Table;
 import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.pk.UserSkillsetValuePk;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "user_skillset_values")
+@Getter @Setter
 public class UserSkillsetValue {
 	
 	@EmbeddedId
@@ -22,22 +26,6 @@ public class UserSkillsetValue {
 	public UserSkillsetValue(User u, Skillset ss, Double val, Integer calcVersion) {
 		this.id = new UserSkillsetValuePk(u, ss, calcVersion);
 		this.value = val;
-	}
-
-	public UserSkillsetValuePk getId() {
-		return id;
-	}
-
-	public void setId(UserSkillsetValuePk id) {
-		this.id = id;
-	}
-
-	public Double getValue() {
-		return value;
-	}
-
-	public void setValue(Double value) {
-		this.value = value;
 	}
 
 }

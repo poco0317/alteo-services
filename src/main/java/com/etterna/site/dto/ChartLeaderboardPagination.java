@@ -6,6 +6,10 @@ import java.util.List;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 import com.etterna.services.datamodel.Chart;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class ChartLeaderboardPagination {
 	
 	Chart chart;
@@ -22,43 +26,6 @@ public class ChartLeaderboardPagination {
 		this.currentPage = currentPage;
 		this.totalPages = totalPages;
 		this.rate = rate;
-	}
-	
-	public Chart getChart() {
-		return chart;
-	}
-	public void setChart(Chart chart) {
-		this.chart = chart;
-	}
-	public List<HighScoreWithSkillsets> getScores() {
-		return scores;
-	}
-	public void setScores(List<HighScoreWithSkillsets> scores) {
-		this.scores = scores;
-	}
-	public int getCurrentPage() {
-		return currentPage;
-	}
-	public void setCurrentPage(int currentPage) {
-		this.currentPage = currentPage;
-	}
-	public int getTotalPages() {
-		return totalPages;
-	}
-	public void setTotalPages(int totalPages) {
-		this.totalPages = totalPages;
-	}
-	public int getRate() {
-		return rate;
-	}
-	public void setRate(int rate) {
-		this.rate = rate;
-	}
-	public List<Integer> getRates() {
-		return rates;
-	}
-	public void setRates(List<Integer> rates) {
-		this.rates = rates;
 	}
 	
 }

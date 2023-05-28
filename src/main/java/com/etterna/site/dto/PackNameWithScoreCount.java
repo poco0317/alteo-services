@@ -1,5 +1,9 @@
 package com.etterna.site.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class PackNameWithScoreCount {
 	
 	private String pack;
@@ -8,19 +12,6 @@ public class PackNameWithScoreCount {
 	public PackNameWithScoreCount(String pack, Long count) {
 		this.pack = pack;
 		this.count = count.intValue();
-	}
-	
-	public String getPack() {
-		return pack;
-	}
-	public void setPack(String pack) {
-		this.pack = pack;
-	}
-	public Integer getCount() {
-		return count;
-	}
-	public void setCount(Integer count) {
-		this.count = count;
 	}
 
 }

@@ -3,6 +3,10 @@ package com.etterna.site.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class PackNameWithChartCountPagination {
 	
 	List<PackNameWithChartCount> pwcc = new ArrayList<>();
@@ -14,24 +18,4 @@ public class PackNameWithChartCountPagination {
 		this.currentPage = currentPage;
 		this.totalPages = totalPages;
 	}
-	
-	public List<PackNameWithChartCount> getPwcc() {
-		return pwcc;
-	}
-	public void setPwcc(List<PackNameWithChartCount> pwcc) {
-		this.pwcc = pwcc;
-	}
-	public int getCurrentPage() {
-		return currentPage;
-	}
-	public void setCurrentPage(int currentPage) {
-		this.currentPage = currentPage;
-	}
-	public int getTotalPages() {
-		return totalPages;
-	}
-	public void setTotalPages(int totalPages) {
-		this.totalPages = totalPages;
-	}
-
 }

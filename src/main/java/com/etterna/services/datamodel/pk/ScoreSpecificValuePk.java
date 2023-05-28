@@ -12,7 +12,11 @@ import javax.persistence.ManyToOne;
 import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.HighScore;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Embeddable
+@Getter @Setter
 public class ScoreSpecificValuePk implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -31,30 +35,6 @@ public class ScoreSpecificValuePk implements Serializable {
 	public ScoreSpecificValuePk(HighScore chart, Skillset skillset, Integer calcVersion) {
 		this.score = chart;
 		this.skillset = skillset;
-		this.calcVersion = calcVersion;
-	}
-	
-	public HighScore getScore() {
-		return score;
-	}
-
-	public void setScore(HighScore score) {
-		this.score = score;
-	}
-
-	public Skillset getSkillset() {
-		return skillset;
-	}
-
-	public void setSkillset(Skillset skillset) {
-		this.skillset = skillset;
-	}
-
-	public Integer getCalcVersion() {
-		return calcVersion;
-	}
-
-	public void setCalcVersion(Integer calcVersion) {
 		this.calcVersion = calcVersion;
 	}
 

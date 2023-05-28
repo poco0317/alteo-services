@@ -1,15 +1,11 @@
 package com.etterna.services.controller.legacy.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class AddFavoriteRequest {
 	
 	private String chartkey;
-
-	public String getChartkey() {
-		return chartkey;
-	}
-
-	public void setChartkey(String chartkey) {
-		this.chartkey = chartkey;
-	}
 
 }

@@ -1,5 +1,9 @@
 package com.etterna.services.controller.legacy.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class UploadScoreResponse {
 	
 	// set to "ssrResults" if a proper ssr return
@@ -12,38 +16,12 @@ public class UploadScoreResponse {
 		dto.setDiff(ssrs);
 		return dto;
 	}
-	
-	public String getType() {
-		return type;
-	}
 
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-
-	public SSRResultsDTO getAttributes() {
-		return attributes;
-	}
-
-
-	public void setAttributes(SSRResultsDTO attributes) {
-		this.attributes = attributes;
-	}
-
-
+	@Getter @Setter
 	public static class SSRResultsDTO {
 		private SSRs diff;
-		
-		public SSRs getDiff() {
-			return diff;
-		}
 
-		public void setDiff(SSRs diff) {
-			this.diff = diff;
-		}
-
+		@Getter @Setter
 		public static class SSRs {
 			private Float Overall;
 			private Float Stream;
@@ -69,79 +47,6 @@ public class UploadScoreResponse {
 				this.Technical = technical;
 				this.Rating = 0.f;
 			}
-
-			public Float getOverall() {
-				return Overall;
-			}
-
-			public void setOverall(Float overall) {
-				Overall = overall;
-			}
-
-			public Float getStream() {
-				return Stream;
-			}
-
-			public void setStream(Float stream) {
-				Stream = stream;
-			}
-
-			public Float getJumpstream() {
-				return Jumpstream;
-			}
-
-			public void setJumpstream(Float jumpstream) {
-				Jumpstream = jumpstream;
-			}
-
-			public Float getHandstream() {
-				return Handstream;
-			}
-
-			public void setHandstream(Float handstream) {
-				Handstream = handstream;
-			}
-
-			public Float getStamina() {
-				return Stamina;
-			}
-
-			public void setStamina(Float stamina) {
-				Stamina = stamina;
-			}
-
-			public Float getJackSpeed() {
-				return JackSpeed;
-			}
-
-			public void setJackSpeed(Float jackSpeed) {
-				JackSpeed = jackSpeed;
-			}
-
-			public Float getChordjack() {
-				return Chordjack;
-			}
-
-			public void setChordjack(Float chordjack) {
-				Chordjack = chordjack;
-			}
-
-			public Float getTechnical() {
-				return Technical;
-			}
-
-			public void setTechnical(Float technical) {
-				Technical = technical;
-			}
-
-			public Float getRating() {
-				return Rating;
-			}
-
-			public void setRating(Float rating) {
-				Rating = rating;
-			}
 		}
 	}
-
 }

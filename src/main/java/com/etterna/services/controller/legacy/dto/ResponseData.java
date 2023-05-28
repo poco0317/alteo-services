@@ -1,5 +1,9 @@
 package com.etterna.services.controller.legacy.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class ResponseData<T> {
 
 	private T data;
@@ -17,40 +21,15 @@ public class ResponseData<T> {
 	
 	public ResponseData() {}
 	
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
-		this.data = data;
-	}
-
-	public Object getErrors() {
-		return errors;
-	}
-
-	public void setErrors(Object errors) {
-		this.errors = errors;
-	}
-	
 	public void error(int status) {
 		ErrorDTO e = new ErrorDTO();
 		e.setStatus(status);
 		this.errors = e;
 	}
 
+	@Getter @Setter
 	public class ErrorDTO {
 		// http status
 		private Integer status;
-
-		public Integer getStatus() {
-			return status;
-		}
-
-		public void setStatus(Integer status) {
-			this.status = status;
-		}
-		
 	}
-	
 }

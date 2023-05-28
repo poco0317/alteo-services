@@ -1,5 +1,9 @@
 package com.etterna.site.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class PackNameWithChartCount {
 	
 	private String pack = "";
@@ -17,28 +21,13 @@ public class PackNameWithChartCount {
 		this.count = count.intValue();
 	}
 	
-	public String getPack() {
-		return pack;
-	}
-	public void setPack(String pack) {
-		this.pack = pack;
-	}
-	public Integer getCount() {
-		return count;
-	}
 	public void setCount(Integer count) {
 		this.count = count;
 		updateAvgscores();
 	}
-	public Integer getScoreCount() {
-		return scoreCount;
-	}
 	public void setScoreCount(Integer scoreCount) {
 		this.scoreCount = scoreCount;
 		updateAvgscores();
-	}
-	public Double getAverageScores() {
-		return averageScores;
 	}
 	
 	private void updateAvgscores() {

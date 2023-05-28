@@ -12,7 +12,11 @@ import javax.persistence.ManyToOne;
 import com.etterna.calc.Skillset;
 import com.etterna.services.datamodel.User;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Embeddable
+@Getter @Setter
 public class UserSkillsetValuePk implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -31,30 +35,6 @@ public class UserSkillsetValuePk implements Serializable {
 	public UserSkillsetValuePk(User user, Skillset skillset, Integer calcVersion) {
 		this.user = user;
 		this.skillset = skillset;
-		this.calcVersion = calcVersion;
-	}
-
-	public Skillset getSkillset() {
-		return skillset;
-	}
-
-	public void setSkillset(Skillset skillset) {
-		this.skillset = skillset;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public Integer getCalcVersion() {
-		return calcVersion;
-	}
-
-	public void setCalcVersion(Integer calcVersion) {
 		this.calcVersion = calcVersion;
 	}
 

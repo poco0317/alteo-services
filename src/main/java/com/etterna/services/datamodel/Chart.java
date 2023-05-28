@@ -13,8 +13,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "charts")
+@Getter @Setter
 public class Chart {
 
 	@Id
@@ -66,118 +70,6 @@ public class Chart {
 	
 	@ManyToMany(mappedBy = "charts", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
 	private Set<Pack> packs;
-	
-	public String getChartKey() {
-		return chartKey;
-	}
-
-	public void setChartKey(String chartKey) {
-		this.chartKey = chartKey;
-	}
-
-	public String getDifficulty() {
-		return difficulty;
-	}
-
-	public void setDifficulty(String difficulty) {
-		this.difficulty = difficulty;
-	}
-
-	public Set<Pack> getPacks() {
-		return packs;
-	}
-
-	public void setPacks(Set<Pack> packs) {
-		this.packs = packs;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getTranslitTitle() {
-		return translitTitle;
-	}
-
-	public void setTranslitTitle(String translitTitle) {
-		this.translitTitle = translitTitle;
-	}
-
-	public String getSubtitle() {
-		return subtitle;
-	}
-
-	public void setSubtitle(String subtitle) {
-		this.subtitle = subtitle;
-	}
-
-	public String getTranslitSubtitle() {
-		return translitSubtitle;
-	}
-
-	public void setTranslitSubtitle(String translitSubtitle) {
-		this.translitSubtitle = translitSubtitle;
-	}
-
-	public String getArtist() {
-		return artist;
-	}
-
-	public void setArtist(String artist) {
-		this.artist = artist;
-	}
-
-	public String getTranslitArtist() {
-		return translitArtist;
-	}
-
-	public void setTranslitArtist(String translitArtist) {
-		this.translitArtist = translitArtist;
-	}
-
-	public String getCredit() {
-		return credit;
-	}
-
-	public void setCredit(String credit) {
-		this.credit = credit;
-	}
-
-	public Set<ChartDiffValue> getDiffValues() {
-		return diffValues;
-	}
-
-	public void setDiffValues(Set<ChartDiffValue> diffValues) {
-		this.diffValues = diffValues;
-	}
-
-	public Set<HighScore> getScores() {
-		return scores;
-	}
-
-	public void setScores(Set<HighScore> scores) {
-		this.scores = scores;
-	}
-
-	public Integer getCalcVersion() {
-		return calcVersion;
-	}
-
-	public void setCalcVersion(Integer calcVersion) {
-		this.calcVersion = calcVersion;
-	}
-
-	public String getStepsType() {
-		return stepsType;
-	}
-
-	public void setStepsType(String stepstype) {
-		this.stepsType = stepstype;
-	}
 
 	@Override
 	public int hashCode() {

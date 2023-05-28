@@ -2,6 +2,10 @@ package com.etterna.site.dto;
 
 import com.etterna.services.datamodel.Chart;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class ChartWithSkillsets {
 
 	private Chart chart;
@@ -52,66 +56,5 @@ public class ChartWithSkillsets {
 				}
 			});
 		}
-	}
-	
-	public Chart getChart() {
-		return chart;
-	}
-	public void setChart(Chart chart) {
-		this.chart = chart;
-	}
-	public Double getOverall() {
-		return overall;
-	}
-	public void setOverall(Double overall) {
-		this.overall = overall;
-	}
-	public Double getStream() {
-		return stream;
-	}
-	public void setStream(Double stream) {
-		this.stream = stream;
-	}
-	public Double getJumpstream() {
-		return jumpstream;
-	}
-	public void setJumpstream(Double jumpstream) {
-		this.jumpstream = jumpstream;
-	}
-	public Double getHandstream() {
-		return handstream;
-	}
-	public void setHandstream(Double handstream) {
-		this.handstream = handstream;
-	}
-	public Double getStamina() {
-		return stamina;
-	}
-	public void setStamina(Double stamina) {
-		this.stamina = stamina;
-	}
-	public Double getJackspeed() {
-		return jackspeed;
-	}
-	public void setJackspeed(Double jackspeed) {
-		this.jackspeed = jackspeed;
-	}
-	public Double getChordjack() {
-		return chordjack;
-	}
-	public void setChordjack(Double chordjack) {
-		this.chordjack = chordjack;
-	}
-	public Double getTechnical() {
-		return technical;
-	}
-	public void setTechnical(Double technical) {
-		this.technical = technical;
-	}
-	public Integer getScoreCount() {
-		return scoreCount;
-	}
-	public void setScoreCount(Integer scoreCount) {
-		this.scoreCount = scoreCount;
 	}
 }
