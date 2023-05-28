@@ -31,6 +31,17 @@ public interface HighScoreRepository extends JpaRepository<HighScore, String> {
 			+ "hs.musicRate = :rate")
 	List<Object[]> findScoresByChartOnRate(Chart chart, Integer rate, Integer calcVersion);
 	
+	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv "
+			+ "WHERE ssv.id.calcVersion = :calcVersion AND "
+			+ "ssv.id.score = hs")
+	List<Object[]> findScoresOnAllChartsOnAllRates(Integer calcVersion);
+	
+	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv "
+			+ "WHERE ssv.id.calcVersion = :calcVersion AND "
+			+ "ssv.id.score = hs AND "
+			+ "hs.musicRate = :rate")
+	List<Object[]> findScoresOnAllChartsOnRate(Integer rate, Integer calcVersion);
+	
 	@Query("SELECT hs, ssv FROM HighScore hs, ScoreSpecificValue ssv WHERE ssv.id.calcVersion = :calcVersion AND ssv.id.score = hs AND hs.user = :user and ssv.id.skillset = :ss")
 	List<Object[]> findUserScoresWithSpecificSkillsetValue(User user, Integer calcVersion, Skillset ss);
 	
@@ -51,4 +62,7 @@ public interface HighScoreRepository extends JpaRepository<HighScore, String> {
 	
 	@Query("SELECT DISTINCT hs.musicRate FROM HighScore hs WHERE hs.chart = :chart")
 	List<Integer> findRatesUsedOnChart(Chart chart);
+	
+	@Query("SELECT DISTINCT hs.musicRate FROM HighScore hs")
+	List<Integer> findAllRates();
 }

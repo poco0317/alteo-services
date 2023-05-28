@@ -7,10 +7,11 @@ import java.util.Date;
 
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 
-public enum ChartLeaderboardSort {
+public enum AllLeaderboardSort {
 	
 	PLAYER,
 	PERCENT,
+	SONG,
 	RATE,
 	DATE,
 	OVERALL, // default
@@ -22,13 +23,15 @@ public enum ChartLeaderboardSort {
 	CHORDJACK,
 	TECHNICAL;
 	
-	public static ChartLeaderboardSort fromString(String s) {
+	public static AllLeaderboardSort fromString(String s) {
 		final String ss = s.toLowerCase();
 		switch (ss) {
 			case "player":
 				return PLAYER;
 			case "percent":
 				return PERCENT;
+			case "song":
+				return SONG;
 			case "rate":
 				return RATE;
 			case "date":
@@ -55,7 +58,7 @@ public enum ChartLeaderboardSort {
 	}
 	
 	
-	public static Comparator<HighScoreWithSkillsets> HighScoreWithSkillsetsComparator(ChartLeaderboardSort ls) {
+	public static Comparator<HighScoreWithSkillsets> HighScoreWithSkillsetsComparator(AllLeaderboardSort ls) {
 		return new Comparator<HighScoreWithSkillsets>() {
 			@Override
 			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
@@ -147,6 +150,15 @@ public enum ChartLeaderboardSort {
 						String an = a.getScore().getUser().getUsername();
 						String bn = b.getScore().getUser().getUsername();
 						// opposite direction sort vs the others
+						int o = an.compareToIgnoreCase(bn);
+						if (o != 0) {
+							return o;
+						}
+					}
+					case SONG:
+					{
+						String an = a.getScore().getChart().getTitle();
+						String bn = b.getScore().getChart().getTitle();
 						int o = an.compareToIgnoreCase(bn);
 						if (o != 0) {
 							return o;

@@ -32,6 +32,7 @@ import com.etterna.services.datamodel.pk.ScoreSpecificValuePk;
 import com.etterna.services.repo.HighScoreRepository;
 import com.etterna.services.repo.ScoreSpecificValueRepository;
 import com.etterna.services.repo.UserRepository;
+import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
@@ -139,6 +140,34 @@ public class HighScoreDao {
 	}
 	
 	@Transactional
+	public ChartLeaderboardPagination getLeaderboardForAllChartsPagination(int rate, AllLeaderboardSort ls, int page, int itemsPerPage) {
+		
+		List<Integer> rates = hsRepo.findAllRates();
+		rates.sort(Integer::compareTo);
+		
+		List<Object[]> obs;
+		if (rate == -1) {
+			obs = hsRepo.findScoresOnAllChartsOnAllRates(calc.getCalcVersion());
+		} else {
+			obs = hsRepo.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion());
+		}
+		if (obs.isEmpty()) {
+			return new ChartLeaderboardPagination(null, new ArrayList<>(), 1, 1, rate);
+		}
+		
+		Map<String, HighScoreWithSkillsets> hsvs = mapHighScoreAndSSVObjects(obs);
+		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
+		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
+		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
+		
+		return new ChartLeaderboardPagination(null, hsvs.values()
+				.stream()
+				.sorted(AllLeaderboardSort.HighScoreWithSkillsetsComparator(ls))
+				.collect(Collectors.toList())
+				.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)), rate);
+	}
+	
+	@Transactional
 	public ChartLeaderboardPagination getChartLeaderboardPagination(String chartkey, int rate, ChartLeaderboardSort ls, int page, int itemsPerPage) {
 		Chart c = charts.get(chartkey);
 		if (c == null) {
@@ -163,116 +192,14 @@ public class HighScoreDao {
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
 		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
 		
-		return new ChartLeaderboardPagination(c, hsvs.values().stream().sorted(new Comparator<HighScoreWithSkillsets>() {
-			@Override
-			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
-				switch (ls) {
-					case OVERALL:
-					case STREAM:
-					case JUMPSTREAM:
-					case HANDSTREAM:
-					case STAMINA:
-					case JACKSPEED:
-					case CHORDJACK:
-					case TECHNICAL:
-					{
-						Double av = 0.0;
-						Double bv = 0.0;
-						switch(ls) {
-							case OVERALL:
-								av = a.getOverall();
-								bv = b.getOverall();
-								break;
-							case STREAM:
-								av = a.getStream();
-								bv = b.getStream();
-								break;
-							case JUMPSTREAM:
-								av = a.getJumpstream();
-								bv = b.getJumpstream();
-								break;
-							case HANDSTREAM:
-								av = a.getHandstream();
-								bv = b.getHandstream();
-								break;
-							case STAMINA:
-								av = a.getStamina();
-								bv = b.getStamina();
-								break;
-							case JACKSPEED:
-								av = a.getJackspeed();
-								bv = b.getJackspeed();
-								break;
-							case CHORDJACK:
-								av = a.getChordjack();
-								bv = b.getChordjack();
-								break;
-							case TECHNICAL:
-								av = a.getTechnical();
-								bv = b.getTechnical();
-								break;
-							default:
-								break;
-						}
-						if (av.equals(bv)) {
-							Integer ar = a.getScore().getMusicRate();
-							Integer br = b.getScore().getMusicRate();
-							if (ar == null || br == null || ar.equals(br)) {
-								return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
-							} else {
-								return br.compareTo(ar);
-							}
-						} else {
-							return bv.compareTo(av);
-						}
-					}
-					case DATE:
-					{
-						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getScore().getDateStr();
-						String bds = b.getScore().getDateStr();
-						try {
-							Date ad = f.parse(ads);
-							Date bd = f.parse(bds);
-							return bd.compareTo(ad);
-						} catch (ParseException e) {
-							return bds.compareToIgnoreCase(ads);
-						}
-					}
-					case RATE:
-					{
-						Integer ar = a.getScore().getMusicRate();
-						Integer br = b.getScore().getMusicRate();
-						if (ar == null || br == null || ar.equals(br)) {
-							return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
-						} else {
-							return br.compareTo(ar);
-						}
-					}
-					case PLAYER:
-					{
-						String an = a.getScore().getUser().getUsername();
-						String bn = b.getScore().getUser().getUsername();
-						// opposite direction sort vs the others
-						int o = an.compareToIgnoreCase(bn);
-						if (o != 0) {
-							return o;
-						}
-						// fall through
-					}
-					default:
-					case PERCENT:
-					{
-						Integer as = a.getScore().getSsrNorm();
-						Integer bs = b.getScore().getSsrNorm();
-						int o = bs.compareTo(as);
-						return o;
-					}
-					
-				}
-			}
-		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)), rate);
+		return new ChartLeaderboardPagination(c, hsvs.values()
+				.stream()
+				.sorted(ChartLeaderboardSort.HighScoreWithSkillsetsComparator(ls))
+				.collect(Collectors.toList())
+				.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)), rate);
 	}
+	
+
 	
 	private Map<String, HighScoreWithSkillsets> mapHighScoreAndSSVObjects(List<Object[]> obs) {
 		Map<String, HighScoreWithSkillsets> hsvs = new HashMap<>();

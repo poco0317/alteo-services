@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +31,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -47,6 +45,7 @@ import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.datamodel.Pack;
 import com.etterna.services.datamodel.User;
+import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
 import com.etterna.site.dto.ChartWithSkillsets;
@@ -309,6 +308,35 @@ public class SiteFrontendController {
 		model.addAttribute("score", scores.getScoreWithSkillsets(scorekey));
 		
 		return "score";
+	}
+	
+	@GetMapping("/allscores")
+	public String getAllScores(Model model,
+			@RequestParam("page") Optional<Integer> page,
+			@RequestParam("sort") Optional<String> sort,
+			@RequestParam("rate") Optional<String> rate) {
+		m_logger.info("FRONTEND API :: All Scores");
+		
+		int currentPage = page.orElse(1);
+		AllLeaderboardSort ls = AllLeaderboardSort.fromString(sort.orElse("date"));
+		int selectedrate = parseRate(rate); // -1 if "all rates" leaderboard, 100 if 1.0x leaderboard
+		final int directionaldistance = 2;
+		final int itemsperpage = 200;
+		
+		ChartLeaderboardPagination ppage = scores.getLeaderboardForAllChartsPagination(selectedrate, ls, currentPage, itemsperpage);
+		int actualcurrentpage = ppage.getCurrentPage();
+		int maxpage = ppage.getTotalPages();
+		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		
+		model.addAttribute("scores", ppage.getScores());
+		model.addAttribute("currentRate", ppage.getRate());
+		model.addAttribute("rates", ppage.getRates());
+		model.addAttribute("currentPage", actualcurrentpage);
+		model.addAttribute("pageRange", pagenumbers);
+		model.addAttribute("maxPage", maxpage);
+		model.addAttribute("currentSort", ls.name());
+		
+		return "allscores";
 	}
 	
 	@GetMapping("/admin")

@@ -17,7 +17,7 @@
 					<h1><a th:text="${score.score.chart.title + ' - ' + score.score.chart.difficulty}" th:href="@{/chart/{ck}(ck=${score.score.chart.chartKey})}"></a></h1>
 					<h3 th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></h3>
 					<h5 th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></h5>
-					<h6 th:text="${'By: ' + score.score.user.username}"></h6>
+					<h6><a th:text="${'By: ' + score.score.user.username}" th:href="@{/user/{user}(user=${score.score.user.username})}"></a></h6>
 					<h6 th:text="${'Date: ' + score.score.dateStr}"></h6>
 					<h6 th:text="${'Mods: ' + score.score.modString}"></h6>
 					<h6>Packs:</h6>
