@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.multi.data.GameLobby;
 import com.etterna.multi.data.LobbyMessage;
-import com.etterna.multi.data.LobbyScore;
 import com.etterna.multi.data.UserLogin;
 import com.etterna.multi.repo.GameLobbyRepository;
 import com.etterna.multi.repo.LobbyMessageRepository;
@@ -80,8 +79,14 @@ public class MultiplayerDataService {
 	
 	@Transactional
 	public List<LobbyScoreWithChart> getScoresInSession(Long sessionId) {
-		List<LobbyScoreWithChart> o = scores.findByLobby(sessionId);
-		o.addAll(scores.findUnrankedFilesInLobby(sessionId));
+		List<LobbyScoreWithChart> o = scores.findByLobby(sessionId).stream().map(objs -> {
+			return new LobbyScoreWithChart(objs);
+		}).collect(Collectors.toList());
+		o.addAll(
+				scores.findUnrankedFilesInLobby(sessionId).stream().map(objs -> {
+					return new LobbyScoreWithChart(objs);
+				}).collect(Collectors.toList())
+			);
 		
 		o.sort(new Comparator<LobbyScoreWithChart>() {
 			@Override
