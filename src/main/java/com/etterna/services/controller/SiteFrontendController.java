@@ -18,8 +18,6 @@ import java.util.zip.ZipInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.etterna.multi.data.GameLobby;
+import com.etterna.services.MultiplayerDataService;
 import com.etterna.services.MultiplayerRequestService;
 import com.etterna.services.XmlProfileParsingService;
 import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
@@ -58,11 +58,12 @@ import com.etterna.site.dto.PacksSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
 @RequestMapping("/")
+@Slf4j
 public class SiteFrontendController {
-
-	private static final Logger m_logger = LoggerFactory.getLogger(SiteFrontendController.class);
 	
 	@Value("${etterna.note-info-folder-path}")
 	private String rootNoteinfoPath;
@@ -86,7 +87,10 @@ public class SiteFrontendController {
 	private PackDao packs;
 	
 	@Autowired
-	private MultiplayerRequestService multiplayer;
+	private MultiplayerRequestService multiplayerApi;
+	
+	@Autowired
+	private MultiplayerDataService multiplayerData;
 	
 	private int parseRate(Optional<String> rate) {
 		String rt = rate.orElse("-1");
@@ -133,8 +137,8 @@ public class SiteFrontendController {
 	
 	@GetMapping("/")
 	public String getHomeModel(Model model) {
-		m_logger.warn("fweoifjweifnasn");
-		model.addAttribute("multiPlayers", multiplayer.getOnlinePlayers());
+		m_logger.info("FRONTEND API :: HOME");
+		model.addAttribute("multiPlayers", multiplayerApi.getOnlinePlayers());
 		return "home";
 	}
 	
@@ -337,6 +341,53 @@ public class SiteFrontendController {
 		model.addAttribute("currentSort", ls.name());
 		
 		return "allscores";
+	}
+	
+	@GetMapping("/multiplayer")
+	public String getMultiHome(Model model) {
+		m_logger.info("FRONTEND API :: Multiplayer");
+		
+		model.addAttribute("multiPlayers", multiplayerApi.getOnlinePlayers());
+		
+		return "multiplayer";
+	}
+	
+	@GetMapping("/multiplayer/players")
+	public String getMultiplayerPlayers(Model model) {
+		m_logger.info("FRONTEND API :: Multiplayer Players");
+		
+		model.addAttribute("multiPlayers", multiplayerApi.getOnlinePlayers());
+		
+		return "multiplayers";
+	}
+	
+	@GetMapping("/multiplayer/sessions")
+	public String getMultiplayerSessions(Model model) {
+		m_logger.info("FRONTEND API :: Multiplayer Sessions");
+		
+		model.addAttribute("sessions", multiplayerData.getMultiplayerSessions());
+		
+		return "multisessions";
+	}
+	
+	@GetMapping("/multiplayer/session/{sessionid}")
+	public String getMultiplayerSession(Model model, @PathVariable("sessionid") String sessionId) {
+		m_logger.info("FRONTEND API :: Multiplayer Session {}", sessionId);
+		
+		Long id = 0L;
+		try {
+			id = Long.parseLong(sessionId);
+		} catch (Exception e) {}
+		
+		GameLobby lobby = multiplayerData.getSession(id);
+		
+		model.addAttribute("sessionId", sessionId);
+		model.addAttribute("lobby", lobby);
+		model.addAttribute("players", multiplayerData.getPlayersInSession(id));
+		model.addAttribute("messages", multiplayerData.getMessagesInSession(id));		
+		model.addAttribute("scores", multiplayerData.getScoresInSession(id));
+		
+		return "multisession";
 	}
 	
 	@GetMapping("/admin")

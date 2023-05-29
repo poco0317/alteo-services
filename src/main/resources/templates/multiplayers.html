@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1>Multiplayer Players</h1>
+					
+					<h4><a th:href="@{/multiplayer/players}">View Players</a></h4>
+					<h4><a th:href="@{/multiplayer/sessions}">View Sessions</a></h4>
+					
+					<br><br><br>
+					<h5>Currently online players:</h5>
+				</div>
+			</div>
+	
+			<div th:object="${multiPlayers}" class="row" style="margin-top: 4vh;">
+				<div class="container">
+					<table th:if="${#lists.size(multiPlayers) > 0}" class="table table-hover table-sm">
+					
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Player</th>
+								<th scope="col">Lobby</th>
+								<th scope="col">State</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="player, stat: ${multiPlayers}">
+								<th scope="row" th:text="${stat.index + 1}"></th>
+								<th scope="row" th:text="${player.name}"></th>
+								<th scope="row" th:text="${player.lobby}"></th>
+								<th scope="row" th:text="${player.state}"></th>
+							</tr>
+						</tbody>
+					</table>
+					<div class="container" th:unless="${#lists.size(multiPlayers) > 0}">
+						<h6>There is nobody playing multiplayer</h6>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>

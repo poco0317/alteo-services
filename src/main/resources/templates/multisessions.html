@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml" 
+   xmlns:sec = "http://www.thymeleaf.org/extras/spring-security"
+   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+   layout:decorate="~{layout}">
+
+	<head>
+		<title>Not EtternaOnline</title>	
+	</head>
+	
+<body>
+
+	<div layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<h1>Multiplayer Sessions</h1>
+					
+					<h4><a th:href="@{/multiplayer/players}">View Players</a></h4>
+					<h4><a th:href="@{/multiplayer/sessions}">View Sessions</a></h4>
+					
+					<br><br><br>
+					<h5>All Past Multiplayer Lobbies:</h5>
+				</div>
+			</div>
+	
+			<div th:object="${sessions}" class="row" style="margin-top: 4vh;">
+				<table th:if="${#lists.size(sessions) > 0}" class="table table-hover table-sm">
+				
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Name</th>
+							<th scope="col">Description</th>
+							<th scope="col">Passworded</th>
+							<th scope="col">Active</th>
+							<th scope="col">Creator</th>
+							<th scope="col">Created</th>
+							<th scope="col">Players</th>
+							<th scope="col">Messages</th>
+							<th scope="col">Scores</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="sess, stat: ${sessions}">
+							<th scope="row"><a th:text="${stat.index + 1}" th:href="@{/multiplayer/session/{id}(id=${sess.id})}"></a></th>
+							<th scope="row"><a th:text="${sess.name}" th:href="@{/multiplayer/session/{id}(id=${sess.id})}"></a></th>
+							<th scope="row" th:text="${sess.description}"></th>
+							<th scope="row" th:text="${sess.passworded}"></th>
+							<th scope="row" th:text="${sess.active}"></th>
+							<th scope="row" th:text="${sess.creator.username}"></th>
+							<th scope="row" th:text="${sess.created}"></th>
+							<th scope="row" th:text="${#lists.size(sess.users)}"></th>
+							<th scope="row" th:text="${#lists.size(sess.messages)}"></th>
+							<th scope="row" th:text="${#lists.size(sess.scores)}"></th>
+						</tr>
+					</tbody>
+				</table>
+				<div class="container" th:unless="${#lists.size(sessions) > 0}">
+					<h6>No lobbies ever occurred...</h6>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+</body>
+</html>

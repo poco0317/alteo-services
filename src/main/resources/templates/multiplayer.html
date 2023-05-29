@@ -14,17 +14,14 @@
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-12 text-center">
-					<h1>Welcome to not Etterna Online</h1>
-					<h3>Another Etterna Leaderboard and Database</h3>
-					<h6>and more</h6>
+					<h1>Multiplayer</h1>
+					
+					<h4><a th:href="@{/multiplayer/players}">View Players</a></h4>
+					<h4><a th:href="@{/multiplayer/sessions}">View Sessions</a></h4>
+					
+					<br><br><br>
+					<h5 th:text="${'Currently online players: ' + #lists.size(multiPlayers)}"></h5>
 				</div>
-			</div>
-			<div class="row" style="margin-top: 10vh;">
-				<h6>This site is very much a work in progress. Have a look around.</h6>
-			</div>
-	
-			<div th:object="${multiPlayers}" class="row" style="margin-top: 4vh;">
-				<h5 th:text="${'Currently online players: ' + #lists.size(multiPlayers)}"></h5>
 			</div>
 		</div>
 	</div>
