@@ -39,6 +39,9 @@ public class CalcManager {
 	@PostConstruct
 	private void init() {
 		minacalc.set(new MinaCalcJNI());
+		
+		m_logger.info("Initialized CalcManager - calc version {}", getCalcVersion());
+		
 	}
 	
 	/**
@@ -192,4 +195,9 @@ public class CalcManager {
 		rating += resolution * 2.0;
 		return rating * resultMult;
 	}
+	
+	/*
+	 with diffs as (select a.skillset, (b.value - a.value) as 'diff', a.chart_key from chart_diff_values a, chart_diff_values b where a.skillset = b.skillset and a.chart_key = b.chart_key and a.calc_version = '500' and b.calc_version = '505')
+     select d.skillset, d.diff, ifnull(c.translit_title, c.title), c.difficulty, c.chart_key from diffs d, charts c where d.chart_key = c.chart_key and skillset = '0' order by d.diff limit 50;
+	 */
 }

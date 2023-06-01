@@ -20,6 +20,7 @@ import com.etterna.site.dto.PackNameWithScoreCount;
 public interface ChartRepository extends JpaRepository<Chart, String> {
 
 	List<Chart> findByCalcVersionLessThan(Integer calcVersion);
+	List<Chart> findByCalcVersionNot(Integer calcVersion);
 	List<RankedChartkey> findChartKeyByChartKeyNotNull();
 	
 	@Query("select new com.etterna.site.dto.PackNameWithChartCount(p.displayName, count(*)) from Pack p left join p.charts group by p.displayName")

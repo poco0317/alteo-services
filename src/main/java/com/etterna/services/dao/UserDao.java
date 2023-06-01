@@ -73,7 +73,7 @@ public class UserDao {
 				HashMap<Skillset, List<Double>> skillsetSSRs = new HashMap<>();
 				m_logger.info("Updating user {} SSRs - {} total scores", user.getUsername(), userScores.size());
 				for (HighScore hs : userScores) {
-					if (hs.getCalcVersion() < calc.getCalcVersion()) {
+					if (hs.getCalcVersion() != calc.getCalcVersion()) {
 						continue;
 					}
 					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScoreAndIdCalcVersion(hs, calcVer);

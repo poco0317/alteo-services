@@ -37,7 +37,7 @@ public class DiffDao {
 	@SuppressWarnings("unused")
 	public void updateDiffValues(Chart c, Set<ChartDiffValue> newDiffs) {
 		Set<ChartDiffValue> diffs = c.getDiffValues();
-		if (c.getCalcVersion() < calc.getCalcVersion()) {
+		if (c.getCalcVersion() != calc.getCalcVersion()) {
 			m_logger.debug("Updating diffs for {}", c.getChartKey());
 			
 			if (DELETE_OLD_DIFFS && diffs != null) {

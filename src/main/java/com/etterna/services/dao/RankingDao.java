@@ -80,7 +80,7 @@ public class RankingDao {
 	@Transactional
 	public void init() {
 		m_logger.info("Starting Chart Difficulty Updates");
-		List<Chart> all = charts.findByCalcVersionLessThan(calc.getCalcVersion());
+		List<Chart> all = charts.findByCalcVersionNotEqual(calc.getCalcVersion());
 		List<RankedChartkey> allRankedChartkeys = charts.findChartKeyByChartKeyNotNull();
 		if (allRankedChartkeys != null) {
 			rankedChartkeys.addAll(allRankedChartkeys.stream().map(c -> c.getChartKey()).collect(Collectors.toSet()));

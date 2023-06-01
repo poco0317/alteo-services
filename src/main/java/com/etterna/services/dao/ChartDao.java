@@ -74,6 +74,11 @@ public class ChartDao {
 	}
 	
 	@Transactional
+	public List<Chart> findByCalcVersionNotEqual(int version) {
+		return charts.findByCalcVersionNot(version);
+	}
+	
+	@Transactional
 	public List<RankedChartkey> findChartKeyByChartKeyNotNull() {
 		return charts.findChartKeyByChartKeyNotNull();
 	}
