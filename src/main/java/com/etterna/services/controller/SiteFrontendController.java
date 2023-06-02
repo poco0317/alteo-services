@@ -127,10 +127,10 @@ public class SiteFrontendController {
 		}
 		
 		if (users.newUser(userDto.getUsername(), userDto.getPassword())) {
-			m_logger.info("Successfully made new account for {}");
+			m_logger.info("Successfully made new account for {}", userDto.getUsername());
 			return new ModelAndView("redirect:/login?registered");
 		} else {
-			m_logger.info("Failed to make new account for {}");
+			m_logger.info("Failed to make new account for {}", userDto.getUsername());
 			return new ModelAndView("redirect:/register?duplicate");
 		}
 	}

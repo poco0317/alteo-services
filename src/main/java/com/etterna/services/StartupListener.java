@@ -21,7 +21,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		m_logger.info("Beginning Application Init");
 		
-		chartRanking.init();
+		
 		
 		m_logger.info("Finished Application Init");
 	}

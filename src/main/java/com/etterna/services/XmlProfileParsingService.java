@@ -76,8 +76,7 @@ public class XmlProfileParsingService {
 		return add(in, user.getUserId());
 	}
 	
-	@Scheduled(fixedDelay = 1000L * 10L)
-	void maintainXmlQueue() {
+	public void maintainXmlQueue() {
 		Iterator<Entry<Long, byte[]>> it = queuedXmls.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<Long, byte[]> entry = it.next();

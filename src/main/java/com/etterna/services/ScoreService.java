@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
@@ -54,8 +53,7 @@ public class ScoreService {
 	
 	private static final boolean DELETE_OLD_SSRS = false;
 	
-	@Scheduled(fixedDelay = 30L * 1000L)
-	private void updateSSRs() {
+	public void updateSSRs() {
 		List<HighScore> scores = highScores.getScoresToCalculate();
 		if (scores.size() > 0) {
 			m_logger.info("Updating queued scores: {} scores", scores.size());
