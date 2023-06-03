@@ -1,0 +1,29 @@
+spring:
+  jpa:
+    properties:
+      jdbc:
+        batch_size: 500
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+      show_sql: true
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+  datasource:
+    driver-class-name: ${DB_DRIVER}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    url: ${DB_URL}
+  jackson:
+    default-property-inclusion: NON_NULL
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  
+etterna:
+  multi-base-url: ${MULTI_API_URL}
+
+logging:
+  level:
+    #org.hibernate.SQL: DEBUG
+    com.etterna: DEBUG
