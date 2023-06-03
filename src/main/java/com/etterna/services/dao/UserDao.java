@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
+import com.etterna.services.RoleService;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.datamodel.HighScore;
@@ -51,6 +52,9 @@ public class UserDao {
 	
 	@Autowired
 	private CalcManager calc;
+	
+	@Autowired
+	private RoleService roles;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -171,6 +175,7 @@ public class UserDao {
 		User user = new User();
 		user.setUsername(username);
 		user.setPassword(passwordEncoder.encode(password));
+		user.setRoles(roles.getDefaultRole());
 		repo.save(user);
 		return true;
 	}

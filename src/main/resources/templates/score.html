@@ -74,7 +74,7 @@
 					
 					<br><br>
 					
-					<div sec:authorize="isAuthenticated()">
+					<div sec:authorize="hasAuthority('ADMIN')">
 						<h5>Secret Info</h5>
 						<a th:text="${'Brittle Key: '+score.score.brittleKey}"></a><br>
 						<a th:text="${'GUID: '+score.score.guid}"></a><br>

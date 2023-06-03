@@ -39,7 +39,7 @@
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		
-		<ul class="navbar-nav ml-auto" sec:authorize="isAuthenticated()">
+		<ul class="navbar-nav ml-auto" sec:authorize="hasAuthority('ADMIN')">
 			<li class="nav-item"><a class="nav-link" th:href="@{/admin}">Admin</a></li>
 		</ul>
 		
