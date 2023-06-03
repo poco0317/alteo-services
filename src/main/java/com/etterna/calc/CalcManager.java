@@ -213,9 +213,9 @@ public class CalcManager {
 	/**
 	 * Will return calc diff values for a chart
 	 */
-	public Set<ChartDiffValue> calcDiffValues(Chart c, byte[] noteinfo, float rate, float goal) {
+	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
 		m_logger.debug("Getting MSD for file {}", c.getChartKey());
-		float[] ssrs = calc().minaSDCalcBytes(noteinfo, rate, goal);
+		float[] ssrs = calc().minaSDCalcBytes(c.getNoteInfo().getNoteinfo(), rate, goal);
 		List<Float> diffs = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
 			diffs.add(f);
