@@ -21,7 +21,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.datamodel.NoteInfo;
 import com.etterna.services.dao.SongCacheData.ChartCacheData;
 import com.etterna.services.datamodel.Chart;
@@ -46,9 +45,6 @@ public class RankingDao {
 	
 	@Autowired
 	private DiffDao chartDiffs;
-	
-	@Autowired
-	private NoteInfoDao noteInfo;
 	
 	private static final long RANKING_QUEUE_TIMER = 1000L * 10L; // 10 secs
 	
