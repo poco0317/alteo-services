@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.dao.NoteInfoDao;
+import com.etterna.calc.datamodel.NoteInfo;
 import com.etterna.services.dao.SongCacheData.ChartCacheData;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
@@ -70,18 +71,7 @@ public class RankingDao {
 			it.remove();
 		}
 		
-		Iterator<Entry<String, byte[]>> nit = noteinfoQueue.entrySet().iterator();
-		while (nit.hasNext()) {
-			Entry<String, byte[]> entry = nit.next();
-			String ck = entry.getKey();
-			if (noteInfo.exists(ck)) {
-				nit.remove();
-				continue;
-			}
-			m_logger.info("Storing NoteInfo {}", entry.getKey());
-			noteInfo.add(ck, entry.getValue());
-			nit.remove();
-		}
+		noteinfoQueue.clear();
 		
 		m_logger.info("Finished handling pack ranking queue");
 	}
@@ -169,7 +159,7 @@ public class RankingDao {
 				} else {
 					m_logger.info("Found {} charts in song {} - pack {}", cacheData.getCharts().size(), cacheData.getTitle(), packname);
 					cacheData.getCharts().forEach(c -> {
-						rankChart(packname, cacheData, c);
+						rankChart(packname, cacheData, c, noteinfoQueue.get(c.getChartkey()));
 					});
 				}
 			}
@@ -181,7 +171,7 @@ public class RankingDao {
 	}
 	
 	@Transactional
-	public boolean rankChart(String packname, SongCacheData songCache, ChartCacheData chartCache) {
+	public boolean rankChart(String packname, SongCacheData songCache, ChartCacheData chartCache, byte[] noteInfoData) {
 		Pack pack = packs.getNewPackByName(packname, true);
 		m_logger.info("Ranking chart {} - {}", chartCache.getChartkey(), songCache.getTitle());
 		Chart c = charts.get(chartCache.getChartkey(), true);
@@ -199,11 +189,17 @@ public class RankingDao {
 			c.setTranslitSubtitle(songCache.getTranslitSubtitle());
 			c.setTranslitTitle(songCache.getTranslitTitle());
 			c.setStepsType(chartCache.getStepstype());
+			NoteInfo ni = new NoteInfo();
+			ni.setChart(c);
+			ni.setChartKey(c.getChartKey());
+			ni.setNoteinfo(noteInfoData);
+			c.setNoteInfo(ni);
 		}
 		c.getPacks().add(pack);
 		pack.getCharts().add(c);
 		
 		charts.save(c);
+		
 		rankedChartkeys.add(chartCache.getChartkey());
 		
 		/*
