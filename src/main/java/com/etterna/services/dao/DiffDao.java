@@ -4,8 +4,6 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +13,11 @@ import com.etterna.services.datamodel.ChartDiffValue;
 import com.etterna.services.repo.ChartDiffValueRepository;
 import com.etterna.services.repo.ChartRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class DiffDao {
-	
-	private static final Logger m_logger = LoggerFactory.getLogger(DiffDao.class);
 	
 	@Autowired
 	private ChartRepository charts;

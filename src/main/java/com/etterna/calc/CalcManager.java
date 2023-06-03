@@ -76,6 +76,7 @@ public class CalcManager {
 		while (o.size() < 8) {
 			o.add(0.f);
 		}
+		printSkillsets(o);
 		return o;
 	}
 	
@@ -97,7 +98,11 @@ public class CalcManager {
 			for (float f : ssr) {
 				o.add(f);
 			}
+			while (o.size() < 8) {
+				o.add(0.f);
+			}
 			ssrs.add(o);
+			printSkillsets(o);
 		}
 		return ssrs;
 	}
@@ -122,7 +127,11 @@ public class CalcManager {
 			for (float f : ssr) {
 				o.add(f);
 			}
+			while (o.size() < 8) {
+				o.add(0.f);
+			}
 			hsToSsrs.put(hs, o);
+			printSkillsets(o);
 		});
 		return hsToSsrs;
 	}
@@ -204,9 +213,16 @@ public class CalcManager {
 	/**
 	 * Will return calc diff values for a chart
 	 */
-	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
+	public Set<ChartDiffValue> calcDiffValues(Chart c, byte[] noteinfo, float rate, float goal) {
 		m_logger.debug("Getting MSD for file {}", c.getChartKey());
-		final List<Float> diffs = getSSR(c.getChartKey(), rate, goal);
+		float[] ssrs = calc().minaSDCalcBytes(noteinfo, rate, goal);
+		List<Float> diffs = new ArrayList<>(ssrs.length);
+		for (float f : ssrs) {
+			diffs.add(f);
+		}
+		while (diffs.size() < 8) {
+			diffs.add(0.f);
+		}
 		final int ver = getCalcVersion();
 		return new HashSet<>(Arrays.asList(new ChartDiffValue[] {
 				new ChartDiffValue(c, diffs.get(0).doubleValue(), Skillset.OVERALL, ver),

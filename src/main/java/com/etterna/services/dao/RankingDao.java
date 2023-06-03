@@ -112,12 +112,14 @@ public class RankingDao {
 		if (all != null) {
 			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), charts.count());
 			
+			Map<String, byte[]> niData = noteInfo.getDatas(all.stream().map(c -> c.getChartKey()).collect(Collectors.toSet()));
+			
 			ExecutorService bulkCalc = Executors.newWorkStealingPool();
 			// Object[] is [Chart, Set<ChartDiffValue>]
 			List<Future<Object[]>> futures = new LinkedList<>();
 			all.forEach(c -> {
 				futures.add(bulkCalc.submit(() -> {
-					return new Object[] {c, calc.calcDiffValues(c, 1.f,.93f)};
+					return new Object[] {c, calc.calcDiffValues(c, niData.get(c.getChartKey()), 1.f,.93f)};
 				}));
 			});
 			
