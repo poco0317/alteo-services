@@ -22,6 +22,9 @@ spring:
   
 etterna:
   multi-base-url: ${MULTI_API_URL}
+  calc:
+    scheduler:
+      enabled: ${CALC_SCHEDULER_ENABLED}
 
 server:
   port: ${SOCKET_PORT}
