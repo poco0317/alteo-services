@@ -25,6 +25,14 @@ etterna:
 
 server:
   port: ${SOCKET_PORT}
+  ssl:
+    key-alias: ${SSL_ALIAS}
+    key-store: ${SSL_KEYSTORE}
+    key-store-password: ${SSL_KEYSTORE_PASS}
+    key-password: ${SSL_PASSWORD}
+    trust-store: ${SSL_TRUST_STORE}
+    trust-store-password: ${SSL_TRUST_STORE_PASS}
+    
 
 logging:
   level:
