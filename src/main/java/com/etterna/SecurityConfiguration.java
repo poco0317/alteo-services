@@ -26,6 +26,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		http
 			.addFilterAfter(new RedirectingFilter(), UsernamePasswordAuthenticationFilter.class)
 			.authorizeRequests()
+				.antMatchers("/favicon.ico").permitAll()
 				.antMatchers("/", "/home", "/register").permitAll() // base site access to public
 				.antMatchers("/user/*", "/packs*", "/leaderboard*").permitAll() // front end nav
 				.antMatchers("/user/*/*").authenticated() // front end post protected
