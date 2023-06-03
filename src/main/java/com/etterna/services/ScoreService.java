@@ -1,10 +1,10 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,8 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,11 +30,12 @@ import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.ScoreSpecificValue;
 import com.etterna.services.datamodel.User;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ScoreService {
 	
-	private static final Logger m_logger = LoggerFactory.getLogger(ScoreService.class);
-
 	@Autowired
 	private HighScoreDao highScores;
 	
@@ -78,36 +77,27 @@ public class ScoreService {
 				organizedScores.get(ck).add(hs);
 			});
 			
-			List<Future<HashMap<HighScore, List<Float>>>> futures = new LinkedList<>();
+			List<Future<Map<HighScore, List<Float>>>> futures = new LinkedList<>();
 			for (Entry<String, List<HighScore>> entry : organizedScores.entrySet()) {
 				final String ck = entry.getKey();
 				
-				Future<HashMap<HighScore, List<Float>>> chartScoreSSRs = bulkSsrExecutor.submit(() -> {
-					HashMap<HighScore, List<Float>> scoreSsrs = new HashMap<>();
-					entry.getValue().forEach(hs -> {
-						float rate = hs.getMusicRate() / 100.F;
-						float goal = hs.getSsrNorm() / 1000000.F;
-						List<Float> ssrs = calc.getSSR(ck, rate, goal);
-						if (ssrs.size() > 0) {
-							scoreSsrs.put(hs, ssrs);
-						}
-					});
-					return scoreSsrs;
+				Future<Map<HighScore, List<Float>>> chartScoreSSRs = bulkSsrExecutor.submit(() -> {
+					return calc.getSSRs(ck, entry.getValue());
 				});
 				futures.add(chartScoreSSRs);
 			}
 			
 			m_logger.info("Waiting for {} tasks to complete...", futures.size());
 			while (!futures.isEmpty()) {
-				Iterator<Future<HashMap<HighScore, List<Float>>>> it = futures.iterator();
+				Iterator<Future<Map<HighScore, List<Float>>>> it = futures.iterator();
 				while (it.hasNext()) {
-					Future<HashMap<HighScore, List<Float>>> future = it.next();
+					Future<Map<HighScore, List<Float>>> future = it.next();
 					if (future.isCancelled()) {
 						m_logger.warn("Found cancelled task, removed from queue");
 						it.remove();
 					} else if (future.isDone()) {
 						try {
-							HashMap<HighScore, List<Float>> results = future.get();
+							Map<HighScore, List<Float>> results = future.get();
 							m_logger.debug(" - Committing {} scores", results.size());
 							for (Entry<HighScore, List<Float>> entry : results.entrySet()) {
 								highScores.updateSsrs(entry.getKey(), entry.getValue());

@@ -41,6 +41,7 @@ public class MinaCalcJNI {
 	}
 	
 	public native String getCalcVersion();
-	public native float[] minaSDCalc(String chartkey, float musicrate, float goal);
+	public native float[] minaSDCalcFile(String chartkey, float musicrate, float goal);
+	public native float[] minaSDCalcBytes(byte[] data, float musicrate, float goal);
 
 }
