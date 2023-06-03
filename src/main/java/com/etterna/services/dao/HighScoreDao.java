@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,10 +35,11 @@ import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
 
-@Service
-public class HighScoreDao {
+import lombok.extern.slf4j.Slf4j;
 
-	private static final Logger m_logger = LoggerFactory.getLogger(HighScoreDao.class);
+@Service
+@Slf4j
+public class HighScoreDao {
 
 	@Autowired
 	private HighScoreRepository hsRepo;
@@ -158,7 +157,6 @@ public class HighScoreDao {
 		Map<String, HighScoreWithSkillsets> hsvs = mapHighScoreAndSSVObjects(obs);
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
-		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
 		
 		return new ChartLeaderboardPagination(null, hsvs.values()
 				.stream()
@@ -190,7 +188,6 @@ public class HighScoreDao {
 		Map<String, HighScoreWithSkillsets> hsvs = mapHighScoreAndSSVObjects(obs);
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
-		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
 		
 		return new ChartLeaderboardPagination(c, hsvs.values()
 				.stream()
@@ -244,7 +241,6 @@ public class HighScoreDao {
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
-		m_logger.debug("{} {} {}", sliceStart, sliceEnd, hsvs.size());
 		
 		if (hsvs.size() == 0) {
 			return new HighScoreWithSkillsetsPagination(hsvs.values().stream().collect(Collectors.toList()), 1, 1);

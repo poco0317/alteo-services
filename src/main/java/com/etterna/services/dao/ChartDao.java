@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.hibernate.Hibernate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,11 +26,12 @@ import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ChartDao {
-	
-	private static final Logger m_logger = LoggerFactory.getLogger(ChartDao.class);
-	
+		
 	@Autowired
 	private ChartRepository charts;
 	
@@ -89,7 +88,6 @@ public class ChartDao {
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), pncc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, pncc.size());
-		m_logger.debug("pncc {} {} {}", sliceStart, sliceEnd, pncc.size());
 		
 		if (pncc.size() == 0) {
 			return new PackNameWithChartCountPagination(pncc, 1, 1);
@@ -155,7 +153,6 @@ public class ChartDao {
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), cwc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, cwc.size());
-		m_logger.debug("cwc {} {} {}", sliceStart, sliceEnd, cwc.size());
 		
 		if (cwc.size() == 0) {
 			return new ChartsInPackPagination(new ArrayList<>(), 1, 1);
