@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.Transactional;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,10 +30,11 @@ import com.etterna.services.datamodel.HighScore;
 import com.etterna.services.datamodel.User;
 import com.etterna.services.repo.HighScoreRepository;
 
-@Service
-public class XmlProfileParsingService {
+import lombok.extern.slf4j.Slf4j;
 
-	private static final Logger m_logger = LoggerFactory.getLogger(XmlProfileParsingService.class);
+@Service
+@Slf4j
+public class XmlProfileParsingService {
 	
 	@Autowired
 	private SessionService sessions;
@@ -51,6 +50,8 @@ public class XmlProfileParsingService {
 	
 	@Autowired
 	private HighScoreRepository hsRepo;
+	
+	private static final long XML_INTAKE_TIMER = 1000L * 10L; // 10 secs
 	
 	private static ConcurrentHashMap<Long, byte[]> queuedXmls = new ConcurrentHashMap<>();
 	
@@ -76,7 +77,8 @@ public class XmlProfileParsingService {
 		return add(in, user.getUserId());
 	}
 	
-	public void maintainXmlQueue() {
+	@Scheduled(fixedDelay = XML_INTAKE_TIMER)
+	void maintainXmlQueue() {
 		Iterator<Entry<Long, byte[]>> it = queuedXmls.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<Long, byte[]> entry = it.next();

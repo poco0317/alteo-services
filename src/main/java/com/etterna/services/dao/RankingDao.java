@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,23 +16,24 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
+import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.services.dao.SongCacheData.ChartCacheData;
 import com.etterna.services.datamodel.Chart;
 import com.etterna.services.datamodel.ChartDiffValue;
 import com.etterna.services.datamodel.Pack;
 import com.etterna.services.datamodel.RankedChartkey;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class RankingDao {
 	
-	private static final Logger m_logger = LoggerFactory.getLogger(RankingDao.class);
-
 	@Autowired
 	private ChartDao charts;
 	
@@ -44,14 +46,21 @@ public class RankingDao {
 	@Autowired
 	private DiffDao chartDiffs;
 	
-	private static Set<String> rankedChartkeys = ConcurrentHashMap.newKeySet();
-	private static ConcurrentHashMap<String, List<String>> packRankQueue = new ConcurrentHashMap<>();
+	@Autowired
+	private NoteInfoDao noteInfo;
 	
-	public void handlePackRankQueue() {
+	private static final long RANKING_QUEUE_TIMER = 1000L * 10L; // 10 secs
+	
+	private static Set<String> rankedChartkeys = ConcurrentHashMap.newKeySet();
+	private static Map<String, List<String>> packRankQueue = new ConcurrentHashMap<>();
+	private static Map<String, byte[]> noteinfoQueue = new ConcurrentHashMap<>();
+	
+	@Scheduled(fixedDelay = RANKING_QUEUE_TIMER)
+	void handlePackRankQueue() {
 		if (packRankQueue.size() == 0) {
 			return;
 		}
-		m_logger.info("Handling pack ranking queue - {} to do", packRankQueue.size());
+		m_logger.info("Handling pack ranking queue - {} packs and {} charts to handle", packRankQueue.size(), noteinfoQueue.size());
 		
 		Iterator<Entry<String, List<String>>> it = packRankQueue.entrySet().iterator();
 		while (it.hasNext()) {
@@ -60,23 +69,39 @@ public class RankingDao {
 			rankSongDatas(entry.getValue(), entry.getKey());
 			it.remove();
 		}
-		init();
+		
+		Iterator<Entry<String, byte[]>> nit = noteinfoQueue.entrySet().iterator();
+		while (nit.hasNext()) {
+			Entry<String, byte[]> entry = nit.next();
+			String ck = entry.getKey();
+			if (noteInfo.exists(ck)) {
+				nit.remove();
+				continue;
+			}
+			m_logger.info("Storing NoteInfo {}", entry.getKey());
+			noteInfo.add(ck, entry.getValue());
+			nit.remove();
+		}
 		
 		m_logger.info("Finished handling pack ranking queue");
 	}
 	
-	public void queuePackForRanking(List<String> songdatas, String packname) {
-		if (packRankQueue.containsKey(packname) || packs.isRanked(packname)) {
-			m_logger.warn("Attempted to rank pack already in queue or already ranked : {}", packname);
-		} else {
-			packRankQueue.put(packname, songdatas);
-			m_logger.info("Queued pack for ranking: {}", packname);
+	public void queuePackForRanking(List<String> songdatas, Map<String, byte[]> noteinfos, String packname) {
+		if (packs.isRanked(packname)) {
+			m_logger.info("Tried to rank pack {} after it was already ranked", packname);
+			return;
 		}
+		
+		int queueBefore = noteinfoQueue.size();
+		noteinfoQueue.putAll(noteinfos);
+		packRankQueue.put(packname, songdatas);
+		m_logger.info("Added {} new charts to the NoteInfo Ranking Queue due to ranking {} which contains {} songs", noteinfoQueue.size() - queueBefore, packname, songdatas.size());
+		
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Transactional
-	public void init() {
+	public void updateMSDs() {
 		m_logger.info("Starting Chart Difficulty Updates");
 		List<Chart> all = charts.findByCalcVersionNotEqual(calc.getCalcVersion());
 		List<RankedChartkey> allRankedChartkeys = charts.findChartKeyByChartKeyNotNull();

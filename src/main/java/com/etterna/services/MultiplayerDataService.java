@@ -17,15 +17,10 @@ import com.etterna.multi.data.UserLogin;
 import com.etterna.multi.repo.GameLobbyRepository;
 import com.etterna.multi.repo.LobbyMessageRepository;
 import com.etterna.multi.repo.LobbyScoreRepository;
-import com.etterna.multi.repo.UserLoginRepository;
-import com.etterna.services.dao.UserDao;
 import com.etterna.site.dto.LobbyScoreWithChart;
 import com.etterna.site.dto.MultiUserWithStatus;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class MultiplayerDataService {
 	
 	@Autowired
@@ -36,12 +31,6 @@ public class MultiplayerDataService {
 	
 	@Autowired
 	private LobbyScoreRepository scores;
-	
-	@Autowired
-	private UserLoginRepository multiLogins;
-	
-	@Autowired
-	private UserDao siteUsers;
 	
 	@Autowired
 	private MultiplayerRequestService multiplayerApi;

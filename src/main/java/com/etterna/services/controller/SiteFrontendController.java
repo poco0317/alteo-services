@@ -1,13 +1,13 @@
 package com.etterna.services.controller;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,7 +19,6 @@ import java.util.zip.ZipInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -64,9 +63,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/")
 @Slf4j
 public class SiteFrontendController {
-	
-	@Value("${etterna.note-info-folder-path}")
-	private String rootNoteinfoPath;
 	
 	@Autowired
 	private UserDao users;
@@ -405,7 +401,8 @@ public class SiteFrontendController {
 		m_logger.info("FRONTEND API :: Admin Pack Ranking Upload - {} files by {}", packs.length, user.getUsername());
 		
 		for (MultipartFile f : packs) {
-			ArrayList<String> songdatas = new ArrayList<>();
+			List<String> songdatas = new ArrayList<>();
+			Map<String, byte[]> noteinfos = new HashMap<>();
 			final Pattern rootnamer = Pattern.compile("([^\\\\/]*)[\\\\/]");
 			String packname = "No Pack Name";
 			
@@ -415,7 +412,7 @@ public class SiteFrontendController {
 				while (entry != null) {
 					
 					String name = entry.getName();
-					if (name.endsWith(".cache")) {
+					if (name.endsWith(".cache") && !name.equalsIgnoreCase(".cache")) {
 						String filename = new File(name).getName();
 						Matcher rooter = rootnamer.matcher(name);
 						if (rooter.find()) {
@@ -431,9 +428,7 @@ public class SiteFrontendController {
 							songdatas.add(content);
 						} else {
 							// should be noteinfo
-							OutputStream fileout = new FileOutputStream(rootNoteinfoPath + "/" + filename, false);
-							fileout.write(zipin.readAllBytes());
-							fileout.close();
+							noteinfos.put(filename.replaceAll(".cache", ""), zipin.readAllBytes());
 						}
 						
 					} else {
@@ -448,7 +443,7 @@ public class SiteFrontendController {
 				m_logger.warn("Attempted to parse upload and failed. {}", e);
 			}
 			
-			chartRanking.queuePackForRanking(songdatas, packname);
+			chartRanking.queuePackForRanking(songdatas, noteinfos, packname);
 		}
 		m_logger.info("Finished queueing {} packs to rank", packs.length);
 		
