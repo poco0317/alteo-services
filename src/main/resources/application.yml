@@ -23,6 +23,9 @@ spring:
 etterna:
   multi-base-url: ${MULTI_API_URL}
 
+server:
+  port: ${SOCKET_PORT}
+
 logging:
   level:
     #org.hibernate.SQL: DEBUG
