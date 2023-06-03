@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import com.etterna.services.dao.UserDao;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -13,6 +15,10 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	
 	@Autowired
 	private RoleService roles;
+	
+	@SuppressWarnings("unused")
+	@Autowired
+	private UserDao users;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {

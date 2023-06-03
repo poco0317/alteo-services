@@ -167,6 +167,18 @@ public class UserDao {
 	}
 	
 	@Transactional
+	public void grantRole(String username, String role) {
+		grantRole(get(username), role);
+	}
+	
+	@Transactional
+	public void grantRole(User user, String role) {
+		m_logger.info("Granting role {} to user {}", role, user.getUsername());
+		user.getRoles().add(roles.get(role));
+		repo.save(user);
+	}
+	
+	@Transactional
 	public boolean newUser(String username, String password) {
 		if (get(username) != null) {
 			return false;
