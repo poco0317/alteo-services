@@ -24,7 +24,7 @@
 					<h5 th:text="${'Chordjack: ' + #numbers.formatDecimal(chart.chordjack, 2, 2)}"></h5>
 					<h5 th:text="${'Technical: ' + #numbers.formatDecimal(chart.technical, 2, 2)}"></h5>
 					<h3>Packs:</h3>
-					<h5 th:each="pack, stat: ${chart.chart.packs}"><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.name})}"></a></h5>
+					<h5 th:each="pack, stat: ${packs}"><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.name})}"></a></h5>
 				</div>
 			</div>
 
@@ -77,18 +77,18 @@
 				<tbody>
 					<tr th:each="score, stat: ${scores}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${score.score.user.username}" th:href="@{/user/{username}(username=${score.score.user.username})}"></a></td>
-						<td th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
-						<td><a th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}" th:href="@{/score/{scorekey}(scorekey=${score.score.scoreKey})}"></a></td>
-						<td th:text="${score.score.dateStr}"></td>
-						<td th:text="${#numbers.formatDecimal(score.overall, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.stream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.jumpstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.handstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.stamina, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.jackspeed, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.chordjack, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.technical, 2, 2)}"></td>
+						<td><a th:text="${score.user.username}" th:href="@{/user/{username}(username=${score.user.username})}"></a></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.score.musicRate / 100.0, 1, 2) + 'x'}"></td>
+						<td><a th:text="${#numbers.formatDecimal(score.hsUnion.score.ssrNorm / 10000.0, 2, 4) + '%'}" th:href="@{/score/{scorekey}(scorekey=${score.hsUnion.score.scoreKey})}"></a></td>
+						<td th:text="${score.hsUnion.score.dateStr}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.overall, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.stream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.jumpstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.handstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.stamina, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.jackspeed, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.chordjack, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.hsUnion.technical, 2, 2)}"></td>
 					</tr>
 				</tbody>
 				

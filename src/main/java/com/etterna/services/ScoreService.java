@@ -26,9 +26,9 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.RankingDao;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.ScoreSpecificValue;
-import com.etterna.services.datamodel.User;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.ScoreSpecificValue;
+import com.etterna.services.model.User;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +70,7 @@ public class ScoreService {
 			// chartkeys to scores
 			ConcurrentHashMap<String, List<HighScore>> organizedScores = new ConcurrentHashMap<>();
 			scores.forEach(hs -> {
-				final String ck = hs.getChart().getChartKey();
+				final String ck = hs.getChartKey();
 				if (!organizedScores.containsKey(ck)) {
 					organizedScores.put(ck, new ArrayList<>());
 				}
@@ -100,7 +100,7 @@ public class ScoreService {
 							Map<HighScore, List<Float>> results = future.get();
 							m_logger.debug(" - Committing {} scores", results.size());
 							for (Entry<HighScore, List<Float>> entry : results.entrySet()) {
-								highScores.updateSsrs(entry.getKey(), entry.getValue());
+								highScores.stageUpdatedSsrs(entry.getKey(), entry.getValue(), false);
 							}
 							m_logger.debug(" - Finished committing {} scores", results.size());
 						} catch (InterruptedException | ExecutionException e) {
@@ -111,6 +111,7 @@ public class ScoreService {
 					}
 				}
 			}
+			highScores.flushStagedSsrs();
 			
 			m_logger.info("Finished updating queued scores");
 		} else {
@@ -168,10 +169,10 @@ public class ScoreService {
 			judgments.setMiss(hs.getMissCount());
 			judgments.setPerfect(hs.getPerfCount());
 			LeaderboardSkillsetDTO ssrs = new LeaderboardSkillsetDTO();
-			Set<ScoreSpecificValue> hsssrs = hs.getSsrs();
+			Set<ScoreSpecificValue> hsssrs = highScores.getSsrs(hs);
 			if (hsssrs != null) {
 				hsssrs.forEach(ssr -> {
-					switch (ssr.getId().getSkillset()) {
+					switch (ssr.getSkillset()) {
 						case OVERALL:
 							ssrs.setOverall(ssr.getValue().floatValue());
 							break;
@@ -201,7 +202,7 @@ public class ScoreService {
 				});
 			}
 			LeaderboardUserDTO user = new LeaderboardUserDTO();
-			User realUser = hs.getUser();
+			User realUser = highScores.getUser(hs);
 			user.setAvatar(null);
 			user.setCountryCode(null);
 			user.setPlayerRating(0.f);

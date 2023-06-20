@@ -8,18 +8,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.datamodel.User;
-import com.etterna.services.repo.UserRepository;
+import com.etterna.services.model.User;
+import com.etterna.services.opensearch.RoleIndexService;
+import com.etterna.services.opensearch.UserIndexService;
 import com.etterna.site.dto.NeoUserPrincipal;
 
 @Service
 public class NeoUserDetailsService implements UserDetailsService {
 		
 	@Autowired
-	private UserRepository users;
+	private UserIndexService users;
+	
+	@Autowired
+	private RoleIndexService roles;
 	
 	private User get(String username) {
-		List<User> us = users.findByUsernameIgnoreCase(username);
+		List<User> us = users.findByUsername(username);
 		if (us == null || us.isEmpty()) {
 			return null;
 		}
@@ -32,7 +36,7 @@ public class NeoUserDetailsService implements UserDetailsService {
 		if (u == null) {
 			throw new UsernameNotFoundException(username);
 		}
-		return new NeoUserPrincipal(u);
+		return new NeoUserPrincipal(u, roles.findByUser(u));
 	}
 
 }

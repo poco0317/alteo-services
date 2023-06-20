@@ -21,10 +21,10 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.jni.MinaCalcJNI;
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.ChartDiffValue;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.ScoreSpecificValue;
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.ScoreSpecificValue;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,7 +68,9 @@ public class CalcManager {
 		}
 		
 		m_logger.debug("Calculating SSR - {} - {}x - {}%", chartkey, rate, goal * 100);
-		float[] ssrs = calc().minaSDCalcBytes(noteInfo.getData(chartkey), rate, goal);
+		byte[] data = noteInfo.getData(chartkey);
+		int ifThisIsntHereItCrashes = data.length;
+		float[] ssrs = calc().minaSDCalcBytes(data, rate, goal);
 		List<Float> o = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
 			o.add(f);
@@ -92,6 +94,7 @@ public class CalcManager {
 		List<List<Float>> ssrs = new ArrayList<>();
 		MinaCalcJNI calc = calc();
 		byte[] data = noteInfo.getData(chartkey);
+		int ifThisIsntHereItCrashes = data.length;
 		for (float[] rg : rategoals) {
 			float[] ssr = calc.minaSDCalcBytes(data, rg[0], rg[1]);
 			List<Float> o = new ArrayList<>(ssr.length);
@@ -119,6 +122,7 @@ public class CalcManager {
 		Map<HighScore, List<Float>> hsToSsrs = new HashMap<>();
 		MinaCalcJNI calc = calc();
 		byte[] data = noteInfo.getData(chartkey);
+		int ifThisIsntHereItCrashes = data.length;
 		hses.forEach(hs -> {
 			float rate = hs.getMusicRate() / 100.F;
 			float goal = hs.getSsrNorm() / 1000000.F;
@@ -131,7 +135,7 @@ public class CalcManager {
 				o.add(0.f);
 			}
 			hsToSsrs.put(hs, o);
-			printSkillsets(o);
+			//printSkillsets(o);
 		});
 		return hsToSsrs;
 	}
@@ -160,16 +164,16 @@ public class CalcManager {
 	public String diffsToString(Set<ChartDiffValue> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ChartDiffValue> zzz = diffs.stream().filter(dv -> dv.getId().getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
+		List<ChartDiffValue> zzz = diffs.stream().filter(dv -> dv.getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
 		Collections.sort(zzz, new Comparator<ChartDiffValue>() {
 			@Override
 			public int compare(ChartDiffValue d1, ChartDiffValue d2) {
-				return d1.getId().getSkillset().compareTo(d2.getId().getSkillset());
+				return d1.getSkillset().compareTo(d2.getSkillset());
 			}
 		});
 		if (!inHTMLTableForm) {
 			zzz.forEach(ss -> {
-				sb.append(ss.getId().getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
+				sb.append(ss.getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
 			});
 			if (zzz.size() > 0) {
 				sb.delete(sb.length() - 3, sb.length());
@@ -187,16 +191,16 @@ public class CalcManager {
 	public String ssrsToString(Set<ScoreSpecificValue> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ScoreSpecificValue> zzz = diffs.stream().filter(ssv -> ssv.getId().getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
+		List<ScoreSpecificValue> zzz = diffs.stream().filter(ssv -> ssv.getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
 		Collections.sort(zzz, new Comparator<ScoreSpecificValue>() {
 			@Override
 			public int compare(ScoreSpecificValue d1, ScoreSpecificValue d2) {
-				return d1.getId().getSkillset().compareTo(d2.getId().getSkillset());
+				return d1.getSkillset().compareTo(d2.getSkillset());
 			}
 		});
 		if (!inHTMLTableForm) {
 			zzz.forEach(ss -> {
-				sb.append(ss.getId().getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
+				sb.append(ss.getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
 			});
 			if (zzz.size() > 0) {
 				sb.delete(sb.length() - 3, sb.length());
@@ -214,8 +218,10 @@ public class CalcManager {
 	 * Will return calc diff values for a chart
 	 */
 	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
-		m_logger.debug("Getting MSD for file {}", c.getChartKey());
-		float[] ssrs = calc().minaSDCalcBytes(c.getNoteInfo().getNoteinfo(), rate, goal);
+		m_logger.trace("Getting MSD for file {}", c.getChartKey());
+		byte[] data = noteInfo.getData(c.getChartKey());
+		int ifThisIsntHereItCrashes = data.length;
+		float[] ssrs = calc().minaSDCalcBytes(data, rate, goal);
 		List<Float> diffs = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
 			diffs.add(f);

@@ -1,6 +1,9 @@
 package com.etterna.site.dto;
 
-import com.etterna.services.datamodel.Chart;
+import java.util.Collection;
+
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.ChartDiffValue;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,14 +22,14 @@ public class ChartWithSkillsets {
 	private Double technical = 0.0;
 	private Integer scoreCount = 0;
 	
-	public ChartWithSkillsets(Chart c, Integer scoreCount) {
-		this.scoreCount = scoreCount;
+	public ChartWithSkillsets(Chart c, Collection<ChartDiffValue> diffValues, Integer count) {
+		this.scoreCount = count;
 		this.chart = c;
 		
-		if (chart.getDiffValues() != null) {
-			chart.getDiffValues().forEach(cdv -> {
+		if (diffValues != null) {
+			diffValues.forEach(cdv -> {
 				final Double v = cdv.getValue();
-				switch (cdv.getId().getSkillset()) {
+				switch (cdv.getSkillset()) {
 					case OVERALL:
 						this.overall = v;
 						break;
@@ -57,4 +60,6 @@ public class ChartWithSkillsets {
 			});
 		}
 	}
+
+	public ChartWithSkillsets() {}
 }

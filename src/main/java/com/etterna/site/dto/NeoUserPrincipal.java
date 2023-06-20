@@ -9,8 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.etterna.services.datamodel.Role;
-import com.etterna.services.datamodel.User;
+import com.etterna.services.model.Role;
+import com.etterna.services.model.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +22,9 @@ public class NeoUserPrincipal implements UserDetails {
 	private User user;
 	private Set<Role> roles;
 	
-	public NeoUserPrincipal(User user) {
+	public NeoUserPrincipal(User user, Set<Role> roles) {
 		this.user = user;
-		this.roles = user.getRoles();
+		this.roles = roles;
 	}
 
 	@Override

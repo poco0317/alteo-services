@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.User;
-import com.etterna.services.repo.HighScoreRepository;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.User;
+import com.etterna.services.opensearch.HighScoreIndexService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,20 +32,20 @@ import lombok.extern.slf4j.Slf4j;
 public class XmlProfileParsingService {
 	
 	@Autowired
+	private HighScoreIndexService highScoreIndex;
+	
+	@Autowired
 	private SessionService sessions;
 	
 	@Autowired
 	private UserDao users;
 	
 	@Autowired
-	private HighScoreRepository hsRepo;
-	
-	@Autowired
 	private ApplicationContext ctx;
 	
 	private static final long XML_INTAKE_TIMER = 1000L * 10L; // 10 secs
 	
-	private static ConcurrentHashMap<Long, byte[]> queuedXmls = new ConcurrentHashMap<>();
+	private static ConcurrentHashMap<String, byte[]> queuedXmls = new ConcurrentHashMap<>();
 	
 	/**
 	 * Returns null when successful
@@ -65,14 +66,14 @@ public class XmlProfileParsingService {
 			m_logger.warn("User attempted to upload xml without being a user?");
 			return "Unknown failure";
 		}
-		return add(in, user.getUserId());
+		return add(in, user.getUsername());
 	}
 	
 	@Scheduled(fixedDelay = XML_INTAKE_TIMER)
 	void maintainXmlQueue() {
-		Iterator<Entry<Long, byte[]>> it = queuedXmls.entrySet().iterator();
+		Iterator<Entry<String, byte[]>> it = queuedXmls.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<Long, byte[]> entry = it.next();
+			Entry<String, byte[]> entry = it.next();
 			User user = users.getByUserId(entry.getKey());
 			if (user != null) {
 				parseProfile(entry.getValue(), user);
@@ -83,13 +84,13 @@ public class XmlProfileParsingService {
 		}
 	}
 	
-	private String add(InputStream in, Long userId) {
-		if (queuedXmls.containsKey(userId)) {
-			m_logger.warn("Tried to add userId {} into XML Queue a second time... Skipped", userId);
+	private String add(InputStream in, String username) {
+		if (queuedXmls.containsKey(username)) {
+			m_logger.warn("Tried to add userId {} into XML Queue a second time... Skipped", username);
 			return "Cannot add the same user twice while processing XMLs";
 		} else {
 			try {
-				queuedXmls.put(userId, in.readAllBytes());
+				queuedXmls.put(username, in.readAllBytes());
 				return null;
 			} catch (IOException e) {
 				m_logger.error(e.getMessage(), e);
@@ -112,7 +113,7 @@ public class XmlProfileParsingService {
 			
 			m_logger.info("Finished parsing XML for user {} - {} ranked scores - Saving to DB", user.getUsername(), highscores.size());
 			if (highscores.size() > 0)
-				hsRepo.saveAll(highscores);
+				highScoreIndex.saveBulk(highscores, Refresh.False);
 			m_logger.info("Saved highscores for user {} to DB", user.getUsername());
 			
 			return null; // success

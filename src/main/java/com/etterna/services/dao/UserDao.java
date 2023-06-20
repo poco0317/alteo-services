@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.opensearch.client.opensearch._types.Refresh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +19,16 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
-import com.etterna.services.RoleService;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.ScoreSpecificValue;
-import com.etterna.services.datamodel.User;
-import com.etterna.services.datamodel.UserSkillsetValue;
-import com.etterna.services.repo.HighScoreRepository;
-import com.etterna.services.repo.ScoreSpecificValueRepository;
-import com.etterna.services.repo.UserRepository;
-import com.etterna.services.repo.UserSkillsetValueRepository;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.ScoreSpecificValue;
+import com.etterna.services.model.User;
+import com.etterna.services.model.UserSkillsetValue;
+import com.etterna.services.opensearch.HighScoreIndexService;
+import com.etterna.services.opensearch.ScoreSpecificValueIndexService;
+import com.etterna.services.opensearch.UserIndexService;
+import com.etterna.services.opensearch.UserSkillsetValueIndexService;
 import com.etterna.site.dto.LeaderboardSort;
 
 @Service
@@ -39,37 +37,34 @@ public class UserDao {
 	private static final Logger m_logger = LoggerFactory.getLogger(UserDao.class);
 	
 	@Autowired
-	private UserRepository repo;
+	private UserIndexService userIndex;
 	
 	@Autowired
-	private UserSkillsetValueRepository ssRepo;
+	private UserSkillsetValueIndexService ussvIndex;
 	
 	@Autowired
-	private ScoreSpecificValueRepository ssrRepo;
+	private ScoreSpecificValueIndexService ssrIndex;
 	
 	@Autowired
-	private HighScoreRepository scoreRepo;
+	private HighScoreIndexService scoreIndex;
 	
 	@Autowired
 	private CalcManager calc;
 	
 	@Autowired
-	private RoleService roles;
-	
-	@Autowired
 	private PasswordEncoder passwordEncoder;
 	
 	public void maintainUserSkillsetRatings() {
-		List<User> users = repo.findByMustRecalcRatingTrueOrMustRecalcRatingNull();
+		List<User> users = userIndex.findByMustRecalcRatingTrue();
 		if (!users.isEmpty()) {
 			m_logger.info("Updating user skillset ratings for {} users", users.size());
 			final int calcVer = calc.getCalcVersion();
 			
 			for (User user : users) {
-				List<UserSkillsetValue> ssvals = ssRepo.findByIdUserAndIdCalcVersion(user, calcVer);
-				List<HighScore> userScores = scoreRepo.findByUser(user);
+				List<UserSkillsetValue> ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
+				List<HighScore> userScores = scoreIndex.findByUser(user);
 				if (ssvals != null) {
-					ssRepo.deleteAll(ssvals);
+					ussvIndex.deleteBulk(ssvals, Refresh.False);
 				}
 				
 				HashMap<Skillset, List<Double>> skillsetSSRs = new HashMap<>();
@@ -78,9 +73,9 @@ public class UserDao {
 					if (hs.getCalcVersion() != calc.getCalcVersion()) {
 						continue;
 					}
-					List<ScoreSpecificValue> ssrs = ssrRepo.findByIdScoreAndIdCalcVersion(hs, calcVer);
+					List<ScoreSpecificValue> ssrs = ssrIndex.findByScoreAndCalcVersion(hs, calcVer);
 					for (ScoreSpecificValue ssr : ssrs) {
-						Skillset ss = ssr.getId().getSkillset();
+						Skillset ss = ssr.getSkillset();
 						switch (ss) {
 							case OVERALL:
 								break;
@@ -100,7 +95,7 @@ public class UserDao {
 								break;
 							}
 							default:
-								m_logger.error("Impossible skillset value {}", ssr.getId().getSkillset());
+								m_logger.error("Impossible skillset value {}", ssr.getSkillset());
 								break;
 						}
 					}
@@ -140,11 +135,9 @@ public class UserDao {
 				tmpssvals.remove(0);
 				
 				newssvals.get(0).setValue(calc.aggregateSkill(tmpssvals, 0.1, 1.125, 0.0, 10.24));
-				Set<UserSkillsetValue> ssvalSet = new HashSet<>(newssvals);
-				user.setSkillsetValues(ssvalSet);
 				user.setMustRecalcRating(false);
-				ssRepo.saveAll(ssvalSet);
-				repo.save(user);
+				ussvIndex.saveBulk(newssvals, Refresh.False);
+				userIndex.save(user, Refresh.True);
 				m_logger.info("Updated user {} SSRs", user.getUsername());
 			}
 			
@@ -154,7 +147,7 @@ public class UserDao {
 
 	@Transactional
 	public User get(String username) {
-		List<User> users = repo.findByUsernameIgnoreCase(username);
+		List<User> users = userIndex.findByUsername(username);
 		if (users == null || users.isEmpty()) {
 			return null;
 		}
@@ -162,20 +155,8 @@ public class UserDao {
 	}
 	
 	@Transactional
-	public User getByUserId(Long userId) {
-		return repo.findById(userId).orElse(null);
-	}
-	
-	@Transactional
-	public void grantRole(String username, String role) {
-		grantRole(get(username), role);
-	}
-	
-	@Transactional
-	public void grantRole(User user, String role) {
-		m_logger.info("Granting role {} to user {}", role, user.getUsername());
-		user.getRoles().add(roles.get(role));
-		repo.save(user);
+	public User getByUserId(String string) {
+		return userIndex.findById(string);
 	}
 	
 	@Transactional
@@ -183,31 +164,31 @@ public class UserDao {
 		if (get(username) != null) {
 			return false;
 		}
-		m_logger.info("Created new user {}", username);
+		m_logger.info("Created new user {}", username.toLowerCase());
 		User user = new User();
-		user.setUsername(username);
+		user.setUsername(username.toLowerCase());
+		user.setDisplayName(username);
 		user.setPassword(passwordEncoder.encode(password));
-		user.setRoles(roles.getDefaultRole());
-		repo.save(user);
+		userIndex.save(user, Refresh.True);
 		return true;
 	}
 	
 	@Transactional
 	public boolean resetPassword(User u) {
 		u.setPassword(passwordEncoder.encode("password"));
-		repo.save(u);
+		userIndex.save(u, Refresh.True);
 		m_logger.info("Reset user password - {}", u.getUsername());
 		return true;
 	}
 	
 	@Transactional
 	public UserWithSkillsets getUserSkillsets(User u) {
-		List<UserSkillsetValue> ssvs = ssRepo.findByIdUserAndIdCalcVersion(u, calc.getCalcVersion());
+		List<UserSkillsetValue> ssvs = ussvIndex.findByUserAndCalcVersion(u, calc.getCalcVersion());
 		UserWithSkillsets o = new UserWithSkillsets();
 		o.setUser(u);
 		ssvs.forEach(ssv -> {
 			final Double v = ssv.getValue();
-			switch (ssv.getId().getSkillset()) {
+			switch (ssv.getSkillset()) {
 				case OVERALL:
 					o.setOverall(v);
 					break;
@@ -244,7 +225,7 @@ public class UserDao {
 	public UserWithSkillsetsPagination getUserLeaderboard(LeaderboardSort ls, int page, int itemsPerPage) {
 		// a list of [User, UserSkillsetValue]
 		// we need to compile the data structure
-		List<Object[]> usersAndSkillsets = repo.findUsersWithSkillsets();
+		List<Object[]> usersAndSkillsets = userIndex.findUsersWithSkillsets();
 		
 		// users to structs
 		HashMap<String, UserWithSkillsets> usvs = new HashMap<>();
@@ -256,7 +237,7 @@ public class UserDao {
 				usvs.put(u.getUsername(), new UserWithSkillsets());
 				usvs.get(u.getUsername()).setUser(u);
 			}
-			final Skillset ssvss = ssv.getId().getSkillset();
+			final Skillset ssvss = ssv.getSkillset();
 			final Double v = ssv.getValue();
 			switch (ssvss) {
 				case OVERALL:

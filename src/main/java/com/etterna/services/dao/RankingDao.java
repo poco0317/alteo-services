@@ -1,5 +1,6 @@
 package com.etterna.services.dao;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -21,12 +22,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
+import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.datamodel.NoteInfo;
 import com.etterna.services.dao.SongCacheData.ChartCacheData;
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.ChartDiffValue;
-import com.etterna.services.datamodel.Pack;
-import com.etterna.services.datamodel.RankedChartkey;
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.Pack;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,6 +46,9 @@ public class RankingDao {
 	
 	@Autowired
 	private DiffDao chartDiffs;
+	
+	@Autowired
+	private NoteInfoDao noteInfoStorage;
 	
 	private static final long RANKING_QUEUE_TIMER = 1000L * 10L; // 10 secs
 	
@@ -85,15 +89,26 @@ public class RankingDao {
 		
 	}
 	
+	@Transactional
+	public void updateRankedChartkeys() {
+		int countBefore = rankedChartkeys.size();
+		Set<String> allRankedChartkeys = charts.findChartKeyByChartKeyNotNull();
+		if (allRankedChartkeys != null) {
+			rankedChartkeys.addAll(allRankedChartkeys);
+		}
+		int countAfter = rankedChartkeys.size();
+		
+		if (countBefore != countAfter) {
+			m_logger.info("Updated ranked chartkey list - before {} - after {} - difference {}", countBefore, countAfter, countAfter - countBefore);
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Transactional
 	public void updateMSDs() {
 		m_logger.info("Starting Chart Difficulty Updates");
 		List<Chart> all = charts.findByCalcVersionNotEqual(calc.getCalcVersion());
-		List<RankedChartkey> allRankedChartkeys = charts.findChartKeyByChartKeyNotNull();
-		if (allRankedChartkeys != null) {
-			rankedChartkeys.addAll(allRankedChartkeys.stream().map(c -> c.getChartKey()).collect(Collectors.toSet()));
-		}
+		updateRankedChartkeys();
 		
 		if (all != null) {
 			m_logger.info("Found {} charts to update out of {} ranked charts.", all.size(), charts.count());
@@ -116,7 +131,7 @@ public class RankingDao {
 						it.remove();
 					} else if (f.isDone()) {
 						try {
-							chartDiffs.updateDiffValues((Chart)f.get()[0], (Set<ChartDiffValue>)f.get()[1]);
+							chartDiffs.stageUpdatedDiffValues((Chart)f.get()[0], (Set<ChartDiffValue>)f.get()[1], false);
 						} catch (InterruptedException | ExecutionException e) {
 							m_logger.error("Error finishing task " + e.getMessage(), e);
 						} finally {
@@ -125,6 +140,7 @@ public class RankingDao {
 					}
 				}
 			}
+			chartDiffs.flushStagedDiffValues();
 			bulkCalc.shutdown();
 		} else {
 			m_logger.info("Found no charts to update and no ranked charts.");
@@ -141,68 +157,80 @@ public class RankingDao {
 	}
 	
 	private void rankSongDatas(List<String> songdatas, String packname) {
-		for (String contents : songdatas) {
-			SongCacheData cacheData = new SongCacheData(contents);
+		Pack pack = packs.getNewPackByName(packname);
+		List<Chart> newCharts = new ArrayList<>();
+		List<NoteInfo> newNoteInfo = new ArrayList<>();
+		List<SongCacheData> songCacheDatas = songdatas.stream().map(content -> new SongCacheData(content)).collect(Collectors.toList());
+		Set<String> chartkeys = new HashSet<>();
+		songCacheDatas.forEach(data -> data.getCharts().forEach(c -> chartkeys.add(c.getChartkey())));
+		Map<String, Chart> alreadyRankedCharts = charts.get(chartkeys);
+		if (pack.getChartKeys() == null) {
+			pack.setChartKeys(new ArrayList<>());
+		}
+		pack.getChartKeys().addAll(alreadyRankedCharts.values().stream().map(c -> c.getChartKey()).collect(Collectors.toList()));
+		rankedChartkeys.addAll(chartkeys);
+		
+		for (SongCacheData cacheData : songCacheDatas) {
 			
 			if (cacheData.getTitle() == null) {
 				m_logger.warn("Skipped song due to missing title in {}", packname);
-				m_logger.warn("{}", contents);
+				m_logger.warn("{}", cacheData.toString());
 			} else {
 				if (cacheData.getCharts().isEmpty()) {
 					m_logger.warn("Chartkey and Diff count is not the same!!! Skipped ranking {}", cacheData.getTitle());
 				} else {
 					m_logger.info("Found {} charts in song {} - pack {}", cacheData.getCharts().size(), cacheData.getTitle(), packname);
+					
 					cacheData.getCharts().forEach(c -> {
-						rankChart(packname, cacheData, c, noteinfoQueue.get(c.getChartkey()));
+						final String ck = c.getChartkey();
+						if (!alreadyRankedCharts.containsKey(ck)) {
+							newCharts.add(rankChart(pack, cacheData, c));
+							NoteInfo ni = new NoteInfo();
+							ni.setChartKey(c.getChartkey());
+							ni.setNoteinfo(noteinfoQueue.get(c.getChartkey()));
+							newNoteInfo.add(ni);
+						}
 					});
 				}
 			}
 		}
+		
+		m_logger.info("Finished setting up pack {} for ranking ... {} new charts", packname, newCharts.size());
+		m_logger.info(" Saving pack changes and new charts");
+		packs.save(pack);
+		charts.saveBulk(newCharts);
+		noteInfoStorage.saveBulk(newNoteInfo);
 	}
 
 	public boolean isRanked(String chartkey) {
 		return rankedChartkeys.contains(chartkey);
 	}
 	
+	/**
+	 * Returns a new chart that was created (never before ranked). Modifies the given Pack, which needs to also be saved.
+	 */
 	@Transactional
-	public boolean rankChart(String packname, SongCacheData songCache, ChartCacheData chartCache, byte[] noteInfoData) {
-		Pack pack = packs.getNewPackByName(packname, true);
+	public Chart rankChart(Pack pack, SongCacheData songCache, ChartCacheData chartCache) {
 		m_logger.info("Ranking chart {} - {}", chartCache.getChartkey(), songCache.getTitle());
-		Chart c = charts.get(chartCache.getChartkey(), true);
-		if (c == null) {
-			c = new Chart();
-			c.setChartKey(chartCache.getChartkey());
-			c.setDifficulty(chartCache.getDifficulty());
-			//c.setCalcVersion(calc.getCalcVersion());
-			c.setPacks(new HashSet<>());
-			c.setArtist(songCache.getArtist());
-			c.setCredit(songCache.getCredit());
-			c.setSubtitle(songCache.getSubtitle());
-			c.setTitle(songCache.getTitle());
-			c.setTranslitArtist(songCache.getTranslitArtist());
-			c.setTranslitSubtitle(songCache.getTranslitSubtitle());
-			c.setTranslitTitle(songCache.getTranslitTitle());
-			c.setStepsType(chartCache.getStepstype());
-			NoteInfo ni = new NoteInfo();
-			ni.setChart(c);
-			ni.setChartKey(c.getChartKey());
-			ni.setNoteinfo(noteInfoData);
-			c.setNoteInfo(ni);
+		Chart c = new Chart();
+		c.setChartKey(chartCache.getChartkey());
+		c.setDifficulty(chartCache.getDifficulty());
+		//c.setCalcVersion(calc.getCalcVersion());
+		c.setArtist(songCache.getArtist());
+		c.setCredit(songCache.getCredit());
+		c.setSubtitle(songCache.getSubtitle());
+		c.setTitle(songCache.getTitle());
+		c.setTranslitArtist(songCache.getTranslitArtist());
+		c.setTranslitSubtitle(songCache.getTranslitSubtitle());
+		c.setTranslitTitle(songCache.getTranslitTitle());
+		c.setStepsType(chartCache.getStepstype());
+		
+		if (pack.getChartKeys() == null) {
+			pack.setChartKeys(new ArrayList<>());
 		}
-		c.getPacks().add(pack);
-		pack.getCharts().add(c);
+		pack.getChartKeys().add(c.getChartKey());
 		
-		charts.save(c);
-		
-		rankedChartkeys.add(chartCache.getChartkey());
-		
-		/*
-		Set<ChartDiffValue> diffs = calc.calcDiffValues(c, 1.f, .93f);
-		chartDiffs.commitDiffs(c, diffs);
-		c.setDiffValues(diffs);
-		*/
-		
-		return true;
+		return c;
 	}
 	
 }

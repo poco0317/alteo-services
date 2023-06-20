@@ -60,7 +60,7 @@
 				<tbody>
 					<tr th:each="pack, stat: ${packs}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${pack.pack}" th:href="@{/packs/{pack}(pack=${pack.pack})}"></a></td>
+						<td><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.pack})}"></a></td>
 						<td th:text="${pack.count}"></td>
 						<td th:text="${pack.scoreCount}"></td>
 						<td th:text="${#numbers.formatDecimal(pack.averageScores, 1, 2)}"></td>

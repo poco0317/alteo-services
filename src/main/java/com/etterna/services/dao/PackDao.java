@@ -4,35 +4,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
+import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.Pack;
-import com.etterna.services.repo.PackRepository;
-
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.Pack;
+import com.etterna.services.opensearch.ChartIndexService;
+import com.etterna.services.opensearch.PackIndexService;
 
 @Service
 public class PackDao {
 
 	@Autowired
-	private PackRepository repo;
+	private PackIndexService packIndex;
+	
+	@Autowired
+	private ChartIndexService chartIndex;
 
 	@Transactional
 	public Pack get(String name) {
-		if (repo.existsById(name.toLowerCase())) {
-			return repo.getById(name);
-		} else {
-			return repo.findById(name.toLowerCase()).orElse(null);
-		}
+		return packIndex.findById(name.toLowerCase());
 	}
 	
 	@Transactional
@@ -42,29 +40,25 @@ public class PackDao {
 	
 	@Transactional
 	public Pack getNewPackByName(String name) {
-		return getNewPackByName(name, false);
-	}
-	
-	@Transactional
-	public Pack getNewPackByName(String name, boolean initCharts) {
 		Pack p = get(name);
 		if (p == null) {
 			p = new Pack();
 			p.setDisplayName(name);
 			p.setName(name.toLowerCase());
 			p.setRanked(new Date());
-			p.setCharts(new HashSet<>());
-			repo.save(p);
-		}
-		if (initCharts) {
-			Hibernate.initialize(p.getCharts());
+			p.setChartKeys(null);
+			packIndex.save(p, Refresh.True);
 		}
 		return p;
 	}
 	
+	public void save(Pack pack) {
+		packIndex.save(pack, Refresh.True);
+	}
+	
 	@Transactional
 	public List<String> getAllNames() {
-		return repo.findAll().stream().map(p -> p.getName()).sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
+		return packIndex.findAll().stream().map(p -> p.getName()).sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
 	}
 
 	/**
@@ -74,7 +68,7 @@ public class PackDao {
 	 */
 	@Transactional
 	public List<Chart> orderedChartList(Pack pack) {
-		Set<Chart> charts = pack.getCharts();
+		Set<Chart> charts = chartIndex.getChartsInPack(pack);
 		List<Chart> o = new ArrayList<>();
 		if (charts == null || charts.isEmpty()) {
 			return o;
@@ -91,6 +85,11 @@ public class PackDao {
 			}
 		});
 		return o;
+	}
+
+	@Transactional
+	public List<Pack> findPacksByChart(String chartkey) {
+		return packIndex.findByChartKey(chartkey);
 	}
 
 

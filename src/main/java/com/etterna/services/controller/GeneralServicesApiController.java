@@ -55,6 +55,7 @@ public class GeneralServicesApiController {
 		String packname = "No Pack Name";
 		
 		try (ZipInputStream zipin = new ZipInputStream(upload)) {
+			m_logger.info("Extracting pack for ranking");
 			
 			ZipEntry entry = zipin.getNextEntry();
 			while (entry != null) {
@@ -68,7 +69,7 @@ public class GeneralServicesApiController {
 					}
 					
 					m_logger.trace("File path {}", name);
-					m_logger.info("Extracting filename {}", filename);
+					m_logger.trace("Extracting filename {}", filename);
 					
 					if (name.contains("songdata")) {
 						// should be song data
