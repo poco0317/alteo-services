@@ -24,7 +24,6 @@ import com.etterna.calc.jni.MinaCalcJNI;
 import com.etterna.services.model.Chart;
 import com.etterna.services.model.ChartDiffValue;
 import com.etterna.services.model.HighScore;
-import com.etterna.services.model.ScoreSpecificValue;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -188,28 +187,23 @@ public class CalcManager {
 	}
 	
 	@Transactional
-	public String ssrsToString(Set<ScoreSpecificValue> diffs, boolean inHTMLTableForm) {
+	public String ssrsToString(List<Float> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ScoreSpecificValue> zzz = diffs.stream().filter(ssv -> ssv.getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
-		Collections.sort(zzz, new Comparator<ScoreSpecificValue>() {
-			@Override
-			public int compare(ScoreSpecificValue d1, ScoreSpecificValue d2) {
-				return d1.getSkillset().compareTo(d2.getSkillset());
-			}
-		});
+		/*
 		if (!inHTMLTableForm) {
-			zzz.forEach(ss -> {
+			diffs.forEach(ss -> {
 				sb.append(ss.getSkillset().name() + " : "+String.format("%5.2f", ss.getValue()) + " - ");
 			});
-			if (zzz.size() > 0) {
+			if (diffs.size() > 0) {
 				sb.delete(sb.length() - 3, sb.length());
 			}
 		} else {
-			zzz.forEach(ss -> {
+			diffs.forEach(ss -> {
 				sb.append("<td>"+String.format("%5.2f", ss.getValue())+"</td>");
 			});
 		}
+		*/
 		
 		return sb.toString();
 	}

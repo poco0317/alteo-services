@@ -9,14 +9,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class HighScoreWithSkillsetsPagination {
+public class HighScorePagination {
 	
-	List<HighScoreFullUnion> hss = new ArrayList<>();;
+	List<HighScoreFullUnion> hses = new ArrayList<>();;
 	int currentPage = 1;
 	int totalPages = 1;
 	
-	public HighScoreWithSkillsetsPagination(List<HighScoreFullUnion> hss, int currentPage, int totalPages) {
-		this.hss = hss;
+	public HighScorePagination(List<HighScoreFullUnion> hss, int currentPage, int totalPages) {
+		this.hses = hss;
 		this.currentPage = currentPage;
 		this.totalPages = totalPages;
 	}

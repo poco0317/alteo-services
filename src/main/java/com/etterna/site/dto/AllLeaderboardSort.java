@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
+import com.etterna.services.model.HighScore;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
 
 public enum AllLeaderboardSort {
@@ -58,7 +59,119 @@ public enum AllLeaderboardSort {
 	}
 	
 	
-	public static Comparator<HighScoreFullUnion> HighScoreWithSkillsetsComparator(AllLeaderboardSort ls) {
+	public static Comparator<HighScore> HighScoreComparator(AllLeaderboardSort ls) {
+		return new Comparator<HighScore>() {
+			@Override
+			public int compare(HighScore a, HighScore b) {
+				switch (ls) {
+				case OVERALL:
+				case STREAM:
+				case JUMPSTREAM:
+				case HANDSTREAM:
+				case STAMINA:
+				case JACKSPEED:
+				case CHORDJACK:
+				case TECHNICAL:
+				{
+					Double av = 0.0;
+					Double bv = 0.0;
+					switch(ls) {
+						case OVERALL:
+							av = a.getOverall();
+							bv = b.getOverall();
+							break;
+						case STREAM:
+							av = a.getStream();
+							bv = b.getStream();
+							break;
+						case JUMPSTREAM:
+							av = a.getJumpstream();
+							bv = b.getJumpstream();
+							break;
+						case HANDSTREAM:
+							av = a.getHandstream();
+							bv = b.getHandstream();
+							break;
+						case STAMINA:
+							av = a.getStamina();
+							bv = b.getStamina();
+							break;
+						case JACKSPEED:
+							av = a.getJackspeed();
+							bv = b.getJackspeed();
+							break;
+						case CHORDJACK:
+							av = a.getChordjack();
+							bv = b.getChordjack();
+							break;
+						case TECHNICAL:
+							av = a.getTechnical();
+							bv = b.getTechnical();
+							break;
+						default:
+							break;
+					}
+					if (av.equals(bv)) {
+						Integer ar = a.getMusicRate();
+						Integer br = b.getMusicRate();
+						if (ar == null || br == null || ar.equals(br)) {
+							return b.getSsrNorm().compareTo(a.getSsrNorm());
+						} else {
+							return br.compareTo(ar);
+						}
+					} else {
+						return bv.compareTo(av);
+					}
+				}
+				case DATE:
+				{
+					SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					String ads = a.getDateStr();
+					String bds = b.getDateStr();
+					try {
+						Date ad = f.parse(ads);
+						Date bd = f.parse(bds);
+						return bd.compareTo(ad);
+					} catch (ParseException e) {
+						return bds.compareToIgnoreCase(ads);
+					}
+				}
+				case RATE:
+				{
+					Integer ar = a.getMusicRate();
+					Integer br = b.getMusicRate();
+					if (ar == null || br == null || ar.equals(br)) {
+						return b.getSsrNorm().compareTo(a.getSsrNorm());
+					} else {
+						return br.compareTo(ar);
+					}
+				}
+				case PLAYER:
+				{
+					String an = a.getUsername();
+					String bn = b.getUsername();
+					// opposite direction sort vs the others
+					int o = an.compareToIgnoreCase(bn);
+					if (o != 0) {
+						return o;
+					}
+				}
+				case SONG:
+				default:
+				case PERCENT:
+				{
+					Integer as = a.getSsrNorm();
+					Integer bs = b.getSsrNorm();
+					int o = bs.compareTo(as);
+					return o;
+				}
+				
+			}
+		}
+		};
+	}
+	
+	public static Comparator<HighScoreFullUnion> HighScoreFullUnionComparator(AllLeaderboardSort ls) {
 		return new Comparator<HighScoreFullUnion>() {
 			@Override
 			public int compare(HighScoreFullUnion a, HighScoreFullUnion b) {
@@ -76,45 +189,45 @@ public enum AllLeaderboardSort {
 						Double bv = 0.0;
 						switch(ls) {
 							case OVERALL:
-								av = a.getChartUnion().getOverall();
-								bv = b.getChartUnion().getOverall();
+								av = a.getHsUnion().getOverall();
+								bv = b.getHsUnion().getOverall();
 								break;
 							case STREAM:
-								av = a.getChartUnion().getStream();
-								bv = b.getChartUnion().getStream();
+								av = a.getHsUnion().getStream();
+								bv = b.getHsUnion().getStream();
 								break;
 							case JUMPSTREAM:
-								av = a.getChartUnion().getJumpstream();
-								bv = b.getChartUnion().getJumpstream();
+								av = a.getHsUnion().getJumpstream();
+								bv = b.getHsUnion().getJumpstream();
 								break;
 							case HANDSTREAM:
-								av = a.getChartUnion().getHandstream();
-								bv = b.getChartUnion().getHandstream();
+								av = a.getHsUnion().getHandstream();
+								bv = b.getHsUnion().getHandstream();
 								break;
 							case STAMINA:
-								av = a.getChartUnion().getStamina();
-								bv = b.getChartUnion().getStamina();
+								av = a.getHsUnion().getStamina();
+								bv = b.getHsUnion().getStamina();
 								break;
 							case JACKSPEED:
-								av = a.getChartUnion().getJackspeed();
-								bv = b.getChartUnion().getJackspeed();
+								av = a.getHsUnion().getJackspeed();
+								bv = b.getHsUnion().getJackspeed();
 								break;
 							case CHORDJACK:
-								av = a.getChartUnion().getChordjack();
-								bv = b.getChartUnion().getChordjack();
+								av = a.getHsUnion().getChordjack();
+								bv = b.getHsUnion().getChordjack();
 								break;
 							case TECHNICAL:
-								av = a.getChartUnion().getTechnical();
-								bv = b.getChartUnion().getTechnical();
+								av = a.getHsUnion().getTechnical();
+								bv = b.getHsUnion().getTechnical();
 								break;
 							default:
 								break;
 						}
 						if (av.equals(bv)) {
-							Integer ar = a.getHsUnion().getScore().getMusicRate();
-							Integer br = b.getHsUnion().getScore().getMusicRate();
+							Integer ar = a.getHsUnion().getMusicRate();
+							Integer br = b.getHsUnion().getMusicRate();
 							if (ar == null || br == null || ar.equals(br)) {
-								return b.getHsUnion().getScore().getSsrNorm().compareTo(a.getHsUnion().getScore().getSsrNorm());
+								return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 							} else {
 								return br.compareTo(ar);
 							}
@@ -125,8 +238,8 @@ public enum AllLeaderboardSort {
 					case DATE:
 					{
 						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getHsUnion().getScore().getDateStr();
-						String bds = b.getHsUnion().getScore().getDateStr();
+						String ads = a.getHsUnion().getDateStr();
+						String bds = b.getHsUnion().getDateStr();
 						try {
 							Date ad = f.parse(ads);
 							Date bd = f.parse(bds);
@@ -137,10 +250,10 @@ public enum AllLeaderboardSort {
 					}
 					case RATE:
 					{
-						Integer ar = a.getHsUnion().getScore().getMusicRate();
-						Integer br = b.getHsUnion().getScore().getMusicRate();
+						Integer ar = a.getHsUnion().getMusicRate();
+						Integer br = b.getHsUnion().getMusicRate();
 						if (ar == null || br == null || ar.equals(br)) {
-							return b.getHsUnion().getScore().getSsrNorm().compareTo(a.getHsUnion().getScore().getSsrNorm());
+							return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 						} else {
 							return br.compareTo(ar);
 						}
@@ -168,8 +281,8 @@ public enum AllLeaderboardSort {
 					default:
 					case PERCENT:
 					{
-						Integer as = a.getHsUnion().getScore().getSsrNorm();
-						Integer bs = b.getHsUnion().getScore().getSsrNorm();
+						Integer as = a.getHsUnion().getSsrNorm();
+						Integer bs = b.getHsUnion().getSsrNorm();
 						int o = bs.compareTo(as);
 						return o;
 					}

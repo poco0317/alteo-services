@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;

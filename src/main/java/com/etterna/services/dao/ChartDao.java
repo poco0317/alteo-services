@@ -27,6 +27,7 @@ import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -229,6 +230,7 @@ public class ChartDao {
 		return chartsIndex.findChartWithSkillsets(chartKey, calc.getCalcVersion());
 	}
 	
+	@LogRuntime
 	@Transactional
 	public Map<String, ChartWithSkillsets> getChartsWithSkillsetsMap(Collection<String> chartKeys) {
 		return chartsIndex.findChartsWithSkillsetsMap(chartKeys, calc.getCalcVersion());

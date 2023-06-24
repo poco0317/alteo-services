@@ -86,7 +86,7 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	
 	public Map<String, Chart> findChartsByChartKeyMap(Collection<String> chartkeys) {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey").terms(tqf -> tqf.value(fvs))));
+		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs))));
 		return searchDocuments(req).stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
 	}
 

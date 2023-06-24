@@ -1,12 +1,12 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
@@ -24,10 +25,11 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardSkillsetDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardUserDTO;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
+import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.RankingDao;
+import com.etterna.services.model.Chart;
 import com.etterna.services.model.HighScore;
-import com.etterna.services.model.ScoreSpecificValue;
 import com.etterna.services.model.User;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,9 @@ public class ScoreService {
 	private RankingDao chartRanking;
 	
 	@Autowired
+	private ChartDao charts;
+	
+	@Autowired
 	private CalcManager calc;
 	
 	@Autowired
@@ -50,7 +55,8 @@ public class ScoreService {
 	
 	private ExecutorService bulkSsrExecutor = Executors.newWorkStealingPool();
 	
-	private static final boolean DELETE_OLD_SSRS = false;
+	private static final boolean SAVE_OLD_SSRS = true;
+	private static final long HS_METADATA_UPDATE_MILLIS = 1000L * 10L; // 10 secs
 	
 	public void updateSSRs() {
 		List<HighScore> scores = highScores.getScoresToCalculate();
@@ -61,10 +67,10 @@ public class ScoreService {
 				bulkSsrExecutor = Executors.newWorkStealingPool();
 			}
 			
-			if (DELETE_OLD_SSRS) {
-				m_logger.info("Deleting SSRs on old calc version...");
-				long deleted = highScores.deleteSsrsOlderThan(calc.getCalcVersion());
-				m_logger.info("Deleted {} SSRs on old calc versions", deleted);
+			if (SAVE_OLD_SSRS) {
+				m_logger.info("Saving SSRs on old calc version...");
+				highScores.saveHistoricScores(scores);
+				m_logger.info("Saved {} SSRs on old calc versions", scores.size());
 			}
 			
 			// chartkeys to scores
@@ -122,6 +128,44 @@ public class ScoreService {
 		}
 	}
 	
+	@Scheduled(fixedDelay = HS_METADATA_UPDATE_MILLIS)
+	public void resolveHighScoreMetadata() {
+		List<HighScore> scores = highScores.getScoresWithMissingChartMetadata();
+		if (!scores.isEmpty()) {
+			m_logger.info("Filling in missing metadata for {} scores", scores.size());
+			
+			Map<String, List<HighScore>> hsmap = new HashMap<>();
+			scores.forEach(hs -> {
+				final String ck = hs.getChartKey();
+				if (!hsmap.containsKey(ck)) {
+					hsmap.put(ck, new ArrayList<>());
+				}
+				hsmap.get(ck).add(hs);
+			});
+			
+			Map<String, Chart> chartmap = charts.get(hsmap.keySet());
+			m_logger.info("{} charts {} cks", chartmap.size(), hsmap.size());
+			hsmap.entrySet().forEach(entry -> {
+				final String ck = entry.getKey();
+				Chart chart = chartmap.get(ck);
+				if (chart != null) {
+					final String title = chart.getTitle();
+					final String artist = chart.getArtist();
+					final String credit = chart.getCredit();
+					entry.getValue().forEach(hs -> {
+						hs.setSongTitle(title);
+						hs.setSongArtist(artist);
+						hs.setSongCredit(credit);
+					});
+				}
+			});
+			
+			highScores.saveBulk(scores);
+			
+			m_logger.info("Finished filling in missing metadata for {} scores", scores.size());
+		}
+	}
+	
 	private void queue(UploadScoreRequest req, User user) {
 		try {
 			highScores.add(req, user);
@@ -169,38 +213,14 @@ public class ScoreService {
 			judgments.setMiss(hs.getMissCount());
 			judgments.setPerfect(hs.getPerfCount());
 			LeaderboardSkillsetDTO ssrs = new LeaderboardSkillsetDTO();
-			Set<ScoreSpecificValue> hsssrs = highScores.getSsrs(hs);
-			if (hsssrs != null) {
-				hsssrs.forEach(ssr -> {
-					switch (ssr.getSkillset()) {
-						case OVERALL:
-							ssrs.setOverall(ssr.getValue().floatValue());
-							break;
-						case STREAM:
-							ssrs.setStream(ssr.getValue().floatValue());
-							break;
-						case JUMPSTREAM:
-							ssrs.setJumpstream(ssr.getValue().floatValue());
-							break;
-						case HANDSTREAM:
-							ssrs.setHandstream(ssr.getValue().floatValue());
-							break;
-						case STAMINA:
-							ssrs.setStamina(ssr.getValue().floatValue());
-							break;
-						case JACKSPEED:
-							ssrs.setJackSpeed(ssr.getValue().floatValue());
-							break;
-						case CHORDJACK:
-							ssrs.setChordjack(ssr.getValue().floatValue());
-							break;
-						case TECHNICAL:
-							ssrs.setTechnical(ssr.getValue().floatValue());
-							break;
-						default: break;
-					}
-				});
-			}
+			ssrs.setOverall(hs.getOverall().floatValue());
+			ssrs.setStream(hs.getStream().floatValue());
+			ssrs.setJumpstream(hs.getJumpstream().floatValue());
+			ssrs.setHandstream(hs.getHandstream().floatValue());
+			ssrs.setStamina(hs.getStamina().floatValue());
+			ssrs.setJackSpeed(hs.getJackspeed().floatValue());
+			ssrs.setChordjack(hs.getChordjack().floatValue());
+			ssrs.setTechnical(hs.getTechnical().floatValue());
 			LeaderboardUserDTO user = new LeaderboardUserDTO();
 			User realUser = highScores.getUser(hs);
 			user.setAvatar(null);

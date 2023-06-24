@@ -36,7 +36,7 @@ import com.etterna.multi.data.GameLobby;
 import com.etterna.services.MultiplayerDataService;
 import com.etterna.services.MultiplayerRequestService;
 import com.etterna.services.XmlProfileParsingService;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.DiffDao;
@@ -60,6 +60,7 @@ import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -163,14 +164,14 @@ public class SiteFrontendController {
 		final int directionaldistance = 2;
 		final int itemsperpage = 200;
 		
-		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(u, ps, currentPage, itemsperpage);
+		HighScorePagination hspage = scores.getUserScores(u, ps, currentPage, itemsperpage);
 		int actualcurrentpage = hspage.getCurrentPage();
 		int maxpage = hspage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
 				
 		model.addAttribute("user", u);
 		model.addAttribute("skillsets", users.getUserSkillsets(u));
-		model.addAttribute("scores", hspage.getHss());
+		model.addAttribute("scores", hspage.getHses());
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
 		model.addAttribute("maxPage", maxpage);
@@ -331,7 +332,7 @@ public class SiteFrontendController {
 		m_logger.info("FRONTEND API :: Score Page {}", scorekey);
 		
 		HighScoreFullUnion score = scores.getFullUnion(scorekey);
-		if (score == null || score.getHsUnion() == null || score.getHsUnion().getScore() == null) {
+		if (score == null || score.getHsUnion() == null) {
 			return getHomeModel(model);
 		}
 		
@@ -342,6 +343,7 @@ public class SiteFrontendController {
 		return "score";
 	}
 	
+	@LogRuntime
 	@GetMapping("/allscores")
 	public String getAllScores(Model model,
 			@RequestParam("page") Optional<Integer> page,

@@ -3,6 +3,7 @@ package com.etterna.services.dao;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -22,22 +23,22 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.model.Chart;
 import com.etterna.services.model.HighScore;
-import com.etterna.services.model.ScoreSpecificValue;
 import com.etterna.services.model.User;
+import com.etterna.services.opensearch.HighScoreHistoryIndexService;
 import com.etterna.services.opensearch.HighScoreIndexService;
-import com.etterna.services.opensearch.ScoreSpecificValueIndexService;
 import com.etterna.services.opensearch.UserIndexService;
+import com.etterna.services.opensearch.model.HighScoreCollection;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
 import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.ProfileSort;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +50,7 @@ public class HighScoreDao {
 	private HighScoreIndexService hsIndex;
 
 	@Autowired
-	private ScoreSpecificValueIndexService ssrIndex;
+	private HighScoreHistoryIndexService hsHistoryIndex;
 	
 	@Autowired
 	private UserIndexService userIndex;
@@ -74,10 +75,10 @@ public class HighScoreDao {
 	public HighScoreFullUnion getFullUnion(String scoreKey) {
 		HighScoreFullUnion o = new HighScoreFullUnion();
 		
-		HighScoreWithSkillsets hs = getScoreWithSkillsets(scoreKey);
+		HighScore hs = get(scoreKey);
 		if (hs != null) {
-			User user = userIndex.findById(hs.getScore().getUsername());
-			ChartWithSkillsets chart = charts.getChartWithSkillsets(hs.getScore().getChartKey());
+			User user = userIndex.findById(hs.getUsername());
+			ChartWithSkillsets chart = charts.getChartWithSkillsets(hs.getChartKey());
 			
 			o.setHsUnion(hs);
 			o.setUser(user);
@@ -88,32 +89,7 @@ public class HighScoreDao {
 	
 	@Transactional
 	public List<HighScore> getLeaderboard(String chartkey) {
-		List<HighScore> hses = hsIndex.findByChartKey(chartkey);
-		
-		hses.sort(new Comparator<HighScore>() {
-			@Override
-			public int compare(HighScore h1, HighScore h2) {
-				Double s1 = 0.0;
-				Double s2 = 0.0;
-				
-				for (ScoreSpecificValue ssv : getSsrs(h1)) {
-					if (ssv.getSkillset() == Skillset.OVERALL) {
-						s1 = ssv.getValue();
-						break;
-					}
-				}
-				for (ScoreSpecificValue ssv : getSsrs(h2)) {
-					if (ssv.getSkillset() == Skillset.OVERALL) {
-						s2 = ssv.getValue();
-						break;
-					}
-				}
-				if (s2.compareTo(s1) == 0) {
-					return h2.getSsrNorm().compareTo(h1.getSsrNorm());
-				}
-				return s2.compareTo(s1);
-			}
-		});
+		List<HighScore> hses = hsIndex.findByChartKeySortedBySkillset(chartkey, Skillset.OVERALL);
 		
 		return hses;
 	}
@@ -132,8 +108,8 @@ public class HighScoreDao {
 	}
 	
 	@Transactional
-	public HighScoreWithSkillsetsPagination getUserScores(User u, ProfileSort ps, int page, int perpage) {
-		List<HighScoreWithSkillsets> hses = hsIndex.findUserScoresWithSkillsets(u, calc.getCalcVersion());
+	public HighScorePagination getUserScores(User u, ProfileSort ps, int page, int perpage) {
+		List<HighScore> hses = hsIndex.findUserScoresSortedBySkillsets(u, calc.getCalcVersion(), ps);
 		return sortBySkillsets(hses, ps, page, perpage);
 	}
 	
@@ -161,31 +137,37 @@ public class HighScoreDao {
 		return hses.size();
 	}
 	
+	@LogRuntime
 	@Transactional
 	public ChartLeaderboardPagination getLeaderboardForAllChartsPagination(int rate, AllLeaderboardSort ls, int page, int itemsPerPage) {
 		
 		List<Integer> rates = hsIndex.findAllRates();
 		rates.sort(Integer::compareTo);
 		
-		List<HighScoreWithSkillsets> obs;
+		HighScoreCollection hsCollection;
 		if (rate == -1) {
-			obs = hsIndex.findScoresOnAllChartsOnAllRates(calc.getCalcVersion());
+			hsCollection = hsIndex.findScoresOnAllChartsOnAllRates(calc.getCalcVersion(), ls, page, itemsPerPage);
 		} else {
-			obs = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion());
+			hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, page, itemsPerPage);
 		}
-		if (obs.isEmpty()) {
+		if (hsCollection.getHses().isEmpty()) {
 			return new ChartLeaderboardPagination(null, new ArrayList<>(), 1, 1, rate);
 		}
 		
-		Map<String, HighScoreFullUnion> hsvs = completeUnion(obs);
+		Map<String, HighScoreFullUnion> hsvs = completeUnion(hsCollection.getHses());
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
+		final long count = hsCollection.getCount();
 		
-		return new ChartLeaderboardPagination(null, hsvs.values()
-				.stream()
-				.sorted(AllLeaderboardSort.HighScoreWithSkillsetsComparator(ls))
-				.collect(Collectors.toList())
-				.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)), rate);
+		return new ChartLeaderboardPagination(
+				null,
+				hsvs.values()
+					.stream()
+					.sorted(AllLeaderboardSort.HighScoreFullUnionComparator(ls))
+					.collect(Collectors.toList()),
+				page,
+				Math.max(1, (int)Math.ceil(count / (float)itemsPerPage)),
+				rate);
 	}
 	
 	@Transactional
@@ -198,17 +180,17 @@ public class HighScoreDao {
 		List<Integer> rates = hsIndex.findRatesUsedOnChart(c);
 		rates.sort(Integer::compareTo);
 		
-		List<HighScoreWithSkillsets> hsUnion;
+		List<HighScore> hses;
 		if (rate == -1) {
-			hsUnion = hsIndex.findScoresByChartOnAllRates(c, calc.getCalcVersion());
+			hses = hsIndex.findScoresByChartOnAllRates(c, calc.getCalcVersion());
 		} else {
-			hsUnion = hsIndex.findScoresByChartOnRate(c, rate, calc.getCalcVersion());
+			hses = hsIndex.findScoresByChartOnRate(c, rate, calc.getCalcVersion());
 		}
-		if (hsUnion.isEmpty()) {
+		if (hses.isEmpty()) {
 			return new ChartLeaderboardPagination(c, new ArrayList<>(), 1, 1, rate);
 		}
 		
-		Map<String, HighScoreFullUnion> hsvs = completeUnion(hsUnion);
+		Map<String, HighScoreFullUnion> hsvs = completeUnion(hses);
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
 		
@@ -219,14 +201,15 @@ public class HighScoreDao {
 				.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)), rate);
 	}
 	
-	private Map<String, HighScoreFullUnion> completeUnion(List<HighScoreWithSkillsets> hsUnions) {
-		Set<String> chartkeys = hsUnions.stream().map(hsUnion -> hsUnion.getScore().getChartKey()).collect(Collectors.toSet());
+	@LogRuntime
+	private Map<String, HighScoreFullUnion> completeUnion(List<HighScore> hses) {
+		Set<String> chartkeys = hses.stream().map(hsUnion -> hsUnion.getChartKey()).collect(Collectors.toSet());
 		Map<String, ChartWithSkillsets> cwss = charts.getChartsWithSkillsetsMap(chartkeys);
-		Set<String> usernames = hsUnions.stream().map(hsUnion -> hsUnion.getScore().getUsername()).collect(Collectors.toSet());
+		Set<String> usernames = hses.stream().map(hsUnion -> hsUnion.getUsername()).collect(Collectors.toSet());
 		Map<String, User> users = userIndex.findUsersByNameMap(usernames);
-		return hsUnions.stream().collect(Collectors.toMap(hswss -> hswss.getScore().getScoreKey(), hswss -> {
-			final String ck = hswss.getScore().getChartKey();
-			final String user = hswss.getScore().getUsername();
+		return hses.stream().collect(Collectors.toMap(hswss -> hswss.getScoreKey(), hswss -> {
+			final String ck = hswss.getChartKey();
+			final String user = hswss.getUsername();
 			HighScoreFullUnion union = new HighScoreFullUnion();
 			union.setChartUnion(cwss.get(ck));
 			union.setHsUnion(hswss);
@@ -235,17 +218,17 @@ public class HighScoreDao {
 		}));
 	}
 	
-	private HighScoreWithSkillsetsPagination sortBySkillsets(List<HighScoreWithSkillsets> obs, ProfileSort ps, int page, int itemsPerPage) {
+	private HighScorePagination sortBySkillsets(List<HighScore> obs, ProfileSort ps, int page, int itemsPerPage) {
 		Map<String, HighScoreFullUnion> hsvs = completeUnion(obs);
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), hsvs.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
 		
 		if (hsvs.size() == 0) {
-			return new HighScoreWithSkillsetsPagination(hsvs.values().stream().collect(Collectors.toList()), 1, 1);
+			return new HighScorePagination(hsvs.values().stream().collect(Collectors.toList()), 1, 1);
 		}
 		
-		return new HighScoreWithSkillsetsPagination(hsvs.values().stream().sorted(new Comparator<HighScoreFullUnion>() {
+		return new HighScorePagination(hsvs.values().stream().sorted(new Comparator<HighScoreFullUnion>() {
 			@Override
 			public int compare(HighScoreFullUnion a, HighScoreFullUnion b) {
 				switch (ps) {
@@ -297,7 +280,7 @@ public class HighScoreDao {
 								break;
 						}
 						if (av.equals(bv)) {
-							return b.getHsUnion().getScore().getSsrNorm().compareTo(a.getHsUnion().getScore().getSsrNorm());
+							return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 						} else {
 							return bv.compareTo(av);
 						}
@@ -315,8 +298,8 @@ public class HighScoreDao {
 					}
 					case PERCENT:
 					{
-						Integer as = a.getHsUnion().getScore().getSsrNorm();
-						Integer bs = b.getHsUnion().getScore().getSsrNorm();
+						Integer as = a.getHsUnion().getSsrNorm();
+						Integer bs = b.getHsUnion().getSsrNorm();
 						int o = bs.compareTo(as);
 						if (o != 0) {
 							return o;
@@ -326,8 +309,8 @@ public class HighScoreDao {
 					case DATE:
 					default: {
 						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getHsUnion().getScore().getDateStr();
-						String bds = b.getHsUnion().getScore().getDateStr();
+						String ads = a.getHsUnion().getDateStr();
+						String bds = b.getHsUnion().getDateStr();
 						try {
 							Date ad = f.parse(ads);
 							Date bd = f.parse(bds);
@@ -342,13 +325,8 @@ public class HighScoreDao {
 	}
 	
 	@Transactional
-	public List<HighScoreWithSkillsets> getScoresWithSkillsetValue(User u, Skillset ss) {
+	public List<HighScore> getScoresWithSkillsetValue(User u, Skillset ss) {
 		return hsIndex.findUserScoresWithSpecificSkillsetValue(u, calc.getCalcVersion(), ss);
-	}
-	
-	@Transactional
-	public HighScoreWithSkillsets getScoreWithSkillsets(String scorekey) {
-		return hsIndex.findScoreWithSkillsets(scorekey, calc.getCalcVersion());
 	}
 
 	/**
@@ -359,11 +337,6 @@ public class HighScoreDao {
 	@Transactional
 	public List<HighScore> getScoresToCalculate() {
 		return hsIndex.findRecalculableScores(calc.getCalcVersion());
-	}
-	
-	@Transactional
-	public Long deleteSsrsOlderThan(Integer calcVersion) {
-		return ssrIndex.deleteByCalcVersionLessThan(calcVersion);
 	}
 
 	/**
@@ -378,19 +351,9 @@ public class HighScoreDao {
 		
 		m_logger.debug("Updating SSRS : {} : {}", hs.getScoreKey(), ssrs);
 		hs.setCalcVersion(calc.getCalcVersion());
-		
-		List<ScoreSpecificValue> ssrsUpdated = new LinkedList<>();
-		for(Skillset ss : Skillset.values()) {
-			ScoreSpecificValue ssr = new ScoreSpecificValue();
-			ssr.setCalcVersion(calc.getCalcVersion());
-			ssr.setScoreKey(hs.getScoreKey());
-			ssr.setSkillset(ss);
-			ssr.setValue(ssrs.get(ss.ordinal()).doubleValue());
-			ssrsUpdated.add(ssr);
-		}
+		hs.intakeSsrs(ssrs);
 		
 		if (instantCommit) {
-			ssrIndex.saveBulk(ssrsUpdated, Refresh.False);
 			hsIndex.save(hs, Refresh.False);
 		}
 		
@@ -403,20 +366,18 @@ public class HighScoreDao {
 		}
 		
 		if (!instantCommit) {
-			stagedSsrUpdates.add(new Object[] {u, hs, ssrsUpdated});
+			stagedSsrUpdates.add(new Object[] {u, hs});
 			if (stagedSsrUpdates.size() >= AUTO_COMMIT_CHUNK_SIZE) {
 				flushStagedSsrs();
 			}
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void flushStagedSsrs() {
 		if (stagedSsrUpdates.isEmpty()) return;
 		
 		m_logger.info("Flushing to commit {} entries from the staged ssr queue", stagedSsrUpdates.size());
 		Set<User> users = new HashSet<>();
-		List<ScoreSpecificValue> ssrs = new LinkedList<>();
 		List<HighScore> hses = new LinkedList<>();
 		while (!stagedSsrUpdates.isEmpty()) {
 			Object[] entry = stagedSsrUpdates.poll();
@@ -425,10 +386,8 @@ public class HighScoreDao {
 				users.add((User)entry[0]);
 			}
 			hses.add((HighScore)entry[1]);
-			ssrs.addAll((List<ScoreSpecificValue>)entry[2]);
 		}
 		userIndex.saveBulk(users, Refresh.True);
-		ssrIndex.saveBulk(ssrs, Refresh.False);
 		hsIndex.saveBulk(hses, Refresh.False);
 		m_logger.info("Finished flushing staged ssr queue");
 	}
@@ -474,17 +433,33 @@ public class HighScoreDao {
 
 		hsIndex.save(hs, Refresh.False);
 	}
+	
+	public void save(HighScore hs) {
+		hsIndex.save(hs, Refresh.False);
+	}
+	
+	public void saveBulk(Collection<HighScore> hses) {
+		hsIndex.saveBulk(hses, Refresh.False);
+	}
 
 	public User getUser(HighScore hs) {
 		return userIndex.findById(hs.getUsername());
 	}
 
-	public Set<ScoreSpecificValue> getSsrs(HighScore hs) {
-		return ssrIndex.findByScoreAndCalcVersion(hs, calc.getCalcVersion()).stream().collect(Collectors.toSet());
-	}
-
 	public Chart getChart(HighScore hs) {
 		return charts.get(hs.getChartKey());
+	}
+
+	public long deleteCalcVersionOlderThan(int calcVersion) {
+		return hsIndex.deleteIfCalcVersionOlderThan(calcVersion);
+	}
+
+	public void saveHistoricScores(List<HighScore> scores) {
+		hsHistoryIndex.saveBulk(scores, Refresh.False);
+	}
+	
+	public List<HighScore> getScoresWithMissingChartMetadata() {
+		return hsIndex.findScoresMissingChartMetadata();
 	}
 
 }

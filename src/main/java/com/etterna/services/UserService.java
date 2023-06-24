@@ -19,7 +19,6 @@ import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO.Sk
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
@@ -83,9 +82,9 @@ public class UserService {
 			return null;
 		}
 		
-		List<HighScoreWithSkillsets> allScores = scores.getScoresWithSkillsetValue(user, actualSkillset);
-		Collections.sort(allScores, new Comparator<HighScoreWithSkillsets>() {
-			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
+		List<HighScore> allScores = scores.getScoresWithSkillsetValue(user, actualSkillset);
+		Collections.sort(allScores, new Comparator<HighScore>() {
+			public int compare(HighScore a, HighScore b) {
 				switch (actualSkillset) {
 					case OVERALL:
 					default:
@@ -109,25 +108,24 @@ public class UserService {
 			}
 		});
 		List<GetSkillsetTopXDTO> o = new ArrayList<>();
-		for (HighScoreWithSkillsets oo : allScores) {
-			HighScore hs = oo.getScore();
+		for (HighScore hs : allScores) {
 			Chart chart = scores.getChart(hs);
 			
 			GetSkillsetTopXDTO dto = new GetSkillsetTopXDTO();
 			ScoreDTO scoreDTO = new ScoreDTO();
 			SkillsetDTO skillsetDTO = new SkillsetDTO(0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-			skillsetDTO.setOverall(oo.getOverall().floatValue());
-			skillsetDTO.setStream(oo.getStream().floatValue());
-			skillsetDTO.setJumpstream(oo.getJumpstream().floatValue());
-			skillsetDTO.setHandstream(oo.getHandstream().floatValue());
-			skillsetDTO.setStamina(oo.getStamina().floatValue());
-			skillsetDTO.setJackSpeed(oo.getJackspeed().floatValue());
-			skillsetDTO.setChordjack(oo.getChordjack().floatValue());
-			skillsetDTO.setTechnical(oo.getTechnical().floatValue());
+			skillsetDTO.setOverall(hs.getOverall().floatValue());
+			skillsetDTO.setStream(hs.getStream().floatValue());
+			skillsetDTO.setJumpstream(hs.getJumpstream().floatValue());
+			skillsetDTO.setHandstream(hs.getHandstream().floatValue());
+			skillsetDTO.setStamina(hs.getStamina().floatValue());
+			skillsetDTO.setJackSpeed(hs.getJackspeed().floatValue());
+			skillsetDTO.setChordjack(hs.getChordjack().floatValue());
+			skillsetDTO.setTechnical(hs.getTechnical().floatValue());
 			
 			scoreDTO.setChartKey(hs.getChartKey());
 			scoreDTO.setDifficulty(chart.getDifficulty());
-			scoreDTO.setOverall(oo.getOverall().floatValue());
+			scoreDTO.setOverall(hs.getOverall().floatValue());
 			scoreDTO.setRate(hs.getMusicRate().floatValue() / 100.f);
 			scoreDTO.setSongName(chart.getTitle());
 			scoreDTO.setWife(hs.getWifePercent().floatValue() * 100);

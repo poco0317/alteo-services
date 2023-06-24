@@ -116,7 +116,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 * Returns false if the document failed to save or was just updated instead of created
 	 */
 	public boolean save(T document, Refresh refresh) {
-		m_logger.info("Saving {} {}", getClazz().getSimpleName(), document.openSearchId());
+		m_logger.info("Saving {} {} - index {}", getClazz().getSimpleName(), document.openSearchId(), INDEX_NAME());
 		IndexRequest<T> req = new IndexRequest.Builder<T>().index(INDEX_NAME()).id(document.openSearchId()).document(document).refresh(refresh).build();
 		return search.saveToIndex(req);
 	}
@@ -126,7 +126,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 */
 	public boolean saveBulk(Collection<T> documents, Refresh refresh) {
 		if (documents.isEmpty()) return true;
-		m_logger.info("Saving bulk {} (count {})", documents.iterator().next().getClass().getSimpleName(), documents.size());
+		m_logger.info("Saving bulk {} (count {}) - index {}", documents.iterator().next().getClass().getSimpleName(), documents.size(), INDEX_NAME());
 		List<BulkOperation> ops = documents.stream().map(doc -> {
 			IndexOperation<T> op = new IndexOperation.Builder<T>().index(INDEX_NAME()).id(doc.openSearchId()).document(doc).build();
 			return new BulkOperation.Builder().index(op).build();
@@ -173,7 +173,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 * Delete the given thing. Return false if nothing happened
 	 */
 	public boolean deleteById(String id, Refresh refresh) {
-		m_logger.info("Deleting {} {}", getClazz().getSimpleName(), id);
+		m_logger.info("Deleting {} {} - index {}", getClazz().getSimpleName(), id, INDEX_NAME());
 		DeleteRequest req = new DeleteRequest.Builder().index(INDEX_NAME()).id(id).refresh(refresh).build();
 		return search.delete(req);
 	}
@@ -182,6 +182,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 * Return the amount of things deleted in the given list
 	 */
 	public int deleteBulk(Collection<T> documents, Refresh refresh) {
+		m_logger.info("Deleting {} documents - index {}", documents.size(), INDEX_NAME());
 		List<BulkOperation> ops = documents.stream().map(doc -> {
 			DeleteOperation op = new DeleteOperation.Builder().index(INDEX_NAME()).id(doc.openSearchId()).build();
 			return new BulkOperation.Builder().delete(op).build();

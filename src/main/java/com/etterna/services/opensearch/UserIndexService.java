@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.services.model.User;
 import com.etterna.services.model.UserSkillsetValue;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +50,7 @@ public class UserIndexService extends BaseIndexService<User> {
 		return skillsetValues.stream().map(ssv -> new Object[] {usermap.get(ssv.getUsername()), ssv}).collect(Collectors.toList());
 	}
 	
+	@LogRuntime
 	public Map<String, User> findUsersByNameMap(Collection<String> usernames) {
 		List<FieldValue> fvs = usernames.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("username.keyword").terms(tqf -> tqf.value(fvs))));

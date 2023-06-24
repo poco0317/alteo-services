@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -22,11 +23,9 @@ import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.model.HighScore;
-import com.etterna.services.model.ScoreSpecificValue;
 import com.etterna.services.model.User;
 import com.etterna.services.model.UserSkillsetValue;
 import com.etterna.services.opensearch.HighScoreIndexService;
-import com.etterna.services.opensearch.ScoreSpecificValueIndexService;
 import com.etterna.services.opensearch.UserIndexService;
 import com.etterna.services.opensearch.UserSkillsetValueIndexService;
 import com.etterna.site.dto.LeaderboardSort;
@@ -41,9 +40,6 @@ public class UserDao {
 	
 	@Autowired
 	private UserSkillsetValueIndexService ussvIndex;
-	
-	@Autowired
-	private ScoreSpecificValueIndexService ssrIndex;
 	
 	@Autowired
 	private HighScoreIndexService scoreIndex;
@@ -68,37 +64,26 @@ public class UserDao {
 				}
 				
 				HashMap<Skillset, List<Double>> skillsetSSRs = new HashMap<>();
+				BiConsumer<Skillset, Double> addskillset = (ss, v) -> {
+					if (!skillsetSSRs.containsKey(ss)) {
+						skillsetSSRs.put(ss, new ArrayList<>());
+					}
+					skillsetSSRs.get(ss).add(v);
+				};
+				
 				m_logger.info("Updating user {} SSRs - {} total scores", user.getUsername(), userScores.size());
 				for (HighScore hs : userScores) {
 					if (hs.getCalcVersion() != calc.getCalcVersion()) {
 						continue;
 					}
-					List<ScoreSpecificValue> ssrs = ssrIndex.findByScoreAndCalcVersion(hs, calcVer);
-					for (ScoreSpecificValue ssr : ssrs) {
-						Skillset ss = ssr.getSkillset();
-						switch (ss) {
-							case OVERALL:
-								break;
-							case STREAM:
-							case JUMPSTREAM:
-							case HANDSTREAM:
-							case STAMINA:
-							case JACKSPEED:
-							case CHORDJACK:
-							case TECHNICAL:
-							{
-								if (!skillsetSSRs.containsKey(ss)) {
-									skillsetSSRs.put(ss, new ArrayList<>());
-								}
-								skillsetSSRs.get(ss).add(ssr.getValue());
-								
-								break;
-							}
-							default:
-								m_logger.error("Impossible skillset value {}", ssr.getSkillset());
-								break;
-						}
-					}
+					
+					addskillset.accept(Skillset.STREAM, hs.getStream());
+					addskillset.accept(Skillset.JUMPSTREAM, hs.getJumpstream());
+					addskillset.accept(Skillset.HANDSTREAM, hs.getHandstream());
+					addskillset.accept(Skillset.STAMINA, hs.getStamina());
+					addskillset.accept(Skillset.JACKSPEED, hs.getJackspeed());
+					addskillset.accept(Skillset.CHORDJACK, hs.getChordjack());
+					addskillset.accept(Skillset.TECHNICAL, hs.getTechnical());
 				}
 				List<UserSkillsetValue> newssvals = new LinkedList<>();
 				for (Skillset ss : Skillset.values()) {

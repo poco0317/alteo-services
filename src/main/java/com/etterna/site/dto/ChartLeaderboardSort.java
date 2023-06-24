@@ -108,10 +108,10 @@ public enum ChartLeaderboardSort {
 								break;
 						}
 						if (av.equals(bv)) {
-							Integer ar = a.getHsUnion().getScore().getMusicRate();
-							Integer br = b.getHsUnion().getScore().getMusicRate();
+							Integer ar = a.getHsUnion().getMusicRate();
+							Integer br = b.getHsUnion().getMusicRate();
 							if (ar == null || br == null || ar.equals(br)) {
-								return b.getHsUnion().getScore().getSsrNorm().compareTo(a.getHsUnion().getScore().getSsrNorm());
+								return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 							} else {
 								return br.compareTo(ar);
 							}
@@ -122,8 +122,8 @@ public enum ChartLeaderboardSort {
 					case DATE:
 					{
 						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getHsUnion().getScore().getDateStr();
-						String bds = b.getHsUnion().getScore().getDateStr();
+						String ads = a.getHsUnion().getDateStr();
+						String bds = b.getHsUnion().getDateStr();
 						try {
 							Date ad = f.parse(ads);
 							Date bd = f.parse(bds);
@@ -134,10 +134,10 @@ public enum ChartLeaderboardSort {
 					}
 					case RATE:
 					{
-						Integer ar = a.getHsUnion().getScore().getMusicRate();
-						Integer br = b.getHsUnion().getScore().getMusicRate();
+						Integer ar = a.getHsUnion().getMusicRate();
+						Integer br = b.getHsUnion().getMusicRate();
 						if (ar == null || br == null || ar.equals(br)) {
-							return b.getHsUnion().getScore().getSsrNorm().compareTo(a.getHsUnion().getScore().getSsrNorm());
+							return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 						} else {
 							return br.compareTo(ar);
 						}
@@ -156,8 +156,8 @@ public enum ChartLeaderboardSort {
 					default:
 					case PERCENT:
 					{
-						Integer as = a.getHsUnion().getScore().getSsrNorm();
-						Integer bs = b.getHsUnion().getScore().getSsrNorm();
+						Integer as = a.getHsUnion().getSsrNorm();
+						Integer bs = b.getHsUnion().getSsrNorm();
 						int o = bs.compareTo(as);
 						return o;
 					}

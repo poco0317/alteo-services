@@ -115,7 +115,7 @@ public class OpenSearchService {
 			}
 		} catch (KeyManagementException | OpenSearchException | NoSuchAlgorithmException | KeyStoreException
 				| IOException e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("CreateIndex - "+e.getMessage(), e);
 		}
 	}
 	
@@ -124,7 +124,7 @@ public class OpenSearchService {
 			return client().index(req).result() == Result.Created;
 		} catch (KeyManagementException | OpenSearchException | NoSuchAlgorithmException | KeyStoreException
 				| IOException e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("SaveReq - "+e.getMessage(), e);
 			return false;
 		}
 	}
@@ -134,7 +134,7 @@ public class OpenSearchService {
 			return client().bulk(req).errors() == false;
 		} catch (KeyManagementException | OpenSearchException | NoSuchAlgorithmException | KeyStoreException
 				| IOException e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("SaveBulk - "+e.getMessage(), e);
 			return false;
 		}
 	}
@@ -147,11 +147,11 @@ public class OpenSearchService {
 				wait1sec();
 				return search(req, clazz);
 			} else {
-				m_logger.error(e.getMessage(), e);
+				m_logger.error("SearchReq - "+e.getMessage(), e);
 				return new SearchResponse.Builder<T>().build();
 			}
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("SearchReq - "+e.getMessage(), e);
 			return new SearchResponse.Builder<T>().build();
 		}
 	}
@@ -164,11 +164,11 @@ public class OpenSearchService {
 				wait1sec();
 				return searchScroll(req, clazz);
 			} else {
-				m_logger.error(e.getMessage(), e);
+				m_logger.error("SearchScroll - "+e.getMessage(), e);
 				return new ScrollResponse.Builder<T>().build();
 			}
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("SearchScroll - "+e.getMessage(), e);
 			return new ScrollResponse.Builder<T>().build();
 		}
 	}
@@ -177,7 +177,7 @@ public class OpenSearchService {
 		try {
 			return client().clearScroll(r -> r.scrollId(scrollId)).succeeded();
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("ExitScroll - "+e.getMessage(), e);
 			return false;
 		}
 	}
@@ -186,7 +186,7 @@ public class OpenSearchService {
 		try {
 			return client().count(req).count();
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("CountReq - "+e.getMessage(), e);
 			return 0;
 		}
 	}
@@ -195,7 +195,7 @@ public class OpenSearchService {
 		try {
 			return client().delete(req).result() == Result.Deleted;
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("Deletereq - "+e.getMessage(), e);
 			return false;
 		}
 	}
@@ -204,7 +204,7 @@ public class OpenSearchService {
 		try {
 			return client().bulk(req).items().size();
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("DeleteBulk - "+e.getMessage(), e);
 			return 0;
 		}
 	}
@@ -213,7 +213,7 @@ public class OpenSearchService {
 		try {
 			return client().deleteByQuery(req).total();
 		} catch (Exception e) {
-			m_logger.error(e.getMessage(), e);
+			m_logger.error("DeleteByQuery - "+e.getMessage(), e);
 			return 0;
 		}
 	}
