@@ -420,6 +420,36 @@ public class SiteFrontendController {
 		return "multisession";
 	}
 	
+	@GetMapping("/eosearch")
+	public String getEOLandingPage(Model model) {
+		m_logger.info("FRONTEND API :: EOSearch Page");
+		
+		return "eosearch";
+	}
+	
+	@GetMapping("/eosearch/packs")
+	public String getEOPacksPage(Model model) {
+		m_logger.info("FRONTEND API :: EOPacks Page");
+		
+		model.addAttribute("packs", null);
+		
+		return "eopacks";
+	}
+	
+	@GetMapping("/eosearch/songs")
+	public String getEOSongs(Model model) {
+		m_logger.info("FRONTEND API :: EOSongs Page");
+		
+		return "eosongs";
+	}
+	
+	@GetMapping("/eosearch/songsearch")
+	public String getEOSongSearchPage(Model model, @RequestParam("searchstring") String searchstring) {
+		m_logger.info("FRONTEND API :: EOSongs Search '{}'", searchstring);
+		
+		return "eosongsearch";
+	}
+	
 	@GetMapping("/admin")
 	public String adminPage(Model model) {
 		
