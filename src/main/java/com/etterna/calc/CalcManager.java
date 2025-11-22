@@ -36,6 +36,9 @@ public class CalcManager {
 	@Autowired
 	private NoteInfoDao noteInfo;
 	
+	public static final float MAX_SSR_GOAL = 0.965f;
+	public static final float BASE_MSD_GOAL = 0.93f;
+	
 	@PostConstruct
 	private void init() {
 		minacalc.set(new MinaCalcJNI());

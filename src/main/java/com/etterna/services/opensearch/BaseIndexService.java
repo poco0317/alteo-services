@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.etterna.services.model.IOpenSearchModel;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,7 +48,11 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	public abstract Class<T> getClazz();
 	
 	protected SearchResponse<T> searchInternal(SearchRequest req) {
-		return search.search(req, getClazz());
+		long t1 = System.currentTimeMillis();
+		SearchResponse<T> o = search.search(req, getClazz());
+		long t2 = System.currentTimeMillis();
+		m_logger.info(" - search result took {}ms", t2-t1);
+		return o;
 	}
 	
 	protected SearchResponse<T> searchInternal(SearchRequest.Builder builder) {
@@ -70,6 +75,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 		return searchDocuments(builder, SCROLL_TIME);
 	}
 	
+	@LogRuntime
 	protected List<T> searchDocuments(SearchRequest.Builder builder, String scrollTime) {
 		SearchResponse<T> resp = searchInternal(builder);
 		if (resp.hits().total().value() > REQUEST_CHUNK_SIZE) {
@@ -182,6 +188,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 * Return the amount of things deleted in the given list
 	 */
 	public int deleteBulk(Collection<T> documents, Refresh refresh) {
+		if (documents.isEmpty()) return 0;
 		m_logger.info("Deleting {} documents - index {}", documents.size(), INDEX_NAME());
 		List<BulkOperation> ops = documents.stream().map(doc -> {
 			DeleteOperation op = new DeleteOperation.Builder().index(INDEX_NAME()).id(doc.openSearchId()).build();

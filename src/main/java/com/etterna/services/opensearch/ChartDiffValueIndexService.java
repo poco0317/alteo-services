@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.CalcManager;
 import com.etterna.services.model.Chart;
 import com.etterna.services.model.ChartDiffValue;
+import com.etterna.util.LogRuntime;
 
 @Service
 public class ChartDiffValueIndexService extends BaseIndexService<ChartDiffValue> {
@@ -36,6 +37,7 @@ public class ChartDiffValueIndexService extends BaseIndexService<ChartDiffValue>
 	/**
 	 * Get the diff values for the current calc version for a chart
 	 */
+	@LogRuntime
 	public Set<ChartDiffValue> getDiffValues(Chart c) {
 		if (c == null) {
 			return new HashSet<>();
@@ -61,6 +63,7 @@ public class ChartDiffValueIndexService extends BaseIndexService<ChartDiffValue>
 	/**
 	 * Get the diff values for the current calc version for many charts
 	 */
+	@LogRuntime
 	public Set<ChartDiffValue> getDiffValues(Collection<Chart> charts) {
 		if (charts == null || charts.isEmpty()) {
 			return new HashSet<>();

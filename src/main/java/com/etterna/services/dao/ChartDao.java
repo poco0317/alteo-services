@@ -230,7 +230,6 @@ public class ChartDao {
 		return chartsIndex.findChartWithSkillsets(chartKey, calc.getCalcVersion());
 	}
 	
-	@LogRuntime
 	@Transactional
 	public Map<String, ChartWithSkillsets> getChartsWithSkillsetsMap(Collection<String> chartKeys) {
 		return chartsIndex.findChartsWithSkillsetsMap(chartKeys, calc.getCalcVersion());

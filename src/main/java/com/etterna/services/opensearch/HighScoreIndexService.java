@@ -43,16 +43,19 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return HighScore.class;
 	}
 
+	@LogRuntime
 	public List<HighScore> findByUser(User user) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("username").query(fv -> fv.stringValue(user.getUsername()))));
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findByChartKey(String chartkey) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(chartkey))));
 		return searchDocuments(req);
 	}
 	
+	@LogRuntime
 	public List<HighScore> findByChartKeySortedBySkillset(String chartkey, Skillset skillset) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(qq -> qq.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(chartkey))))))
@@ -70,6 +73,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findUserRecalculableScores(User u, int calcVersion) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(
@@ -90,6 +94,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findUserScoresSortedBySkillsets(User u, int calcVersion, ProfileSort ps) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(
@@ -110,6 +115,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return aggs.get("rates").lterms().buckets().array().stream().map(b -> Integer.parseInt(b.key())).collect(Collectors.toList());
 	}
 
+	@LogRuntime
 	public HighScoreCollection findScoresOnAllChartsOnRate(int rate, int calcVersion, AllLeaderboardSort ls, int page, int itemsPerPage) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q
 				.bool(bq -> bq
@@ -342,6 +348,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return new HighScoreCollection(hits(resp), count);
 	}
 
+	@LogRuntime
 	public List<HighScore> findUserIncalculableScores(User u, int calcVersion) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(qq -> qq.match(mq -> mq.field("username").query(fv -> fv.stringValue(u.getUsername()))))
@@ -355,6 +362,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<Integer> findRatesUsedOnChart(Chart c) {
 		SearchRequest.Builder req = new SearchRequest.Builder()
 				.aggregations("rates", agg -> agg.terms(ta -> ta.field("musicRate")))
@@ -366,6 +374,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return aggs.get("rates").lterms().buckets().array().stream().map(b -> Integer.parseInt(b.key())).collect(Collectors.toList());
 	}
 
+	@LogRuntime
 	public List<HighScore> findScoresByChartOnAllRates(Chart c, int calcVersion) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(qq -> qq.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(c.getChartKey()))))
@@ -374,6 +383,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findScoresByChartOnRate(Chart c, int rate, int calcVersion) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(qq -> qq.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(c.getChartKey()))))
@@ -383,6 +393,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findUserScoresWithSpecificSkillsetValue(User u, int calcVersion, Skillset ss) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(
@@ -392,6 +403,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public List<HighScore> findRecalculableScores(int calcVersion) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
 				.must(
@@ -410,6 +422,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@LogRuntime
 	public long deleteIfCalcVersionOlderThan(int calcVersion) {
 		DeleteByQueryRequest req = new DeleteByQueryRequest.Builder().query(q -> q.range(rq -> rq.lt(JsonData.of(calcVersion)).field("calcVersion"))).build();
 		return search.deleteByQuery(req);
