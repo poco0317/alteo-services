@@ -5,7 +5,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import org.apache.hc.client5.http.auth.AuthScope;
@@ -31,11 +30,14 @@ import org.opensearch.client.opensearch.core.ScrollRequest;
 import org.opensearch.client.opensearch.core.ScrollResponse;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.generic.Requests;
+import org.opensearch.client.opensearch.generic.Response;
 import org.opensearch.client.opensearch.indices.CreateIndexRequest;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsRequest;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
 import org.opensearch.client.transport.httpclient5.ResponseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -44,16 +46,40 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OpenSearchService {
 	
+	@Value("${opensearch.db.host}")
+	private String dbhost;
+	
+	@Value("${opensearch.db.port}")
+	private String dbport;
+	
+	@Value("${opensearch.db.username}")
+	private String dbusername;
+	
+	@Value("${opensearch.db.password}")
+	private String dbpassword;
+	
+	@Value("${opensearch.ssl.enabled}")
+	private Boolean sslEnabled;
+	
 	private OpenSearchClient client = null;
 
 	private OpenSearchClient client() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 		if (this.client != null) return this.client;
 		//System.setProperty("javax.net.ssl.trustStore", "/full/path/to/keystore");
 		//System.setProperty("javax.net.ssl.trustStorePassword", "password-to-keystore");
+		
+		m_logger.info("Connecting to '{}' port '{}' ", dbhost, dbport);
+		
+		final String httphttps;
+		if (sslEnabled) {
+			httphttps = "https";
+		} else {
+			httphttps = "http";
+		}
 
-		final HttpHost host = new HttpHost("http", "localhost", 9200);
+		final HttpHost host = new HttpHost(httphttps, dbhost, Integer.parseInt(dbport));
 		final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		//credentialsProvider.setCredentials(new AuthScope(host), new UsernamePasswordCredentials("admin", "admin".toCharArray()));
+		credentialsProvider.setCredentials(new AuthScope(host), new UsernamePasswordCredentials(dbusername, dbpassword.toCharArray()));
 
 		final ApacheHttpClient5TransportBuilder builder = ApacheHttpClient5TransportBuilder.builder(host);
 		builder.setHttpClientConfigCallback(httpClientBuilder -> {
@@ -83,7 +109,12 @@ public class OpenSearchService {
 			}
 		});
 
-		final OpenSearchTransport transport = ApacheHttpClient5TransportBuilder.builder(host).build();
+		final OpenSearchTransport transport; 
+		if (!sslEnabled) {
+			transport = ApacheHttpClient5TransportBuilder.builder(host).build();
+		} else {
+			transport = builder.build();
+		}
 		OpenSearchClient client = new OpenSearchClient(transport);
 		this.client = client;
 		return client;
