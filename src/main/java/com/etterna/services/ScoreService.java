@@ -1,6 +1,7 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,7 +90,49 @@ public class ScoreService {
 				final String ck = entry.getKey();
 				
 				Future<Map<HighScore, List<Float>>> chartScoreSSRs = bulkSsrExecutor.submit(() -> {
-					return calc.getSSRs(ck, entry.getValue());
+					int sz = entry.getValue().size();
+					if (sz > 10) {
+						Map<HighScore, List<Float>> out = new HashMap<>();
+						Map<Integer, List<HighScore>> byRate = new HashMap<>();
+						entry.getValue().forEach(hs -> {
+							Integer rate = hs.getMusicRate();
+							if (!byRate.containsKey(rate)) {
+								byRate.put(rate, new ArrayList<>());
+							}
+							byRate.get(rate).add(hs);
+						});
+						byRate.entrySet().forEach(rateEntry -> {
+							float rate = rateEntry.getKey() / 100.F;
+							List<HighScore> below93 = rateEntry.getValue().stream().filter(hs -> hs.getSsrNorm() < 930000).collect(Collectors.toList());
+							if (!below93.isEmpty()) {
+								out.putAll(calc.getSSRs(ck, below93));
+							}
+							List<Float> maxSSR = calc.getSSR(ck, rate, CalcManager.MAX_SSR_GOAL);
+							List<Float> baseMSD = calc.getSSR(ck, rate, CalcManager.BASE_MSD_GOAL);
+							Function<Integer, List<Float>> interpolate = intSsrnorm -> {
+								float ssrnorm = intSsrnorm / 1000000.F;
+								ssrnorm = Math.min(ssrnorm, CalcManager.MAX_SSR_GOAL);
+								
+								List<Float> o = new ArrayList<>();
+								for (int i = 0; i < maxSSR.size(); i++) {
+									float max = maxSSR.get(i);
+									float min = baseMSD.get(i);
+									float proportion = (ssrnorm - CalcManager.BASE_MSD_GOAL) / (CalcManager.MAX_SSR_GOAL - CalcManager.BASE_MSD_GOAL);
+									o.add(proportion * (max - min) + min);
+								}
+								return o;
+							};
+							
+							rateEntry.getValue().forEach(hs -> {
+								if (hs.getSsrNorm() >= 930000) {
+									out.put(hs, interpolate.apply(hs.getSsrNorm()));
+								}
+							});
+						});
+						return out;
+					} else {
+						return calc.getSSRs(ck, entry.getValue());
+					}
 				});
 				futures.add(chartScoreSSRs);
 			}
