@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.services.model.HighScore;
 import com.etterna.services.model.Pack;
 import com.etterna.site.dto.ChartWithCount;
@@ -44,7 +44,7 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	private HighScoreIndexService scoreIndex;
 	
 	@Autowired
-	private ChartDiffValueIndexService diffValueIndex;
+	private ChartDiffValueHistoryIndexService diffValueIndex;
 
 	@Override
 	public String INDEX_NAME() {
@@ -160,7 +160,7 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	@LogRuntime
 	public ChartWithSkillsets findChartWithSkillsets(String chartkey, int calcVersion) {
 		Chart c = findByChartkey(chartkey);
-		Set<ChartDiffValue> diffs = diffValueIndex.getDiffValues(c);
+		ChartSkillsetValuesHistory diffs = diffValueIndex.getDiffValues(c);
 		return new ChartWithSkillsets(c, diffs, 0);
 	}
 	
@@ -169,13 +169,10 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs))));
 		Map<String, Chart> chartmap = searchDocuments(req).stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
-		Set<ChartDiffValue> diffs = diffValueIndex.getDiffValues(chartmap.values());
-		Map<String, Set<ChartDiffValue>> diffCollected = new HashMap<>();
-		for (ChartDiffValue diff : diffs) {
-			if (!diffCollected.containsKey(diff.getChartKey())) {
-				diffCollected.put(diff.getChartKey(), new HashSet<>());
-			}
-			diffCollected.get(diff.getChartKey()).add(diff);
+		Set<ChartSkillsetValuesHistory> diffs = diffValueIndex.getDiffValues(chartmap.values());
+		Map<String, ChartSkillsetValuesHistory> diffCollected = new HashMap<>();
+		for (ChartSkillsetValuesHistory diff : diffs) {
+			diffCollected.put(diff.getChartKey(), diff);
 		}
 		return diffCollected.keySet().stream().map(ck -> new ChartWithSkillsets(chartmap.get(ck), diffCollected.get(ck), 0)).collect(Collectors.toList());
 	}
@@ -187,14 +184,11 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 		
 		List<Chart> huh = searchDocuments(req);
 		Map<String, Chart> chartmap = huh.stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
-		Set<ChartDiffValue> diffs = diffValueIndex.getDiffValues(chartmap.values());
+		Set<ChartSkillsetValuesHistory> diffs = diffValueIndex.getDiffValues(chartmap.values());
 		
-		Map<String, Set<ChartDiffValue>> diffCollected = new HashMap<>();
-		for (ChartDiffValue diff : diffs) {
-			if (!diffCollected.containsKey(diff.getChartKey())) {
-				diffCollected.put(diff.getChartKey(), new HashSet<>());
-			}
-			diffCollected.get(diff.getChartKey()).add(diff);
+		Map<String, ChartSkillsetValuesHistory> diffCollected = new HashMap<>();
+		for (ChartSkillsetValuesHistory diff : diffs) {
+			diffCollected.put(diff.getChartKey(), diff);
 		}
 		return diffCollected.keySet().stream().collect(Collectors.toMap(ck -> ck, ck -> new ChartWithSkillsets(chartmap.get(ck), diffCollected.get(ck), 0)));
 	}

@@ -24,7 +24,7 @@ import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.model.HighScore;
 import com.etterna.services.model.User;
-import com.etterna.services.model.UserSkillsetValue;
+import com.etterna.services.model.UserSkillsetValuesHistory;
 import com.etterna.services.opensearch.HighScoreIndexService;
 import com.etterna.services.opensearch.UserIndexService;
 import com.etterna.services.opensearch.UserSkillsetValueIndexService;
@@ -57,7 +57,7 @@ public class UserDao {
 			final int calcVer = calc.getCalcVersion();
 			
 			for (User user : users) {
-				List<UserSkillsetValue> ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
+				List<UserSkillsetValuesHistory> ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
 				List<HighScore> userScores = scoreIndex.findByUser(user);
 				if (ssvals != null) {
 					ussvIndex.deleteBulk(ssvals, Refresh.False);
@@ -85,12 +85,14 @@ public class UserDao {
 					addskillset.accept(Skillset.CHORDJACK, hs.getChordjack());
 					addskillset.accept(Skillset.TECHNICAL, hs.getTechnical());
 				}
-				List<UserSkillsetValue> newssvals = new LinkedList<>();
+				
+				// this should work out correctly
+				// basically, we want a list of only Stream -> Tech not including the 0.0 Overall
+				List<Double> newssvals = new LinkedList<>();
 				for (Skillset ss : Skillset.values()) {
 					switch (ss) {
 						case OVERALL:
 						{
-							newssvals.add(new UserSkillsetValue(user, ss, 0.0, calcVer));
 							break;
 						}
 						case STREAM:
@@ -104,9 +106,9 @@ public class UserDao {
 							if (skillsetSSRs.containsKey(ss)) {
 								Collections.sort(skillsetSSRs.get(ss), Collections.reverseOrder());
 								Double v = calc.aggregateSkill(skillsetSSRs.get(ss), 0.1, 1.05, 0.0, 10.24);
-								newssvals.add(new UserSkillsetValue(user, ss, v, calcVer));
+								newssvals.add(v);
 							} else {
-								newssvals.add(new UserSkillsetValue(user, ss, 0.0, calcVer));
+								newssvals.add(0.0);
 							}
 							break;
 						}
@@ -114,14 +116,10 @@ public class UserDao {
 							break;
 					}
 				}
-				// this should work out correctly
-				// basically, we want a list of only Stream -> Tech not including the 0.0 Overall
-				List<Double> tmpssvals = newssvals.stream().map(ssv -> ssv.getValue()).collect(Collectors.toList());
-				tmpssvals.remove(0);
 				
-				newssvals.get(0).setValue(calc.aggregateSkill(tmpssvals, 0.1, 1.125, 0.0, 10.24));
+				newssvals.add(0, calc.aggregateSkill(newssvals, 0.1, 1.125, 0.0, 10.24));
 				user.setMustRecalcRating(false);
-				ussvIndex.saveBulk(newssvals, Refresh.False);
+				ussvIndex.save(new UserSkillsetValuesHistory(user.getUsername(), calcVer, newssvals), Refresh.False);
 				userIndex.save(user, Refresh.True);
 				m_logger.info("Updated user {} SSRs", user.getUsername());
 			}
@@ -167,83 +165,13 @@ public class UserDao {
 	}
 	
 	@Transactional
-	public UserWithSkillsets getUserSkillsets(User u) {
-		List<UserSkillsetValue> ssvs = ussvIndex.findByUserAndCalcVersion(u, calc.getCalcVersion());
-		UserWithSkillsets o = new UserWithSkillsets();
-		o.setUser(u);
-		ssvs.forEach(ssv -> {
-			final Double v = ssv.getValue();
-			switch (ssv.getSkillset()) {
-				case OVERALL:
-					o.setOverall(v);
-					break;
-				case STREAM:
-					o.setStream(v);
-					break;
-				case JUMPSTREAM:
-					o.setJumpstream(v);
-					break;
-				case HANDSTREAM:
-					o.setHandstream(v);
-					break;
-				case STAMINA:
-					o.setStamina(v);
-					break;
-				case JACKSPEED:
-					o.setJackspeed(v);
-					break;
-				case CHORDJACK:
-					o.setChordjack(v);
-					break;
-				case TECHNICAL:
-					o.setTechnical(v);
-					break;
-				default:
-					break;
-			}
-		});
-		
-		return o;
-	}
-	
-	@Transactional
 	public UserWithSkillsetsPagination getUserLeaderboard(LeaderboardSort ls, int page, int itemsPerPage) {
-		// a list of [User, UserSkillsetValue]
-		// we need to compile the data structure
-		List<Object[]> usersAndSkillsets = userIndex.findUsersWithSkillsets();
+		List<User> usersAndSkillsets = userIndex.findAll();
 		
 		// users to structs
 		HashMap<String, UserWithSkillsets> usvs = new HashMap<>();
-		usersAndSkillsets.forEach(usv -> {
-			User u = (User)usv[0];
-			UserSkillsetValue ssv = (UserSkillsetValue)usv[1];
-			
-			if (!usvs.containsKey(u.getUsername())) {
-				usvs.put(u.getUsername(), new UserWithSkillsets());
-				usvs.get(u.getUsername()).setUser(u);
-			}
-			final Skillset ssvss = ssv.getSkillset();
-			final Double v = ssv.getValue();
-			switch (ssvss) {
-				case OVERALL:
-					usvs.get(u.getUsername()).setOverall(v);
-				case STREAM:
-					usvs.get(u.getUsername()).setStream(v);
-				case JUMPSTREAM:
-					usvs.get(u.getUsername()).setJumpstream(v);
-				case HANDSTREAM:
-					usvs.get(u.getUsername()).setHandstream(v);
-				case STAMINA:
-					usvs.get(u.getUsername()).setStamina(v);
-				case JACKSPEED:
-					usvs.get(u.getUsername()).setJackspeed(v);
-				case CHORDJACK:
-					usvs.get(u.getUsername()).setChordjack(v);
-				case TECHNICAL:
-					usvs.get(u.getUsername()).setTechnical(v);
-				default:
-					break;
-			}
+		usersAndSkillsets.forEach(u -> {
+			usvs.put(u.getUsername(), new UserWithSkillsets(u));
 		});
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), usvs.size()-1);

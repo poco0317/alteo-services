@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.CalcManager;
 import com.etterna.services.model.Chart;
 import com.etterna.services.model.Pack;
-import com.etterna.services.opensearch.ChartDiffValueIndexService;
+import com.etterna.services.opensearch.ChartDiffValueHistoryIndexService;
 import com.etterna.services.opensearch.ChartIndexService;
 import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.ChartWithSkillsets;
@@ -39,7 +39,7 @@ public class ChartDao {
 	private ChartIndexService chartsIndex;
 	
 	@Autowired
-	private ChartDiffValueIndexService diffIndex;
+	private ChartDiffValueHistoryIndexService diffIndex;
 	
 	@Autowired
 	private PackDao packs;

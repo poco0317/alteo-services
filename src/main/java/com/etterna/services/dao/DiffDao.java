@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
-import com.etterna.services.opensearch.ChartDiffValueIndexService;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
+import com.etterna.services.opensearch.ChartDiffValueHistoryIndexService;
 import com.etterna.services.opensearch.ChartIndexService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class DiffDao {
 	private ChartIndexService chartIndex;
 	
 	@Autowired
-	private ChartDiffValueIndexService chartDiffIndex;
+	private ChartDiffValueHistoryIndexService chartDiffIndex;
 	
 	@Autowired
 	private CalcManager calc;
@@ -44,15 +44,13 @@ public class DiffDao {
 	 * This may delete old difficulty values under certain circumstances.
 	 */
 	@SuppressWarnings("unused")
-	public void stageUpdatedDiffValues(Chart c, Set<ChartDiffValue> newDiffs, boolean instantCommit) {
-		Set<ChartDiffValue> diffs = chartDiffIndex.getDiffValues(c);
+	public void stageUpdatedDiffValues(Chart c, Set<ChartSkillsetValuesHistory> newDiffs, boolean instantCommit) {
+		ChartSkillsetValuesHistory diffs = chartDiffIndex.getDiffValues(c);
 		if (c.getCalcVersion() != calc.getCalcVersion()) {
 			m_logger.debug("Updating diffs for {}", c.getChartKey());
 			
 			if (DELETE_OLD_DIFFS && diffs != null) {
-				diffs.forEach(diff -> {
-					chartDiffIndex.delete(diff, Refresh.False);
-				});
+				chartDiffIndex.delete(diffs, Refresh.False);
 			}
 			
 			c.setCalcVersion(calc.getCalcVersion());
@@ -78,11 +76,11 @@ public class DiffDao {
 		
 		m_logger.info("Flushing to commit {} entries from the staged chart diff queue", stagedChartsAndDiffs.size());
 		List<Chart> charts = new ArrayList<>();
-		Set<ChartDiffValue> diffValues = new HashSet<>();
+		Set<ChartSkillsetValuesHistory> diffValues = new HashSet<>();
 		while (!stagedChartsAndDiffs.isEmpty()) {
 			Object[] entry = stagedChartsAndDiffs.poll();
 			charts.add((Chart)entry[0]);
-			diffValues.addAll((Set<ChartDiffValue>)entry[1]);
+			diffValues.addAll((Set<ChartSkillsetValuesHistory>)entry[1]);
 		}
 		chartDiffIndex.saveBulk(diffValues, Refresh.False);
 		chartIndex.saveBulk(charts, Refresh.False);
@@ -90,7 +88,7 @@ public class DiffDao {
 	}
 	
 	@Transactional
-	public Set<ChartDiffValue> getDiffValues(Chart c) {
+	public ChartSkillsetValuesHistory getDiffValues(Chart c) {
 		return chartDiffIndex.getDiffValues(c);
 	}
 

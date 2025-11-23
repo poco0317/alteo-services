@@ -15,32 +15,32 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.util.LogRuntime;
 
 @Service
-public class ChartDiffValueIndexService extends BaseIndexService<ChartDiffValue> {
+public class ChartDiffValueHistoryIndexService extends BaseIndexService<ChartSkillsetValuesHistory> {
 	
 	@Autowired
 	private CalcManager calc;
 
 	@Override
 	public String INDEX_NAME() {
-		return "chart-diff-value";
+		return "chart-diff-value-history";
 	}
 
 	@Override
-	public Class<ChartDiffValue> getClazz() {
-		return ChartDiffValue.class;
+	public Class<ChartSkillsetValuesHistory> getClazz() {
+		return ChartSkillsetValuesHistory.class;
 	}
 
 	/**
 	 * Get the diff values for the current calc version for a chart
 	 */
 	@LogRuntime
-	public Set<ChartDiffValue> getDiffValues(Chart c) {
+	public ChartSkillsetValuesHistory getDiffValues(Chart c) {
 		if (c == null) {
-			return new HashSet<>();
+			return null;
 		}
 		
 		SearchRequest.Builder req = new SearchRequest.Builder()
@@ -57,14 +57,18 @@ public class ChartDiffValueIndexService extends BaseIndexService<ChartDiffValue>
 						).build()
 					);
 		
-		return searchDocuments(req, null).stream().collect(Collectors.toSet());
+		Set<ChartSkillsetValuesHistory> result = searchDocuments(req, null).stream().collect(Collectors.toSet());
+		if (result == null || result.isEmpty()) {
+			return null;
+		}
+		return result.iterator().next();
 	}
 	
 	/**
 	 * Get the diff values for the current calc version for many charts
 	 */
 	@LogRuntime
-	public Set<ChartDiffValue> getDiffValues(Collection<Chart> charts) {
+	public Set<ChartSkillsetValuesHistory> getDiffValues(Collection<Chart> charts) {
 		if (charts == null || charts.isEmpty()) {
 			return new HashSet<>();
 		}

@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.model.User;
-import com.etterna.services.model.UserSkillsetValue;
+import com.etterna.services.model.UserSkillsetValuesHistory;
 import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,10 +43,10 @@ public class UserIndexService extends BaseIndexService<User> {
 		return searchDocuments(req, null);
 	}
 
-	public List<Object[]> findUsersWithSkillsets() {
+	public List<Object[]> findUsersWithSkillsetHistory() {
 		List<User> users = findAll();
 		Map<String, User> usermap = users.stream().collect(Collectors.toMap(user -> user.getUsername(), user -> user));
-		List<UserSkillsetValue> skillsetValues = skillsetIndex.findAll();
+		List<UserSkillsetValuesHistory> skillsetValues = skillsetIndex.findAll();
 		return skillsetValues.stream().map(ssv -> new Object[] {usermap.get(ssv.getUsername()), ssv}).collect(Collectors.toList());
 	}
 	

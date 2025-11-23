@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +36,7 @@ import com.etterna.services.MultiplayerDataService;
 import com.etterna.services.MultiplayerRequestService;
 import com.etterna.services.XmlProfileParsingService;
 import com.etterna.services.controller.legacy.dto.HighScorePagination;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.DiffDao;
@@ -44,7 +44,7 @@ import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.services.model.Pack;
 import com.etterna.services.model.User;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
@@ -170,7 +170,7 @@ public class SiteFrontendController {
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
 				
 		model.addAttribute("user", u);
-		model.addAttribute("skillsets", users.getUserSkillsets(u));
+		model.addAttribute("skillsets", new UserWithSkillsets(u));
 		model.addAttribute("scores", hspage.getHses());
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
@@ -312,7 +312,7 @@ public class SiteFrontendController {
 		int maxpage = ppage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
 		List<Pack> packsWithChart = packs.findPacksByChart(chartkey);
-		Set<ChartDiffValue> diffValues = chartDiffs.getDiffValues(ppage.getChart());
+		ChartSkillsetValuesHistory diffValues = chartDiffs.getDiffValues(ppage.getChart());
 		
 		model.addAttribute("chart", new ChartWithSkillsets(ppage.getChart(), diffValues, 0));
 		model.addAttribute("packs", packsWithChart);

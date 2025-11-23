@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.jni.MinaCalcJNI;
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.services.model.HighScore;
 
 import lombok.extern.slf4j.Slf4j;
@@ -162,14 +162,16 @@ public class CalcManager {
 	 * Outputs diff values in basic string or HTML table row form
 	 * Will only display values that are of the latest calc version
 	 */
+	@Deprecated
 	@Transactional
-	public String diffsToString(Set<ChartDiffValue> diffs, boolean inHTMLTableForm) {
+	public String diffsToString(Set<ChartSkillsetValuesHistory> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
-		List<ChartDiffValue> zzz = diffs.stream().filter(dv -> dv.getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
-		Collections.sort(zzz, new Comparator<ChartDiffValue>() {
+		/*
+		List<ChartSkillsetValuesHistory> zzz = diffs.stream().filter(dv -> dv.getCalcVersion() == getCalcVersion()).collect(Collectors.toList());
+		Collections.sort(zzz, new Comparator<ChartSkillsetValuesHistory>() {
 			@Override
-			public int compare(ChartDiffValue d1, ChartDiffValue d2) {
+			public int compare(ChartSkillsetValuesHistory d1, ChartSkillsetValuesHistory d2) {
 				return d1.getSkillset().compareTo(d2.getSkillset());
 			}
 		});
@@ -185,10 +187,12 @@ public class CalcManager {
 				sb.append("<td>"+String.format("%5.2f", ss.getValue())+"</td>");
 			});
 		}
+		*/
 		
 		return sb.toString();
 	}
 	
+	@Deprecated
 	@Transactional
 	public String ssrsToString(List<Float> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
@@ -214,28 +218,22 @@ public class CalcManager {
 	/**
 	 * Will return calc diff values for a chart
 	 */
-	public Set<ChartDiffValue> calcDiffValues(Chart c, float rate, float goal) {
-		m_logger.trace("Getting MSD for file {}", c.getChartKey());
-		byte[] data = noteInfo.getData(c.getChartKey());
+	public Set<ChartSkillsetValuesHistory> calcDiffValues(Chart c, float rate, float goal) {
+		final String ck = c.getChartKey();
+		m_logger.trace("Getting MSD for file {}", ck);
+		byte[] data = noteInfo.getData(ck);
 		int ifThisIsntHereItCrashes = data.length;
 		float[] ssrs = calc().minaSDCalcBytes(data, rate, goal);
-		List<Float> diffs = new ArrayList<>(ssrs.length);
+		List<Double> diffs = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
-			diffs.add(f);
+			diffs.add((double)f);
 		}
 		while (diffs.size() < 8) {
-			diffs.add(0.f);
+			diffs.add(0.0);
 		}
-		final int ver = getCalcVersion();
-		return new HashSet<>(Arrays.asList(new ChartDiffValue[] {
-				new ChartDiffValue(c, diffs.get(0).doubleValue(), Skillset.OVERALL, ver),
-				new ChartDiffValue(c, diffs.get(1).doubleValue(), Skillset.STREAM, ver),
-				new ChartDiffValue(c, diffs.get(2).doubleValue(), Skillset.JUMPSTREAM, ver),
-				new ChartDiffValue(c, diffs.get(3).doubleValue(), Skillset.HANDSTREAM, ver),
-				new ChartDiffValue(c, diffs.get(4).doubleValue(), Skillset.STAMINA, ver),
-				new ChartDiffValue(c, diffs.get(5).doubleValue(), Skillset.JACKSPEED, ver),
-				new ChartDiffValue(c, diffs.get(6).doubleValue(), Skillset.CHORDJACK, ver),
-				new ChartDiffValue(c, diffs.get(7).doubleValue(), Skillset.TECHNICAL, ver),
+		final Integer ver = getCalcVersion();
+		return new HashSet<>(Arrays.asList(new ChartSkillsetValuesHistory[] {
+				new ChartSkillsetValuesHistory(ck, ver, diffs.get(0), diffs.get(1), diffs.get(2), diffs.get(3), diffs.get(4), diffs.get(5), diffs.get(6), diffs.get(7)),
 		}));
 	}
 	

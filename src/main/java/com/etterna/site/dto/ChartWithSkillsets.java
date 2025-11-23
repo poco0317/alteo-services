@@ -1,9 +1,7 @@
 package com.etterna.site.dto;
 
-import java.util.Collection;
-
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,42 +20,19 @@ public class ChartWithSkillsets {
 	private Double technical = 0.0;
 	private Integer scoreCount = 0;
 	
-	public ChartWithSkillsets(Chart c, Collection<ChartDiffValue> diffValues, Integer count) {
+	public ChartWithSkillsets(Chart c, ChartSkillsetValuesHistory diffValues, Integer count) {
 		this.scoreCount = count;
 		this.chart = c;
 		
 		if (diffValues != null) {
-			diffValues.forEach(cdv -> {
-				final Double v = cdv.getValue();
-				switch (cdv.getSkillset()) {
-					case OVERALL:
-						this.overall = v;
-						break;
-					case STREAM:
-						this.stream = v;
-						break;
-					case JUMPSTREAM:
-						this.jumpstream = v;
-						break;
-					case HANDSTREAM:
-						this.handstream = v;
-						break;
-					case STAMINA:
-						this.stamina = v;
-						break;
-					case JACKSPEED:
-						this.jackspeed = v;
-						break;
-					case CHORDJACK:
-						this.chordjack = v;
-						break;
-					case TECHNICAL:
-						this.technical = v;
-						break;
-					default:
-						break;
-				}
-			});
+			overall = diffValues.getSs1Value();
+			stream = diffValues.getSs2Value();
+			jumpstream = diffValues.getSs3Value();
+			handstream = diffValues.getSs4Value();
+			stamina = diffValues.getSs5Value();
+			jackspeed = diffValues.getSs6Value();
+			chordjack = diffValues.getSs7Value();
+			technical = diffValues.getSs8Value();
 		}
 	}
 

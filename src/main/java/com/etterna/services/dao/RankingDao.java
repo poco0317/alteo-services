@@ -26,7 +26,7 @@ import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.datamodel.NoteInfo;
 import com.etterna.services.dao.SongCacheData.ChartCacheData;
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartDiffValue;
+import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.services.model.Pack;
 
 import lombok.extern.slf4j.Slf4j;
@@ -131,7 +131,7 @@ public class RankingDao {
 						it.remove();
 					} else if (f.isDone()) {
 						try {
-							chartDiffs.stageUpdatedDiffValues((Chart)f.get()[0], (Set<ChartDiffValue>)f.get()[1], false);
+							chartDiffs.stageUpdatedDiffValues((Chart)f.get()[0], (Set<ChartSkillsetValuesHistory>)f.get()[1], false);
 						} catch (InterruptedException | ExecutionException e) {
 							m_logger.error("Error finishing task " + e.getMessage(), e);
 						} finally {

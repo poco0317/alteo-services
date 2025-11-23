@@ -148,17 +148,16 @@ public class UserService {
 		GetUserInfoResponse r = new GetUserInfoResponse();
 		UserInfoDTO dto = new UserInfoDTO();
 		UserSkillsetDTO skills = new UserSkillsetDTO();
-		UserWithSkillsets uwss = users.getUserSkillsets(user);
-		dto.setPlayerRating(uwss.getOverall());
-		skills.setOverall(uwss.getOverall());
-		skills.setStream(uwss.getStream());
-		skills.setJumpstream(uwss.getJumpstream());
-		skills.setHandstream(uwss.getHandstream());
-		skills.setStamina(uwss.getStamina());
-		skills.setJackSpeed(uwss.getJackspeed());
-		skills.setChordjack(uwss.getChordjack());
-		skills.setTechnical(uwss.getTechnical());
-		dto.setSkillsets(skills);		
+		dto.setPlayerRating(user.getSs1Value());
+		skills.setOverall(user.getSs1Value());
+		skills.setStream(user.getSs2Value());
+		skills.setJumpstream(user.getSs3Value());
+		skills.setHandstream(user.getSs4Value());
+		skills.setStamina(user.getSs5Value());
+		skills.setJackSpeed(user.getSs6Value());
+		skills.setChordjack(user.getSs7Value());
+		skills.setTechnical(user.getSs8Value());
+		dto.setSkillsets(skills);
 		r.setAttributes(dto);
 		return r;
 	}
