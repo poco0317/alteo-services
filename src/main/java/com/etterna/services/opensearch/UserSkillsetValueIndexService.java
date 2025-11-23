@@ -1,8 +1,5 @@
 package com.etterna.services.opensearch;
 
-import java.util.List;
-
-import org.opensearch.client.opensearch.core.SearchRequest;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.model.User;
@@ -21,13 +18,19 @@ public class UserSkillsetValueIndexService extends BaseIndexService<UserSkillset
 		return UserSkillsetValuesHistory.class;
 	}
 
-	public List<UserSkillsetValuesHistory> findByUserAndCalcVersion(User user, int calcVersion) {
+	public UserSkillsetValuesHistory findByUserAndCalcVersion(User user, int calcVersion) {
+		UserSkillsetValuesHistory example = new UserSkillsetValuesHistory();
+		example.setUsername(user.getUsername());
+		example.setCalcVersion(calcVersion);
+		return findById(example);
+		/*
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q
 				.bool(bq -> bq
 						.must(qq -> qq.match(mq -> mq.field("username").query(fv -> fv.stringValue(user.getUsername()))))
 						.must(qq -> qq.match(mq -> mq.field("calcVersion").query(fv -> fv.longValue(calcVersion))))
 						));
 		return searchDocuments(req, null);
+		*/
 	}
 
 }

@@ -1,11 +1,13 @@
 package com.etterna.services.dao;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -57,9 +59,9 @@ public class UserDao {
 			final int calcVer = calc.getCalcVersion();
 			
 			for (User user : users) {
-				List<UserSkillsetValuesHistory> ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
+				UserSkillsetValuesHistory ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
 				if (ssvals != null) {
-					ussvIndex.deleteBulk(ssvals, Refresh.False);
+					ussvIndex.delete(ssvals, Refresh.False);
 				}
 				
 				HashMap<Skillset, List<Double>> skillsetSSRs = new HashMap<>();
@@ -118,6 +120,14 @@ public class UserDao {
 				}
 				
 				newssvals.add(0, calc.aggregateSkill(newssvals, 0.1, 1.125, 0.0, 10.24));
+				user.setSs1Value(newssvals.get(0));
+				user.setSs2Value(newssvals.get(1));
+				user.setSs3Value(newssvals.get(2));
+				user.setSs4Value(newssvals.get(3));
+				user.setSs5Value(newssvals.get(4));
+				user.setSs6Value(newssvals.get(5));
+				user.setSs7Value(newssvals.get(6));
+				user.setSs8Value(newssvals.get(7));
 				user.setMustRecalcRating(false);
 				ussvIndex.save(new UserSkillsetValuesHistory(user.getUsername(), calcVer, newssvals), Refresh.False);
 				userIndex.save(user, Refresh.True);
@@ -140,6 +150,11 @@ public class UserDao {
 	@Transactional
 	public User getByUserId(String string) {
 		return userIndex.findById(string);
+	}
+	
+	@Transactional
+	public Map<String, User> getByUserNamesMap(Collection<String> usernames) {
+		return userIndex.findUsersByNameMap(usernames);
 	}
 	
 	@Transactional
@@ -254,6 +269,10 @@ public class UserDao {
 				}
 			}
 		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(usvs.size() / (float)itemsPerPage)));
+	}
+
+	public void syncUsers(Collection<User> userList) {
+		userIndex.saveBulk(userList, Refresh.True);
 	}
 
 }

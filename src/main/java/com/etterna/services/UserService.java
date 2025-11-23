@@ -1,9 +1,11 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -19,7 +21,6 @@ import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO.Sk
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
-import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
 import com.etterna.services.model.Chart;
@@ -160,6 +161,15 @@ public class UserService {
 		dto.setSkillsets(skills);
 		r.setAttributes(dto);
 		return r;
+	}
+	
+	public Map<String, User> getByUsernamesMap(Collection<String> usernames) {
+		return users.getByUserNamesMap(usernames);
+	}
+
+	public void setMustRecalcRating(Collection<User> userList, boolean mustRecalcRating) {
+		userList.forEach(u -> u.setMustRecalcRating(mustRecalcRating));
+		users.syncUsers(userList);
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -55,6 +54,9 @@ public class ScoreService {
 	@Autowired
 	private SessionService sessions;
 	
+	@Autowired
+	private UserService users;
+	
 	private ExecutorService bulkSsrExecutor = Executors.newWorkStealingPool();
 	
 	private static final boolean SAVE_OLD_SSRS = true;
@@ -85,6 +87,9 @@ public class ScoreService {
 				}
 				organizedScores.get(ck).add(hs);
 			});
+			
+			// due to changed ssrs, all these users need to have their ratings updated
+			Map<String, User> updatedUsers = users.getByUsernamesMap(scores.stream().map(s -> s.getUsername()).collect(Collectors.toList()));
 			
 			List<Future<Map<HighScore, List<Float>>>> futures = new LinkedList<>();
 			for (Entry<String, List<HighScore>> entry : organizedScores.entrySet()) {
@@ -163,6 +168,8 @@ public class ScoreService {
 				}
 			}
 			highScores.flushStagedSsrs();
+			
+			users.setMustRecalcRating(updatedUsers.values(), true);
 			
 			m_logger.info("Finished updating queued scores");
 		} else {
