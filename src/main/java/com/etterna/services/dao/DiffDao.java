@@ -62,6 +62,9 @@ public class DiffDao {
 			c.setSs6Value(newDiffs.getSs6Value());
 			c.setSs7Value(newDiffs.getSs7Value());
 			c.setSs8Value(newDiffs.getSs8Value());
+			if (newDiffs.getSs1Value() <= 0.0) {
+				m_logger.info("Chart MSD calculated at 0: {} {}", c.getTitle(), c.getChartKey());
+			}
 			
 			if (instantCommit) {
 				chartDiffHistoryIndex.save(newDiffs, Refresh.False);

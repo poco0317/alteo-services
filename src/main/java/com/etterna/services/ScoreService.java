@@ -59,6 +59,7 @@ public class ScoreService {
 	
 	private static final boolean SAVE_OLD_SSRS = true;
 	private static final long HS_METADATA_UPDATE_MILLIS = 1000L * 10L; // 10 secs
+	private static final long START_DELAY = 1000L * 10L;
 	
 	public void updateSSRs() {
 		List<HighScore> scores = highScores.getScoresToCalculate();
@@ -172,7 +173,7 @@ public class ScoreService {
 		}
 	}
 	
-	@Scheduled(fixedDelay = HS_METADATA_UPDATE_MILLIS)
+	@Scheduled(fixedDelay = HS_METADATA_UPDATE_MILLIS, initialDelay = START_DELAY)
 	public void resolveHighScoreMetadata() {
 		List<HighScore> scores = highScores.getScoresWithMissingChartMetadata();
 		if (!scores.isEmpty()) {
