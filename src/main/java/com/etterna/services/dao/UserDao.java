@@ -58,7 +58,6 @@ public class UserDao {
 			
 			for (User user : users) {
 				List<UserSkillsetValuesHistory> ssvals = ussvIndex.findByUserAndCalcVersion(user, calcVer);
-				List<HighScore> userScores = scoreIndex.findByUser(user);
 				if (ssvals != null) {
 					ussvIndex.deleteBulk(ssvals, Refresh.False);
 				}
@@ -71,6 +70,7 @@ public class UserDao {
 					skillsetSSRs.get(ss).add(v);
 				};
 				
+				List<HighScore> userScores = scoreIndex.findByUser(user);
 				m_logger.info("Updating user {} SSRs - {} total scores", user.getUsername(), userScores.size());
 				for (HighScore hs : userScores) {
 					if (hs.getCalcVersion() != calc.getCalcVersion()) {

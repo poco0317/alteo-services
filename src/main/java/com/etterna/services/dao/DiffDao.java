@@ -29,7 +29,7 @@ public class DiffDao {
 	private ChartIndexService chartIndex;
 	
 	@Autowired
-	private ChartDiffValueHistoryIndexService chartDiffIndex;
+	private ChartDiffValueHistoryIndexService chartDiffHistoryIndex;
 	
 	@Autowired
 	private CalcManager calc;
@@ -43,20 +43,28 @@ public class DiffDao {
 	 * This prepares new difficulty values to be committed but does not save anything.
 	 * This may delete old difficulty values under certain circumstances.
 	 */
-	@SuppressWarnings("unused")
-	public void stageUpdatedDiffValues(Chart c, Set<ChartSkillsetValuesHistory> newDiffs, boolean instantCommit) {
-		ChartSkillsetValuesHistory diffs = chartDiffIndex.getDiffValues(c);
+	public void stageUpdatedDiffValues(Chart c, ChartSkillsetValuesHistory newDiffs, boolean instantCommit) {
 		if (c.getCalcVersion() != calc.getCalcVersion()) {
 			m_logger.debug("Updating diffs for {}", c.getChartKey());
 			
-			if (DELETE_OLD_DIFFS && diffs != null) {
-				chartDiffIndex.delete(diffs, Refresh.False);
+			if (DELETE_OLD_DIFFS) {
+				ChartSkillsetValuesHistory diffs = chartDiffHistoryIndex.getDiffValues(c);
+				if (diffs != null)
+					chartDiffHistoryIndex.delete(diffs, Refresh.False);
 			}
 			
 			c.setCalcVersion(calc.getCalcVersion());
+			c.setSs1Value(newDiffs.getSs1Value());
+			c.setSs2Value(newDiffs.getSs2Value());
+			c.setSs3Value(newDiffs.getSs3Value());
+			c.setSs4Value(newDiffs.getSs4Value());
+			c.setSs5Value(newDiffs.getSs5Value());
+			c.setSs6Value(newDiffs.getSs6Value());
+			c.setSs7Value(newDiffs.getSs7Value());
+			c.setSs8Value(newDiffs.getSs8Value());
 			
 			if (instantCommit) {
-				chartDiffIndex.saveBulk(newDiffs, Refresh.False);
+				chartDiffHistoryIndex.save(newDiffs, Refresh.False);
 				chartIndex.save(c, Refresh.False);
 			} else {
 				stagedChartsAndDiffs.add(new Object[] {c, newDiffs});
@@ -70,7 +78,6 @@ public class DiffDao {
 	/**
 	 * Clears the difficulty values that are staged to be committed, if any. This usually takes place automatically in chunks of 100 charts
 	 */
-	@SuppressWarnings("unchecked")
 	public void flushStagedDiffValues() {
 		if (stagedChartsAndDiffs.isEmpty()) return;
 		
@@ -80,16 +87,16 @@ public class DiffDao {
 		while (!stagedChartsAndDiffs.isEmpty()) {
 			Object[] entry = stagedChartsAndDiffs.poll();
 			charts.add((Chart)entry[0]);
-			diffValues.addAll((Set<ChartSkillsetValuesHistory>)entry[1]);
+			diffValues.add((ChartSkillsetValuesHistory)entry[1]);
 		}
-		chartDiffIndex.saveBulk(diffValues, Refresh.False);
+		chartDiffHistoryIndex.saveBulk(diffValues, Refresh.False);
 		chartIndex.saveBulk(charts, Refresh.False);
 		m_logger.info("Finished flushing staged chart diff queue");
 	}
 	
 	@Transactional
-	public ChartSkillsetValuesHistory getDiffValues(Chart c) {
-		return chartDiffIndex.getDiffValues(c);
+	public ChartSkillsetValuesHistory getCurrentDiffValuesHistory(Chart c) {
+		return chartDiffHistoryIndex.getDiffValues(c);
 	}
 
 }

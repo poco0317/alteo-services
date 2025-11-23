@@ -1,7 +1,6 @@
 package com.etterna.site.dto;
 
 import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartSkillsetValuesHistory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -20,20 +19,18 @@ public class ChartWithSkillsets {
 	private Double technical = 0.0;
 	private Integer scoreCount = 0;
 	
-	public ChartWithSkillsets(Chart c, ChartSkillsetValuesHistory diffValues, Integer count) {
+	public ChartWithSkillsets(Chart c, Integer count) {
 		this.scoreCount = count;
 		this.chart = c;
 		
-		if (diffValues != null) {
-			overall = diffValues.getSs1Value();
-			stream = diffValues.getSs2Value();
-			jumpstream = diffValues.getSs3Value();
-			handstream = diffValues.getSs4Value();
-			stamina = diffValues.getSs5Value();
-			jackspeed = diffValues.getSs6Value();
-			chordjack = diffValues.getSs7Value();
-			technical = diffValues.getSs8Value();
-		}
+		overall = c.getSs1Value();
+		stream = c.getSs2Value();
+		jumpstream = c.getSs3Value();
+		handstream = c.getSs4Value();
+		stamina = c.getSs5Value();
+		jackspeed = c.getSs6Value();
+		chordjack = c.getSs7Value();
+		technical = c.getSs8Value();
 	}
 
 	public ChartWithSkillsets() {}

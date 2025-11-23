@@ -103,7 +103,6 @@ public class RankingDao {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Transactional
 	public void updateMSDs() {
 		m_logger.info("Starting Chart Difficulty Updates");
@@ -131,7 +130,7 @@ public class RankingDao {
 						it.remove();
 					} else if (f.isDone()) {
 						try {
-							chartDiffs.stageUpdatedDiffValues((Chart)f.get()[0], (Set<ChartSkillsetValuesHistory>)f.get()[1], false);
+							chartDiffs.stageUpdatedDiffValues((Chart)f.get()[0], (ChartSkillsetValuesHistory)f.get()[1], false);
 						} catch (InterruptedException | ExecutionException e) {
 							m_logger.error("Error finishing task " + e.getMessage(), e);
 						} finally {

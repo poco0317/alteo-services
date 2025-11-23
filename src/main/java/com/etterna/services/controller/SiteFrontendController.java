@@ -312,9 +312,8 @@ public class SiteFrontendController {
 		int maxpage = ppage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
 		List<Pack> packsWithChart = packs.findPacksByChart(chartkey);
-		ChartSkillsetValuesHistory diffValues = chartDiffs.getDiffValues(ppage.getChart());
 		
-		model.addAttribute("chart", new ChartWithSkillsets(ppage.getChart(), diffValues, 0));
+		model.addAttribute("chart", new ChartWithSkillsets(ppage.getChart(), 0));
 		model.addAttribute("packs", packsWithChart);
 		model.addAttribute("scores", ppage.getScores());
 		model.addAttribute("currentRate", ppage.getRate());

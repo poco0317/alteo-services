@@ -218,7 +218,7 @@ public class CalcManager {
 	/**
 	 * Will return calc diff values for a chart
 	 */
-	public Set<ChartSkillsetValuesHistory> calcDiffValues(Chart c, float rate, float goal) {
+	public ChartSkillsetValuesHistory calcDiffValues(Chart c, float rate, float goal) {
 		final String ck = c.getChartKey();
 		m_logger.trace("Getting MSD for file {}", ck);
 		byte[] data = noteInfo.getData(ck);
@@ -232,9 +232,7 @@ public class CalcManager {
 			diffs.add(0.0);
 		}
 		final Integer ver = getCalcVersion();
-		return new HashSet<>(Arrays.asList(new ChartSkillsetValuesHistory[] {
-				new ChartSkillsetValuesHistory(ck, ver, diffs.get(0), diffs.get(1), diffs.get(2), diffs.get(3), diffs.get(4), diffs.get(5), diffs.get(6), diffs.get(7)),
-		}));
+		return new ChartSkillsetValuesHistory(ck, ver, diffs.get(0), diffs.get(1), diffs.get(2), diffs.get(3), diffs.get(4), diffs.get(5), diffs.get(6), diffs.get(7));
 	}
 	
 	/**

@@ -164,7 +164,7 @@ public class ChartDao {
 		
 		List<ChartWithSkillsets> cip = cwc
 				.stream()
-				.map(c -> new ChartWithSkillsets(c.getChart(), diffIndex.getDiffValues(c.getChart()), c.getCount().intValue()))
+				.map(c -> new ChartWithSkillsets(c.getChart(), c.getCount().intValue()))
 				.collect(Collectors.toList());
 		
 		Collections.sort(cip, new Comparator<ChartWithSkillsets>() {
@@ -227,12 +227,12 @@ public class ChartDao {
 	
 	@Transactional
 	public ChartWithSkillsets getChartWithSkillsets(String chartKey) {
-		return chartsIndex.findChartWithSkillsets(chartKey, calc.getCalcVersion());
+		return chartsIndex.findChartWithSkillsets(chartKey);
 	}
 	
 	@Transactional
 	public Map<String, ChartWithSkillsets> getChartsWithSkillsetsMap(Collection<String> chartKeys) {
-		return chartsIndex.findChartsWithSkillsetsMap(chartKeys, calc.getCalcVersion());
+		return chartsIndex.findChartsWithSkillsetsMap(chartKeys);
 	}
 
 }
