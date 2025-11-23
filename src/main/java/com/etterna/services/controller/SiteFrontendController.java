@@ -39,12 +39,10 @@ import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
-import com.etterna.services.dao.DiffDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.model.ChartSkillsetValuesHistory;
 import com.etterna.services.model.Pack;
 import com.etterna.services.model.User;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
@@ -92,9 +90,6 @@ public class SiteFrontendController {
 	
 	@Autowired
 	private MultiplayerDataService multiplayerData;
-	
-	@Autowired
-	private DiffDao chartDiffs;
 	
 	private int parseRate(Optional<String> rate) {
 		String rt = rate.orElse("-1");

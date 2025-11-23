@@ -17,5 +17,9 @@ public class HighScoreCollection {
 		this.hses = hses;
 		this.count = count;
 	}
+	public HighScoreCollection(List<HighScore> hses) {
+		this.hses = hses;
+		this.count = hses.size();
+	}
 
 }

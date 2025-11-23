@@ -7,14 +7,12 @@ import java.util.stream.Collectors;
 
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch._types.FieldSort;
-import org.opensearch.client.opensearch._types.NestedSortValue;
 import org.opensearch.client.opensearch._types.SortOrder;
 import org.opensearch.client.opensearch._types.aggregations.Aggregate;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteByQueryRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
-import org.opensearch.client.opensearch.core.SearchRequest.Builder;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.Skillset;
@@ -23,7 +21,6 @@ import com.etterna.services.model.HighScore;
 import com.etterna.services.model.User;
 import com.etterna.services.opensearch.model.HighScoreCollection;
 import com.etterna.site.dto.AllLeaderboardSort;
-import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.util.LogRuntime;
 
@@ -125,8 +122,8 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 					)
 				))
 				.aggregations("count", agg -> agg.valueCount(vc -> vc.field("scoreKey.keyword")))
-				.from((page-1)* itemsPerPage)
-				.size(itemsPerPage)
+				//.from((page-1)* itemsPerPage)
+				//.size(itemsPerPage)
 				
 				// primary sort order
 				.sort(so -> {
@@ -227,9 +224,11 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 					return so;
 				});
 		
-		SearchResponse<HighScore> resp = searchInternal(req.index(INDEX_NAME()).build());
-		long count = (long)resp.aggregations().get("count").valueCount().value();
-		return new HighScoreCollection(hits(resp), count);
+		// TODO this fails after 10000 results
+		//SearchResponse<HighScore> resp = searchInternal(req.index(INDEX_NAME()).build());
+		//long count = (long)resp.aggregations().get("count").valueCount().value();
+		//return new HighScoreCollection(hits(resp), count);
+		return new HighScoreCollection(searchDocuments(req));
 	}
 
 	@LogRuntime
@@ -241,8 +240,8 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 					)
 				))
 				.aggregations("count", agg -> agg.valueCount(vc -> vc.field("scoreKey.keyword")))
-				.from((page-1) * itemsPerPage)
-				.size(itemsPerPage)
+				//.from((page-1) * itemsPerPage)
+				//.size(itemsPerPage)
 				
 				// primary sort order
 				.sort(so -> {
@@ -343,9 +342,11 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 					return so;
 				});
 		
-		SearchResponse<HighScore> resp = searchInternal(req.index(INDEX_NAME()).build());
-		long count = (long)resp.aggregations().get("count").valueCount().value();
-		return new HighScoreCollection(hits(resp), count);
+		// TODO this fails after 10000 results
+		//SearchResponse<HighScore> resp = searchInternal(req.index(INDEX_NAME()).build());
+		//long count = (long)resp.aggregations().get("count").valueCount().value();
+		//return new HighScoreCollection(hits(resp), count);
+		return new HighScoreCollection(searchDocuments(req));
 	}
 
 	@LogRuntime

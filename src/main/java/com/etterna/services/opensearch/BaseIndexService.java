@@ -47,6 +47,9 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 */
 	public abstract Class<T> getClazz();
 	
+	/**
+	 * Basic search given a built SearchRequest. Limit of 10000 results.
+	 */
 	protected SearchResponse<T> searchInternal(SearchRequest req) {
 		long t1 = System.currentTimeMillis();
 		SearchResponse<T> o = search.search(req, getClazz());
@@ -55,10 +58,16 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 		return o;
 	}
 	
+	/**
+	 * Internal search method for repetitive scrolling searches, 10000 records at a time.
+	 */
 	protected SearchResponse<T> searchInternal(SearchRequest.Builder builder) {
 		return searchInternal(builder, SCROLL_TIME);
 	}
 	
+	/**
+	 * Internal search method for repetitive scrolling searches, 10000 records at a time.
+	 */
 	protected SearchResponse<T> searchInternal(SearchRequest.Builder builder, String scrollTime) {
 		SearchRequest.Builder req = builder.index(INDEX_NAME()).size(REQUEST_CHUNK_SIZE);
 		if (scrollTime != null) {
@@ -67,14 +76,23 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 		return searchInternal(req.build());
 	}
 	
+	/**
+	 * Dump the results of a search of up to 10000 results
+	 */
 	protected List<T> searchDocuments(SearchRequest req) {
 		return hits(searchInternal(req));
 	}
 	
+	/**
+	 * Dump the results of a search of arbitrary size
+	 */
 	protected List<T> searchDocuments(SearchRequest.Builder builder) {
 		return searchDocuments(builder, SCROLL_TIME);
 	}
 	
+	/**
+	 * Dump the results of a search of arbitrary size
+	 */
 	@LogRuntime
 	protected List<T> searchDocuments(SearchRequest.Builder builder, String scrollTime) {
 		SearchResponse<T> resp = searchInternal(builder);

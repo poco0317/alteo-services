@@ -164,7 +164,8 @@ public class HighScoreDao {
 				hsvs.values()
 					.stream()
 					.sorted(AllLeaderboardSort.HighScoreFullUnionComparator(ls))
-					.collect(Collectors.toList()),
+					.collect(Collectors.toList())
+					.subList(sliceStart, sliceEnd),
 				page,
 				Math.max(1, (int)Math.ceil(count / (float)itemsPerPage)),
 				rate);
