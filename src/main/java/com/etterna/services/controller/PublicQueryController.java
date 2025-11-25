@@ -14,16 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.User;
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.User;
 import com.etterna.site.dto.LeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
 
@@ -52,7 +51,7 @@ public class PublicQueryController {
 	private UserDao users;
 	
 	private static final String NAV = "<a href='/query'>All Packs</a><br><a href='/query/users'>User Leaderboard</a><br><br>";
-	
+	/*
 	@GetMapping("")
 	public String getRanked() {
 		m_logger.info("QUERY API CALLED :: Base Url");
@@ -306,5 +305,5 @@ public class PublicQueryController {
 		
 		return NAV+sb.toString();
 	}
-	
+	*/
 }

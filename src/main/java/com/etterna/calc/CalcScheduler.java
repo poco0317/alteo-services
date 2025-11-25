@@ -26,36 +26,27 @@ public class CalcScheduler {
 	@Autowired
 	private ScoreService scores;
 	
-	private static final long USER_SKILLSET_TIMER = 1000L * 30L; // 30 secs
-	private static final long SCORE_SSRS_TIMER = 1000L * 30L; // 30 secs
-	private static final long CHART_MSD_TIMER = 1000L * 30L; // 30 secs
+	private static final long TIME_BETWEEN = 1000L * 30L; // 30 secs
+	private static final long START_DELAY = 1000L * 5L;
 	
 	@Value("${etterna.calc.scheduler.enabled:false}")
 	private Boolean enabled;
 	
 	@PostConstruct
 	void init() {
-		m_logger.info("Started Calc Scheduler - scheduling {}", enabled);
+		m_logger.info("Started Calc Scheduler - scheduling {} - execution buffer {}ms", enabled, TIME_BETWEEN);
 	}
 	
-	@Scheduled(fixedDelay = USER_SKILLSET_TIMER)
-	void maintainUserSkillsetRatings() {
+	@Scheduled(fixedDelay = TIME_BETWEEN, initialDelay = START_DELAY)
+	void maintain() {
 		if (!enabled) return;
+		if (packRanking.getPackQueueSize() > 0) {
+			m_logger.info("Skipped MSD/SSR/User Ratings update because pack ranking is in progress");
+			return;
+		}
+		packRanking.updateMSDs();
+		scores.updateSSRs();
 		users.maintainUserSkillsetRatings();
 	}
-	
-	@Scheduled(fixedDelay = SCORE_SSRS_TIMER)
-	void updateSSRs() {
-		if (!enabled) return;
-		scores.updateSSRs();
-	}
-	
-	@Scheduled(fixedDelay = CHART_MSD_TIMER)
-	void updateMSDs() {
-		if (!enabled) return;
-		packRanking.updateMSDs();
-	}
-	
-	
 
 }

@@ -14,27 +14,27 @@
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-12 text-center">
-					<h1><a th:text="${score.score.chart.title + ' - ' + score.score.chart.difficulty}" th:href="@{/chart/{ck}(ck=${score.score.chart.chartKey})}"></a></h1>
-					<h3 th:text="${#numbers.formatDecimal(score.score.musicRate / 100.0, 1, 2) + 'x'}"></h3>
-					<h5 th:text="${#numbers.formatDecimal(score.score.ssrNorm / 10000.0, 2, 4) + '%'}"></h5>
-					<h6><a th:text="${'By: ' + score.score.user.username}" th:href="@{/user/{user}(user=${score.score.user.username})}"></a></h6>
-					<h6 th:text="${'Date: ' + score.score.dateStr}"></h6>
-					<h6 th:text="${'Mods: ' + score.score.modString}"></h6>
+					<h1><a th:text="${score.chartUnion.chart.title + ' - ' + score.chartUnion.chart.difficulty}" th:href="@{/chart/{ck}(ck=${score.chartUnion.chart.chartKey})}"></a></h1>
+					<h3 th:text="${#numbers.formatDecimal(score.hsUnion.musicRate / 100.0, 1, 2) + 'x'}"></h3>
+					<h5 th:text="${#numbers.formatDecimal(score.hsUnion.ssrNorm / 10000.0, 2, 4) + '%'}"></h5>
+					<h6><a th:text="${'By: ' + score.user.username}" th:href="@{/user/{user}(user=${score.user.username})}"></a></h6>
+					<h6 th:text="${'Date: ' + score.hsUnion.dateStr}"></h6>
+					<h6 th:text="${'Mods: ' + score.hsUnion.modString}"></h6>
 					<h6>Packs:</h6>
-					<h6 th:each="pack, stat: ${score.score.chart.packs}"><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.name})}"></a></h6>
+					<h6 th:each="pack, stat: ${packs}"><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.name})}"></a></h6>
 				</div>
 			</div>
 
 			<div class="row" style="margin-top: 5vh;">
 				<div class="col-md-12 text-center">
-					<h6 th:text="${'Overall: ' + #numbers.formatDecimal(score.overall, 2, 2)}"></h6>
-					<h6 th:text="${'Stream: ' + #numbers.formatDecimal(score.stream, 2, 2)}"></h6>
-					<h6 th:text="${'Jumpstream: ' + #numbers.formatDecimal(score.jumpstream, 2, 2)}"></h6>
-					<h6 th:text="${'Handstream: ' + #numbers.formatDecimal(score.handstream, 2, 2)}"></h6>
-					<h6 th:text="${'Stamina: ' + #numbers.formatDecimal(score.stamina, 2, 2)}"></h6>
-					<h6 th:text="${'Jackspeed: ' + #numbers.formatDecimal(score.jackspeed, 2, 2)}"></h6>
-					<h6 th:text="${'Chordjack: ' + #numbers.formatDecimal(score.chordjack, 2, 2)}"></h6>
-					<h6 th:text="${'Technical: ' + #numbers.formatDecimal(score.technical, 2, 2)}"></h6>
+					<h6 th:text="${'Overall: ' + #numbers.formatDecimal(score.hsUnion.overall, 2, 2)}"></h6>
+					<h6 th:text="${'Stream: ' + #numbers.formatDecimal(score.hsUnion.stream, 2, 2)}"></h6>
+					<h6 th:text="${'Jumpstream: ' + #numbers.formatDecimal(score.hsUnion.jumpstream, 2, 2)}"></h6>
+					<h6 th:text="${'Handstream: ' + #numbers.formatDecimal(score.hsUnion.handstream, 2, 2)}"></h6>
+					<h6 th:text="${'Stamina: ' + #numbers.formatDecimal(score.hsUnion.stamina, 2, 2)}"></h6>
+					<h6 th:text="${'Jackspeed: ' + #numbers.formatDecimal(score.hsUnion.jackspeed, 2, 2)}"></h6>
+					<h6 th:text="${'Chordjack: ' + #numbers.formatDecimal(score.hsUnion.chordjack, 2, 2)}"></h6>
+					<h6 th:text="${'Technical: ' + #numbers.formatDecimal(score.hsUnion.technical, 2, 2)}"></h6>
 				</div>
 			</div>
 			
@@ -42,44 +42,44 @@
 				<div class="container">
 				
 					<h5>Judgments</h5>
-					<a th:text="${'Marvelous: '+score.score.marvCount}"></a><br>
-					<a th:text="${'Perfect: '+score.score.perfCount}"></a><br>
-					<a th:text="${'Great: '+score.score.greatCount}"></a><br>
-					<a th:text="${'Good: '+score.score.goodCount}"></a><br>
-					<a th:text="${'Bad: '+score.score.badCount}"></a><br>
-					<a th:text="${'Miss: '+score.score.missCount}"></a><br>
+					<a th:text="${'Marvelous: '+score.hsUnion.marvCount}"></a><br>
+					<a th:text="${'Perfect: '+score.hsUnion.perfCount}"></a><br>
+					<a th:text="${'Great: '+score.hsUnion.greatCount}"></a><br>
+					<a th:text="${'Good: '+score.hsUnion.goodCount}"></a><br>
+					<a th:text="${'Bad: '+score.hsUnion.badCount}"></a><br>
+					<a th:text="${'Miss: '+score.hsUnion.missCount}"></a><br>
 					
 					<br>
-					<a th:text="${'Holds Held: '+score.score.heldCount}"></a><br>
-					<a th:text="${'Holds Dropped: '+score.score.letgoCount}"></a><br>
-					<a th:text="${'Holds Missed: '+score.score.ngCount}"></a><br>
+					<a th:text="${'Holds Held: '+score.hsUnion.heldCount}"></a><br>
+					<a th:text="${'Holds Dropped: '+score.hsUnion.letgoCount}"></a><br>
+					<a th:text="${'Holds Missed: '+score.hsUnion.ngCount}"></a><br>
 					
 					<br>
-					<a th:text="${'Mines Hit: '+score.score.hitMineCount}"></a><br>
+					<a th:text="${'Mines Hit: '+score.hsUnion.hitMineCount}"></a><br>
 					
 					<br><br>
 					
 					<h5>Extra Info</h5>
-					<a th:text="${'Max Combo: '+score.score.maxCombo}"></a><br>
-					<a th:text="${'Grade: '+score.score.grade}"></a><br>
-					<a th:text="${'WifeGrade: '+score.score.wifeGrade}"></a><br>
-					<a th:text="${'WifeVersion: '+score.score.wifeVersion}"></a><br>
-					<a th:text="${'WifePoints: '+score.score.wifePoints}"></a><br>
-					<a th:text="${'Original WifePercent: '+score.score.wifePercent}"></a><br>
-					<a th:text="${'Judge Scale: '+score.score.judgeScale}"></a><br>
-					<a th:text="${'TopScore: '+score.score.topScore}"></a><br>
-					<a th:text="${'EtternaValid: '+score.score.etternaValid}"></a><br>
-					<a th:text="${'NegBPM: '+score.score.negBpm}"></a><br>
-					<a th:text="${'NoCC: '+score.score.noCC}"></a><br>
+					<a th:text="${'Max Combo: '+score.hsUnion.maxCombo}"></a><br>
+					<a th:text="${'Grade: '+score.hsUnion.grade}"></a><br>
+					<a th:text="${'WifeGrade: '+score.hsUnion.wifeGrade}"></a><br>
+					<a th:text="${'WifeVersion: '+score.hsUnion.wifeVersion}"></a><br>
+					<a th:text="${'WifePoints: '+score.hsUnion.wifePoints}"></a><br>
+					<a th:text="${'Original WifePercent: '+score.hsUnion.wifePercent}"></a><br>
+					<a th:text="${'Judge Scale: '+score.hsUnion.judgeScale}"></a><br>
+					<a th:text="${'TopScore: '+score.hsUnion.topScore}"></a><br>
+					<a th:text="${'EtternaValid: '+score.hsUnion.etternaValid}"></a><br>
+					<a th:text="${'NegBPM: '+score.hsUnion.negBpm}"></a><br>
+					<a th:text="${'NoCC: '+score.hsUnion.noCC}"></a><br>
 					
 					<br><br>
 					
 					<div sec:authorize="hasAuthority('ROLE_ADMIN')">
 						<h5>Secret Info</h5>
-						<a th:text="${'Brittle Key: '+score.score.brittleKey}"></a><br>
-						<a th:text="${'GUID: '+score.score.guid}"></a><br>
-						<a th:text="${'Nerf Multiplier: '+score.score.nerfMultiplier}"></a><br>
-						<a th:text="${'Admin Invalidation: '+score.score.manuallyInvalid}"></a><br>
+						<a th:text="${'Brittle Key: '+score.hsUnion.brittleKey}"></a><br>
+						<a th:text="${'GUID: '+score.hsUnion.guid}"></a><br>
+						<a th:text="${'Nerf Multiplier: '+score.hsUnion.nerfMultiplier}"></a><br>
+						<a th:text="${'Admin Invalidation: '+score.hsUnion.manuallyInvalid}"></a><br>
 					</div>
 				</div>
 			</div>

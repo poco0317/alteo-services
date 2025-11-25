@@ -1,6 +1,7 @@
 package com.etterna.services.dao;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -10,14 +11,15 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.hibernate.Hibernate;
+import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.Pack;
-import com.etterna.services.datamodel.RankedChartkey;
-import com.etterna.services.repo.ChartRepository;
+import com.etterna.calc.CalcManager;
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.Pack;
+import com.etterna.services.opensearch.ChartDiffValueHistoryIndexService;
+import com.etterna.services.opensearch.ChartIndexService;
 import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.ChartsInPackPagination;
@@ -25,6 +27,7 @@ import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,58 +36,59 @@ import lombok.extern.slf4j.Slf4j;
 public class ChartDao {
 		
 	@Autowired
-	private ChartRepository charts;
+	private ChartIndexService chartsIndex;
+	
+	@Autowired
+	private ChartDiffValueHistoryIndexService diffIndex;
 	
 	@Autowired
 	private PackDao packs;
-
-	@Transactional
-	public Chart get(String chartkey) {
-		return get(chartkey, false);
-	}
+	
+	@Autowired
+	private CalcManager calc;
 	
 	@Transactional
-	public Chart get(String chartkey, boolean initPacks) {
-		Chart c = null;
-		if (charts.existsById(chartkey)) {
-			c = charts.getById(chartkey);
-		} else {
-			c = charts.findById(chartkey).orElse(null);
-		}
-		if (initPacks && c != null) {
-			Hibernate.initialize(c.getPacks());
-		}
-		return c;
+	public Chart get(String chartkey) {
+		return chartsIndex.findById(chartkey);
+	}
+	
+	public Map<String, Chart> get(Collection<String> chartkeys) {
+		return chartsIndex.findChartsByChartKeyMap(chartkeys);
 	}
 	
 	@Transactional
 	public void save(Chart c) {
-		charts.save(c);
+		chartsIndex.save(c, Refresh.True);
+	}
+	
+	@Transactional
+	public boolean saveBulk(List<Chart> newCharts) {
+		return chartsIndex.saveBulk(newCharts, Refresh.True);
 	}
 	
 	@Transactional
 	public long count() {
-		return charts.count();
+		return chartsIndex.count();
 	}
 	
 	@Transactional
 	public List<Chart> findByCalcVersionLessThan(int version) {
-		return charts.findByCalcVersionLessThan(version);
+		return chartsIndex.findByCalcVersionLessThan(version);
 	}
 	
 	@Transactional
 	public List<Chart> findByCalcVersionNotEqual(int version) {
-		return charts.findByCalcVersionNot(version);
+		return chartsIndex.findByCalcVersionNot(version);
 	}
 	
 	@Transactional
-	public List<RankedChartkey> findChartKeyByChartKeyNotNull() {
-		return charts.findChartKeyByChartKeyNotNull();
+	public Set<String> findChartKeyByChartKeyNotNull() {
+		return chartsIndex.findChartKeyByChartKeyNotNull();
 	}
 	
 	@Transactional
 	public PackNameWithChartCountPagination getPacksAndChartCounts(PacksSort ps, int page, int itemsPerPage) {
-		List<PackNameWithChartCount> pncc = charts.getPackNamesWithChartCounts();
+		List<PackNameWithChartCount> pncc = chartsIndex.getPackNamesWithChartCounts();
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), pncc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, pncc.size());
@@ -93,7 +97,7 @@ public class ChartDao {
 			return new PackNameWithChartCountPagination(pncc, 1, 1);
 		}
 		
-		Map<String, Integer> packScoreCounts = charts.getPackNamesWithScoreCountsMap();
+		Map<String, Integer> packScoreCounts = chartsIndex.getPackNamesWithScoreCountsMap();
 		pncc.forEach(c -> {
 			c.setScoreCount(packScoreCounts.getOrDefault(c.getPack(), 0));
 		});
@@ -147,9 +151,9 @@ public class ChartDao {
 	
 	@Transactional
 	public ChartsInPackPagination getChartsInPackPagination(String pack, PackContentSort ps, int page, int itemsPerPage) {
-		Set<String> chartkeys = charts.getChartKeysInPack(packs.get(pack));
-		List<ChartWithCount> cwc = charts.getChartsAndScoreCounts(chartkeys);
-		cwc.addAll(charts.getChartsWithNoScores(chartkeys));
+		Set<String> chartkeys = chartsIndex.getChartKeysInPack(packs.get(pack));
+		List<ChartWithCount> cwc = chartsIndex.getChartsAndScoreCounts(chartkeys);
+		//cwc.addAll(chartsIndex.getChartsWithNoScores(chartkeys));
 		
 		int sliceStart = Math.min(itemsPerPage * (page-1), cwc.size()-1);
 		int sliceEnd = Math.min(itemsPerPage * page, cwc.size());
@@ -158,7 +162,10 @@ public class ChartDao {
 			return new ChartsInPackPagination(new ArrayList<>(), 1, 1);
 		}
 		
-		List<ChartWithSkillsets> cip = cwc.stream().map(c -> new ChartWithSkillsets(c.getChart(), c.getCount().intValue())).collect(Collectors.toList());
+		List<ChartWithSkillsets> cip = cwc
+				.stream()
+				.map(c -> new ChartWithSkillsets(c.getChart(), c.getCount().intValue()))
+				.collect(Collectors.toList());
 		
 		Collections.sort(cip, new Comparator<ChartWithSkillsets>() {
 			@Override
@@ -216,6 +223,16 @@ public class ChartDao {
 		});
 		
 		return new ChartsInPackPagination(cip.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(cip.size() / (float)itemsPerPage)));
+	}
+	
+	@Transactional
+	public ChartWithSkillsets getChartWithSkillsets(String chartKey) {
+		return chartsIndex.findChartWithSkillsets(chartKey);
+	}
+	
+	@Transactional
+	public Map<String, ChartWithSkillsets> getChartsWithSkillsetsMap(Collection<String> chartKeys) {
+		return chartsIndex.findChartsWithSkillsetsMap(chartKeys);
 	}
 
 }

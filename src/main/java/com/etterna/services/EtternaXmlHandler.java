@@ -9,11 +9,9 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.RankingDao;
-import com.etterna.services.datamodel.Chart;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.User;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,15 +22,12 @@ import lombok.Setter;
 public class EtternaXmlHandler extends DefaultHandler {
 	
 	@Autowired
-	private ChartDao charts;
-	
-	@Autowired
 	private RankingDao chartRanking;
 	
 	private StringBuilder currentValue = new StringBuilder();
 	private List<HighScore> highscores;
 	private HighScore currentHighScore;
-	private Chart currentChart;
+	private String currentChartKey;
 	
 	private boolean inJudgments = false;
 	private boolean inHolds = false;
@@ -85,29 +80,29 @@ public class EtternaXmlHandler extends DefaultHandler {
 		
 		switch (qName) {
 			case CHART: {
-				currentChart = null;
+				currentChartKey = null;
 				String chartkey = attributes.getValue("Key");
 				if (chartRanking.isRanked(chartkey)) {
-					currentChart = charts.get(chartkey);
+					currentChartKey = chartkey;
 				}
 				break;
 			}
 			case SCORESAT: {
-				if (currentChart == null) return;
+				if (currentChartKey == null) return;
 				currentRate = Math.round(100.f * Float.parseFloat(attributes.getValue("Rate")));
 				break;
 			}
 			case SCORE: {
-				if (currentChart == null) return;
+				if (currentChartKey == null) return;
 				String scoreKey = attributes.getValue("Key");
 				currentHighScore = new HighScore();
 				currentHighScore.setMusicRate(currentRate);
-				currentHighScore.setChart(currentChart);
+				currentHighScore.setChartKey(currentChartKey);
 				currentHighScore.setCalcVersion(0);
 				currentHighScore.setManuallyInvalid(false);
 				currentHighScore.setNegBpm(null);
 				currentHighScore.setScoreKey(scoreKey);
-				currentHighScore.setUser(user);
+				currentHighScore.setUsername(user.getUsername());
 				currentHighScore.setWifeGrade(null);
 				break;
 			}
@@ -126,7 +121,7 @@ public class EtternaXmlHandler extends DefaultHandler {
 	
 	@Override
 	public void endElement(String uri, String localName, String qName) {
-		if (currentChart == null || currentHighScore == null) return;
+		if (currentChartKey == null || currentHighScore == null) return;
 		
 		switch (qName) {
 			case SCORE: {

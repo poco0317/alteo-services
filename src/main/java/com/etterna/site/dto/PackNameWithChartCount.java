@@ -7,17 +7,20 @@ import lombok.Setter;
 public class PackNameWithChartCount {
 	
 	private String pack = "";
+	private String displayName = "";
 	private Integer count = 0;
 	private Integer scoreCount = 0;
 	private Double averageScores = 0.0;
 	
-	public PackNameWithChartCount(String pack, Integer count) {
+	public PackNameWithChartCount(String pack, String displayName, Integer count) {
 		this.pack = pack;
+		this.displayName = displayName;
 		this.count = count;
 	}
 	
-	public PackNameWithChartCount(String pack, Long count) {
+	public PackNameWithChartCount(String pack, String displayName, Long count) {
 		this.pack = pack;
+		this.displayName = displayName;
 		this.count = count.intValue();
 	}
 	

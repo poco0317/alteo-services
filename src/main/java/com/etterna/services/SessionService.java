@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.opensearch.client.opensearch._types.Refresh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,9 @@ import com.etterna.services.controller.legacy.dto.LoginRequest;
 import com.etterna.services.controller.legacy.dto.LoginResponse;
 import com.etterna.services.controller.legacy.dto.LoginResponse.SessionTokenDTO;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.datamodel.LoginSession;
-import com.etterna.services.datamodel.User;
-import com.etterna.services.repo.LoginSessionRepository;
+import com.etterna.services.model.LoginSession;
+import com.etterna.services.model.User;
+import com.etterna.services.opensearch.LoginSessionIndexService;
 
 import io.jsonwebtoken.Jwts;
 
@@ -27,7 +28,7 @@ public class SessionService {
 	private static final Logger m_logger = LoggerFactory.getLogger(SessionService.class);
 
 	@Autowired
-	private LoginSessionRepository loginRepo;
+	private LoginSessionIndexService loginSessionIndex;
 	
 	@Autowired
 	private UserDao users;
@@ -62,7 +63,7 @@ public class SessionService {
 	 */
 	@Transactional
 	public boolean validateSession(String jwt) {
-		LoginSession sessions = loginRepo.findById(jwt).orElse(null);
+		LoginSession sessions = loginSessionIndex.findById(jwt);
 		if (sessions == null) {
 			return false;
 		}
@@ -71,9 +72,9 @@ public class SessionService {
 	
 	@Transactional
 	public User sessionToUser(String jwt) {
-		LoginSession sess = loginRepo.findById(jwt).orElse(null);
+		LoginSession sess = loginSessionIndex.findById(jwt);
 		if (sess != null) {
-			return sess.getUser();
+			return users.getByUserId(sess.getUsername());
 		}
 		return null;
 	}
@@ -84,14 +85,14 @@ public class SessionService {
 	private String newSession(User user) {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("username", user.getUsername());
-		claims.put("uid", user.getUserId());
+		claims.put("uid", user.getUsername());
 		Date now = new Date();
 		String jwt = Jwts.builder().addClaims(claims).setIssuedAt(now).compact();
 		LoginSession session = new LoginSession();
 		session.setCreatedAt(now);
-		session.setUser(user);
+		session.setUsername(user.getUsername());
 		session.setSessionJwt(jwt);
-		loginRepo.save(session);
+		loginSessionIndex.save(session, Refresh.True);
 		return jwt;
 	}
 

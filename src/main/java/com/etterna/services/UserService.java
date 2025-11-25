@@ -1,10 +1,11 @@
 package com.etterna.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -22,10 +23,9 @@ import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDT
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.datamodel.HighScore;
-import com.etterna.services.datamodel.ScoreSpecificValue;
-import com.etterna.services.datamodel.User;
-import com.etterna.services.datamodel.UserSkillsetValue;
+import com.etterna.services.model.Chart;
+import com.etterna.services.model.HighScore;
+import com.etterna.services.model.User;
 
 @Service
 public class UserService {
@@ -83,53 +83,52 @@ public class UserService {
 			return null;
 		}
 		
-		List<Object[]> allScores = scores.getScoresWithSkillsetValue(user, actualSkillset);
-		Collections.sort(allScores, new Comparator<Object[]>() {
-			public int compare(Object[] a, Object[] b) {
-				ScoreSpecificValue ssvA = (ScoreSpecificValue)a[1];
-				ScoreSpecificValue ssvB = (ScoreSpecificValue)b[1];
-				return ssvB.getValue().compareTo(ssvA.getValue());
+		List<HighScore> allScores = scores.getScoresWithSkillsetValue(user, actualSkillset);
+		Collections.sort(allScores, new Comparator<HighScore>() {
+			public int compare(HighScore a, HighScore b) {
+				switch (actualSkillset) {
+					case OVERALL:
+					default:
+						return a.getOverall().compareTo(b.getOverall());
+					case STREAM:
+						return a.getStream().compareTo(b.getStream());
+					case JUMPSTREAM:
+						return a.getJumpstream().compareTo(b.getJumpstream());
+					case HANDSTREAM:
+						return a.getHandstream().compareTo(b.getHandstream());
+					case STAMINA:
+						return a.getStamina().compareTo(b.getStamina());
+					case JACKSPEED:
+						return a.getJackspeed().compareTo(b.getJackspeed());
+					case CHORDJACK:
+						return a.getChordjack().compareTo(b.getChordjack());
+					case TECHNICAL:
+						return a.getTechnical().compareTo(b.getTechnical());
+						
+				}
 			}
 		});
 		List<GetSkillsetTopXDTO> o = new ArrayList<>();
-		for (Object[] oo : allScores) {
-			HighScore hs = (HighScore)oo[0];
-			ScoreSpecificValue ssv = (ScoreSpecificValue)oo[1];
+		for (HighScore hs : allScores) {
+			Chart chart = scores.getChart(hs);
 			
 			GetSkillsetTopXDTO dto = new GetSkillsetTopXDTO();
 			ScoreDTO scoreDTO = new ScoreDTO();
 			SkillsetDTO skillsetDTO = new SkillsetDTO(0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-			switch (actualSkillset) {
-				case OVERALL:
-					skillsetDTO.setOverall(ssv.getValue().floatValue());
-					break;
-				case STREAM:
-					skillsetDTO.setStream(ssv.getValue().floatValue());
-					break;
-				case JUMPSTREAM:
-					skillsetDTO.setJumpstream(ssv.getValue().floatValue());
-					break;
-				case HANDSTREAM:
-					skillsetDTO.setHandstream(ssv.getValue().floatValue());
-					break;
-				case STAMINA:
-					skillsetDTO.setStamina(ssv.getValue().floatValue());
-					break;
-				case JACKSPEED:
-					skillsetDTO.setJackSpeed(ssv.getValue().floatValue());
-					break;
-				case CHORDJACK:
-					skillsetDTO.setChordjack(ssv.getValue().floatValue());
-					break;
-				case TECHNICAL:
-					skillsetDTO.setTechnical(ssv.getValue().floatValue());
-					break;
-			}
-			scoreDTO.setChartKey(hs.getChart().getChartKey());
-			scoreDTO.setDifficulty(hs.getChart().getDifficulty());
-			scoreDTO.setOverall(ssv.getValue().floatValue()); // THIS IS WRONG
+			skillsetDTO.setOverall(hs.getOverall().floatValue());
+			skillsetDTO.setStream(hs.getStream().floatValue());
+			skillsetDTO.setJumpstream(hs.getJumpstream().floatValue());
+			skillsetDTO.setHandstream(hs.getHandstream().floatValue());
+			skillsetDTO.setStamina(hs.getStamina().floatValue());
+			skillsetDTO.setJackSpeed(hs.getJackspeed().floatValue());
+			skillsetDTO.setChordjack(hs.getChordjack().floatValue());
+			skillsetDTO.setTechnical(hs.getTechnical().floatValue());
+			
+			scoreDTO.setChartKey(hs.getChartKey());
+			scoreDTO.setDifficulty(chart.getDifficulty());
+			scoreDTO.setOverall(hs.getOverall().floatValue());
 			scoreDTO.setRate(hs.getMusicRate().floatValue() / 100.f);
-			scoreDTO.setSongName(hs.getChart().getTitle());
+			scoreDTO.setSongName(chart.getTitle());
 			scoreDTO.setWife(hs.getWifePercent().floatValue() * 100);
 			scoreDTO.setSkillsets(skillsetDTO);
 			dto.setAttributes(scoreDTO);
@@ -150,42 +149,27 @@ public class UserService {
 		GetUserInfoResponse r = new GetUserInfoResponse();
 		UserInfoDTO dto = new UserInfoDTO();
 		UserSkillsetDTO skills = new UserSkillsetDTO();
-		Set<UserSkillsetValue> ssrs = user.getSkillsetValues();
-		if (ssrs != null) {
-			ssrs.forEach(ssr -> {
-				switch (ssr.getId().getSkillset()) {
-					case OVERALL:
-						skills.setOverall(ssr.getValue());
-						dto.setPlayerRating(ssr.getValue());
-						break;
-					case STREAM:
-						skills.setStream(ssr.getValue());
-						break;
-					case JUMPSTREAM:
-						skills.setJumpstream(ssr.getValue());
-						break;
-					case HANDSTREAM:
-						skills.setHandstream(ssr.getValue());
-						break;
-					case STAMINA:
-						skills.setStamina(ssr.getValue());
-						break;
-					case JACKSPEED:
-						skills.setJackSpeed(ssr.getValue());
-						break;
-					case CHORDJACK:
-						skills.setChordjack(ssr.getValue());
-						break;
-					case TECHNICAL:
-						skills.setTechnical(ssr.getValue());
-						break;
-					default: break;
-				}
-			});
-		}
-		dto.setSkillsets(skills);		
+		dto.setPlayerRating(user.getSs1Value());
+		skills.setOverall(user.getSs1Value());
+		skills.setStream(user.getSs2Value());
+		skills.setJumpstream(user.getSs3Value());
+		skills.setHandstream(user.getSs4Value());
+		skills.setStamina(user.getSs5Value());
+		skills.setJackSpeed(user.getSs6Value());
+		skills.setChordjack(user.getSs7Value());
+		skills.setTechnical(user.getSs8Value());
+		dto.setSkillsets(skills);
 		r.setAttributes(dto);
 		return r;
+	}
+	
+	public Map<String, User> getByUsernamesMap(Collection<String> usernames) {
+		return users.getByUserNamesMap(usernames);
+	}
+
+	public void setMustRecalcRating(Collection<User> userList, boolean mustRecalcRating) {
+		userList.forEach(u -> u.setMustRecalcRating(mustRecalcRating));
+		users.syncUsers(userList);
 	}
 
 }

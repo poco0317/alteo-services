@@ -35,15 +35,17 @@ import com.etterna.multi.data.GameLobby;
 import com.etterna.services.MultiplayerDataService;
 import com.etterna.services.MultiplayerRequestService;
 import com.etterna.services.XmlProfileParsingService;
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsetsPagination;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.dao.ChartDao;
 import com.etterna.services.dao.HighScoreDao;
 import com.etterna.services.dao.PackDao;
 import com.etterna.services.dao.RankingDao;
 import com.etterna.services.dao.UserDao;
-import com.etterna.services.datamodel.Pack;
-import com.etterna.services.datamodel.User;
+import com.etterna.services.model.Pack;
+import com.etterna.services.model.User;
+import com.etterna.services.opensearch.model.HighScoreFullUnion;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
@@ -56,6 +58,7 @@ import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.site.dto.UserDTO;
+import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -138,11 +141,16 @@ public class SiteFrontendController {
 		return "home";
 	}
 	
+	@GetMapping("/home")
+	public String getHomeModel2(Model model) {
+		return getHomeModel(model);
+	}
+	
 	@GetMapping("/user/{username}")
 	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
 		User u = users.get(username);
 		if (u == null) {
-			return "home";
+			return getHomeModel(model);
 		}
 		m_logger.info("FRONTEND API :: User Page {}", username);
 		
@@ -151,14 +159,14 @@ public class SiteFrontendController {
 		final int directionaldistance = 2;
 		final int itemsperpage = 200;
 		
-		HighScoreWithSkillsetsPagination hspage = scores.getUserScores(u, ps, currentPage, itemsperpage);
+		HighScorePagination hspage = scores.getUserScores(u, ps, currentPage, itemsperpage);
 		int actualcurrentpage = hspage.getCurrentPage();
 		int maxpage = hspage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
-		
+				
 		model.addAttribute("user", u);
-		model.addAttribute("skillsets", users.getUserSkillsets(u));
-		model.addAttribute("scores", hspage.getHss());
+		model.addAttribute("skillsets", new UserWithSkillsets(u));
+		model.addAttribute("scores", hspage.getHses());
 		model.addAttribute("currentPage", actualcurrentpage);
 		model.addAttribute("pageRange", pagenumbers);
 		model.addAttribute("maxPage", maxpage);
@@ -254,6 +262,11 @@ public class SiteFrontendController {
 		final int itemsperpage = 200;
 		
 		Pack packObj = packs.get(pack);
+		
+		if (packObj == null) {
+			return getHomeModel(model);
+		}
+		
 		ChartsInPackPagination ppage = charts.getChartsInPackPagination(pack, ps, currentPage, itemsperpage);
 		int actualcurrentpage = ppage.getCurrentPage();
 		int maxpage = ppage.getTotalPages();
@@ -285,11 +298,18 @@ public class SiteFrontendController {
 		final int itemsperpage = 200;
 		
 		ChartLeaderboardPagination ppage = scores.getChartLeaderboardPagination(chartkey, selectedrate, ls, currentPage, itemsperpage);
+		
+		if (ppage == null || ppage.getChart() == null) {
+			return getHomeModel(model);
+		}
+		
 		int actualcurrentpage = ppage.getCurrentPage();
 		int maxpage = ppage.getTotalPages();
 		List<Integer> pagenumbers = IntStream.rangeClosed(Math.max(1, actualcurrentpage - directionaldistance), Math.min(maxpage, actualcurrentpage + directionaldistance)).boxed().collect(Collectors.toList());
+		List<Pack> packsWithChart = packs.findPacksByChart(chartkey);
 		
 		model.addAttribute("chart", new ChartWithSkillsets(ppage.getChart(), 0));
+		model.addAttribute("packs", packsWithChart);
 		model.addAttribute("scores", ppage.getScores());
 		model.addAttribute("currentRate", ppage.getRate());
 		model.addAttribute("rates", ppage.getRates());
@@ -305,11 +325,19 @@ public class SiteFrontendController {
 	public String getScorePage(Model model, @PathVariable("scorekey") String scorekey) {
 		m_logger.info("FRONTEND API :: Score Page {}", scorekey);
 		
-		model.addAttribute("score", scores.getScoreWithSkillsets(scorekey));
+		HighScoreFullUnion score = scores.getFullUnion(scorekey);
+		if (score == null || score.getHsUnion() == null) {
+			return getHomeModel(model);
+		}
+		
+		List<Pack> packsWithChart = packs.findPacksByChart(score.getChartUnion().getChart().getChartKey());
+		model.addAttribute("score", score);
+		model.addAttribute("packs", packsWithChart);
 		
 		return "score";
 	}
 	
+	@LogRuntime
 	@GetMapping("/allscores")
 	public String getAllScores(Model model,
 			@RequestParam("page") Optional<Integer> page,
@@ -386,6 +414,36 @@ public class SiteFrontendController {
 		return "multisession";
 	}
 	
+	@GetMapping("/eosearch")
+	public String getEOLandingPage(Model model) {
+		m_logger.info("FRONTEND API :: EOSearch Page");
+		
+		return "eosearch";
+	}
+	
+	@GetMapping("/eosearch/packs")
+	public String getEOPacksPage(Model model) {
+		m_logger.info("FRONTEND API :: EOPacks Page");
+		
+		model.addAttribute("packs", null);
+		
+		return "eopacks";
+	}
+	
+	@GetMapping("/eosearch/songs")
+	public String getEOSongs(Model model) {
+		m_logger.info("FRONTEND API :: EOSongs Page");
+		
+		return "eosongs";
+	}
+	
+	@GetMapping("/eosearch/songsearch")
+	public String getEOSongSearchPage(Model model, @RequestParam("searchstring") String searchstring) {
+		m_logger.info("FRONTEND API :: EOSongs Search '{}'", searchstring);
+		
+		return "eosongsearch";
+	}
+	
 	@GetMapping("/admin")
 	public String adminPage(Model model) {
 		
@@ -407,7 +465,8 @@ public class SiteFrontendController {
 			String packname = "No Pack Name";
 			
 			try (ZipInputStream zipin = new ZipInputStream(f.getInputStream())) {
-				
+				m_logger.info("Extracting pack for ranking");
+
 				ZipEntry entry = zipin.getNextEntry();
 				while (entry != null) {
 					
@@ -420,7 +479,7 @@ public class SiteFrontendController {
 						}
 						
 						m_logger.trace("File path {}", name);
-						m_logger.info("Extracting filename {}", filename);
+						m_logger.trace("Extracting filename {}", filename);
 						
 						if (name.contains("songdata")) {
 							// should be song data
@@ -432,7 +491,7 @@ public class SiteFrontendController {
 						}
 						
 					} else {
-						m_logger.info("Skipped filename {}", name);
+						m_logger.debug("Skipped filename {}", name);
 					}
 					
 					

@@ -1,6 +1,6 @@
 package com.etterna.site.dto;
 
-import com.etterna.services.datamodel.Chart;
+import com.etterna.services.model.Chart;
 
 import lombok.Getter;
 import lombok.Setter;

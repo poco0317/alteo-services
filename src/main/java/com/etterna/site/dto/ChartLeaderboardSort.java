@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
-import com.etterna.services.controller.legacy.dto.HighScoreWithSkillsets;
+import com.etterna.services.opensearch.model.HighScoreFullUnion;
 
 public enum ChartLeaderboardSort {
 	
@@ -55,10 +55,10 @@ public enum ChartLeaderboardSort {
 	}
 	
 	
-	public static Comparator<HighScoreWithSkillsets> HighScoreWithSkillsetsComparator(ChartLeaderboardSort ls) {
-		return new Comparator<HighScoreWithSkillsets>() {
+	public static Comparator<HighScoreFullUnion> HighScoreWithSkillsetsComparator(ChartLeaderboardSort ls) {
+		return new Comparator<HighScoreFullUnion>() {
 			@Override
-			public int compare(HighScoreWithSkillsets a, HighScoreWithSkillsets b) {
+			public int compare(HighScoreFullUnion a, HighScoreFullUnion b) {
 				switch (ls) {
 					case OVERALL:
 					case STREAM:
@@ -73,45 +73,45 @@ public enum ChartLeaderboardSort {
 						Double bv = 0.0;
 						switch(ls) {
 							case OVERALL:
-								av = a.getOverall();
-								bv = b.getOverall();
+								av = a.getHsUnion().getOverall();
+								bv = b.getHsUnion().getOverall();
 								break;
 							case STREAM:
-								av = a.getStream();
-								bv = b.getStream();
+								av = a.getHsUnion().getStream();
+								bv = b.getHsUnion().getStream();
 								break;
 							case JUMPSTREAM:
-								av = a.getJumpstream();
-								bv = b.getJumpstream();
+								av = a.getHsUnion().getJumpstream();
+								bv = b.getHsUnion().getJumpstream();
 								break;
 							case HANDSTREAM:
-								av = a.getHandstream();
-								bv = b.getHandstream();
+								av = a.getHsUnion().getHandstream();
+								bv = b.getHsUnion().getHandstream();
 								break;
 							case STAMINA:
-								av = a.getStamina();
-								bv = b.getStamina();
+								av = a.getHsUnion().getStamina();
+								bv = b.getHsUnion().getStamina();
 								break;
 							case JACKSPEED:
-								av = a.getJackspeed();
-								bv = b.getJackspeed();
+								av = a.getHsUnion().getJackspeed();
+								bv = b.getHsUnion().getJackspeed();
 								break;
 							case CHORDJACK:
-								av = a.getChordjack();
-								bv = b.getChordjack();
+								av = a.getHsUnion().getChordjack();
+								bv = b.getHsUnion().getChordjack();
 								break;
 							case TECHNICAL:
-								av = a.getTechnical();
-								bv = b.getTechnical();
+								av = a.getHsUnion().getTechnical();
+								bv = b.getHsUnion().getTechnical();
 								break;
 							default:
 								break;
 						}
 						if (av.equals(bv)) {
-							Integer ar = a.getScore().getMusicRate();
-							Integer br = b.getScore().getMusicRate();
+							Integer ar = a.getHsUnion().getMusicRate();
+							Integer br = b.getHsUnion().getMusicRate();
 							if (ar == null || br == null || ar.equals(br)) {
-								return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
+								return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 							} else {
 								return br.compareTo(ar);
 							}
@@ -122,8 +122,8 @@ public enum ChartLeaderboardSort {
 					case DATE:
 					{
 						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getScore().getDateStr();
-						String bds = b.getScore().getDateStr();
+						String ads = a.getHsUnion().getDateStr();
+						String bds = b.getHsUnion().getDateStr();
 						try {
 							Date ad = f.parse(ads);
 							Date bd = f.parse(bds);
@@ -134,18 +134,18 @@ public enum ChartLeaderboardSort {
 					}
 					case RATE:
 					{
-						Integer ar = a.getScore().getMusicRate();
-						Integer br = b.getScore().getMusicRate();
+						Integer ar = a.getHsUnion().getMusicRate();
+						Integer br = b.getHsUnion().getMusicRate();
 						if (ar == null || br == null || ar.equals(br)) {
-							return b.getScore().getSsrNorm().compareTo(a.getScore().getSsrNorm());
+							return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
 						} else {
 							return br.compareTo(ar);
 						}
 					}
 					case PLAYER:
 					{
-						String an = a.getScore().getUser().getUsername();
-						String bn = b.getScore().getUser().getUsername();
+						String an = a.getUser().getUsername();
+						String bn = b.getUser().getUsername();
 						// opposite direction sort vs the others
 						int o = an.compareToIgnoreCase(bn);
 						if (o != 0) {
@@ -156,8 +156,8 @@ public enum ChartLeaderboardSort {
 					default:
 					case PERCENT:
 					{
-						Integer as = a.getScore().getSsrNorm();
-						Integer bs = b.getScore().getSsrNorm();
+						Integer as = a.getHsUnion().getSsrNorm();
+						Integer bs = b.getHsUnion().getSsrNorm();
 						int o = bs.compareTo(as);
 						return o;
 					}
