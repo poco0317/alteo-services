@@ -146,6 +146,7 @@ public class SiteFrontendController {
 		return getHomeModel(model);
 	}
 	
+	@LogRuntime
 	@GetMapping("/user/{username}")
 	public String getUsernameModelAndPage(Model model, @PathVariable("username") String username, @RequestParam("page") Optional<Integer> page, @RequestParam("sort") Optional<String> sort) {
 		User u = users.get(username);

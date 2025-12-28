@@ -38,7 +38,9 @@ import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
 import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.ProfileSort;
+import com.etterna.util.CacheEarlyExit;
 import com.etterna.util.LogRuntime;
+import com.etterna.util.SelfExpiringCache;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,6 +62,9 @@ public class HighScoreDao {
 	
 	@Autowired
 	private CalcManager calc;
+	
+	@Autowired
+	private SelfExpiringCache cache;
 
 	private static final int SSR_LIST_LENGTH = 8;
 	private static final int AUTO_COMMIT_CHUNK_SIZE = 100;
@@ -107,6 +112,8 @@ public class HighScoreDao {
 		return hses;
 	}
 	
+	@LogRuntime
+	@CacheEarlyExit
 	@Transactional
 	public HighScorePagination getUserScores(User u, ProfileSort ps, int page, int perpage) {
 		List<HighScore> hses = hsIndex.findUserScoresSortedBySkillsets(u, calc.getCalcVersion(), ps);
@@ -146,9 +153,11 @@ public class HighScoreDao {
 		
 		HighScoreCollection hsCollection;
 		if (rate == -1) {
-			hsCollection = hsIndex.findScoresOnAllChartsOnAllRates(calc.getCalcVersion(), ls, page, itemsPerPage);
+			hsCollection = hsIndex.findScoresOnAllChartsOnAllRates(calc.getCalcVersion(), ls, -1, itemsPerPage);
+			//hsCollection = hsIndex.findScoresOnAllChartsOnAllRates(calc.getCalcVersion(), ls, page, itemsPerPage);
 		} else {
-			hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, page, itemsPerPage);
+			hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, -1, itemsPerPage);
+			//hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, page, itemsPerPage);
 		}
 		if (hsCollection.getHses().isEmpty()) {
 			return new ChartLeaderboardPagination(null, new ArrayList<>(), 1, 1, rate);
@@ -159,16 +168,19 @@ public class HighScoreDao {
 		int sliceEnd = Math.min(itemsPerPage * page, hsvs.size());
 		final long count = hsCollection.getCount();
 		
-		return new ChartLeaderboardPagination(
-				null,
-				hsvs.values()
+		List<HighScoreFullUnion> hsvunionList = cache.get(String.format("getLeaderboardForAllChartsPagination;%d;%s", rate, ls.toString()), () -> {
+			return hsvs.values()
 					.stream()
 					.sorted(AllLeaderboardSort.HighScoreFullUnionComparator(ls))
-					.collect(Collectors.toList())
-					.subList(sliceStart, sliceEnd),
+					.collect(Collectors.toList());
+		});
+		
+		return new ChartLeaderboardPagination(
+				null,
+				hsvunionList.subList(sliceStart, sliceEnd),
 				page,
 				Math.max(1, (int)Math.ceil(count / (float)itemsPerPage)),
-				rate);
+				rate);		
 	}
 	
 	@Transactional
@@ -229,100 +241,104 @@ public class HighScoreDao {
 			return new HighScorePagination(hsvs.values().stream().collect(Collectors.toList()), 1, 1);
 		}
 		
-		return new HighScorePagination(hsvs.values().stream().sorted(new Comparator<HighScoreFullUnion>() {
-			@Override
-			public int compare(HighScoreFullUnion a, HighScoreFullUnion b) {
-				switch (ps) {
-					case OVERALL:
-					case STREAM:
-					case JUMPSTREAM:
-					case HANDSTREAM:
-					case STAMINA:
-					case JACKSPEED:
-					case CHORDJACK:
-					case TECHNICAL:
-					{
-						Double av = 0.0;
-						Double bv = 0.0;
-						switch(ps) {
-							case OVERALL:
-								av = a.getHsUnion().getOverall();
-								bv = b.getHsUnion().getOverall();
-								break;
-							case STREAM:
-								av = a.getHsUnion().getStream();
-								bv = b.getHsUnion().getStream();
-								break;
-							case JUMPSTREAM:
-								av = a.getHsUnion().getJumpstream();
-								bv = b.getHsUnion().getJumpstream();
-								break;
-							case HANDSTREAM:
-								av = a.getHsUnion().getHandstream();
-								bv = b.getHsUnion().getHandstream();
-								break;
-							case STAMINA:
-								av = a.getHsUnion().getStamina();
-								bv = b.getHsUnion().getStamina();
-								break;
-							case JACKSPEED:
-								av = a.getHsUnion().getJackspeed();
-								bv = b.getHsUnion().getJackspeed();
-								break;
-							case CHORDJACK:
-								av = a.getHsUnion().getChordjack();
-								bv = b.getHsUnion().getChordjack();
-								break;
-							case TECHNICAL:
-								av = a.getHsUnion().getTechnical();
-								bv = b.getHsUnion().getTechnical();
-								break;
-							default:
-								break;
+		List<HighScoreFullUnion> hsunionList = cache.get(String.format("sortBySkillsets;%s;%s", obs.toString(), ps.toString()), () -> { 
+			return hsvs.values().stream().sorted(new Comparator<HighScoreFullUnion>() {
+				@Override
+				public int compare(HighScoreFullUnion a, HighScoreFullUnion b) {
+					switch (ps) {
+						case OVERALL:
+						case STREAM:
+						case JUMPSTREAM:
+						case HANDSTREAM:
+						case STAMINA:
+						case JACKSPEED:
+						case CHORDJACK:
+						case TECHNICAL:
+						{
+							Double av = 0.0;
+							Double bv = 0.0;
+							switch(ps) {
+								case OVERALL:
+									av = a.getHsUnion().getOverall();
+									bv = b.getHsUnion().getOverall();
+									break;
+								case STREAM:
+									av = a.getHsUnion().getStream();
+									bv = b.getHsUnion().getStream();
+									break;
+								case JUMPSTREAM:
+									av = a.getHsUnion().getJumpstream();
+									bv = b.getHsUnion().getJumpstream();
+									break;
+								case HANDSTREAM:
+									av = a.getHsUnion().getHandstream();
+									bv = b.getHsUnion().getHandstream();
+									break;
+								case STAMINA:
+									av = a.getHsUnion().getStamina();
+									bv = b.getHsUnion().getStamina();
+									break;
+								case JACKSPEED:
+									av = a.getHsUnion().getJackspeed();
+									bv = b.getHsUnion().getJackspeed();
+									break;
+								case CHORDJACK:
+									av = a.getHsUnion().getChordjack();
+									bv = b.getHsUnion().getChordjack();
+									break;
+								case TECHNICAL:
+									av = a.getHsUnion().getTechnical();
+									bv = b.getHsUnion().getTechnical();
+									break;
+								default:
+									break;
+							}
+							if (av.equals(bv)) {
+								return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
+							} else {
+								return bv.compareTo(av);
+							}
 						}
-						if (av.equals(bv)) {
-							return b.getHsUnion().getSsrNorm().compareTo(a.getHsUnion().getSsrNorm());
-						} else {
-							return bv.compareTo(av);
+						case SONG:
+						{
+							String an = a.getChartUnion().getChart().getTitle();
+							String bn = b.getChartUnion().getChart().getTitle();
+							// opposite direction sort vs the others
+							int o = an.compareToIgnoreCase(bn);
+							if (o != 0) {
+								return o;
+							}
+							// fall through
 						}
-					}
-					case SONG:
-					{
-						String an = a.getChartUnion().getChart().getTitle();
-						String bn = b.getChartUnion().getChart().getTitle();
-						// opposite direction sort vs the others
-						int o = an.compareToIgnoreCase(bn);
-						if (o != 0) {
-							return o;
+						case PERCENT:
+						{
+							Integer as = a.getHsUnion().getSsrNorm();
+							Integer bs = b.getHsUnion().getSsrNorm();
+							int o = bs.compareTo(as);
+							if (o != 0) {
+								return o;
+							}
+							// fall through
 						}
-						// fall through
-					}
-					case PERCENT:
-					{
-						Integer as = a.getHsUnion().getSsrNorm();
-						Integer bs = b.getHsUnion().getSsrNorm();
-						int o = bs.compareTo(as);
-						if (o != 0) {
-							return o;
-						}
-						// fall through
-					}
-					case DATE:
-					default: {
-						SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						String ads = a.getHsUnion().getDateStr();
-						String bds = b.getHsUnion().getDateStr();
-						try {
-							Date ad = f.parse(ads);
-							Date bd = f.parse(bds);
-							return bd.compareTo(ad);
-						} catch (ParseException e) {
-							return bds.compareToIgnoreCase(ads);
+						case DATE:
+						default: {
+							SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+							String ads = a.getHsUnion().getDateStr();
+							String bds = b.getHsUnion().getDateStr();
+							try {
+								Date ad = f.parse(ads);
+								Date bd = f.parse(bds);
+								return bd.compareTo(ad);
+							} catch (ParseException e) {
+								return bds.compareToIgnoreCase(ads);
+							}
 						}
 					}
 				}
-			}
-		}).collect(Collectors.toList()).subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)));
+			}).collect(Collectors.toList());
+		});
+		
+		return new HighScorePagination(hsunionList.subList(sliceStart, sliceEnd), page, Math.max(1, (int)Math.ceil(hsvs.size() / (float)itemsPerPage)));
 	}
 	
 	@Transactional

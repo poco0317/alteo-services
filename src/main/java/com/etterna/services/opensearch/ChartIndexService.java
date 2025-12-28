@@ -25,6 +25,7 @@ import com.etterna.services.model.Pack;
 import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.PackNameWithChartCount;
+import com.etterna.util.CacheEarlyExit;
 import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
@@ -175,6 +176,7 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	 * Get the current Chart entries for the given chartkeys. Usually represents the current calcVersion
 	 * Returns a map of chartkeys to charts.
 	 */
+	@CacheEarlyExit
 	@LogRuntime
 	public Map<String, ChartWithSkillsets> findChartsWithSkillsetsMap(Collection<String> chartkeys) {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());

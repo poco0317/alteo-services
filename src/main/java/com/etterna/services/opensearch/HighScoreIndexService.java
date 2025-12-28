@@ -22,6 +22,7 @@ import com.etterna.services.model.User;
 import com.etterna.services.opensearch.model.HighScoreCollection;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
+import com.etterna.util.CacheEarlyExit;
 import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +92,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@CacheEarlyExit
 	@LogRuntime
 	public List<HighScore> findUserScoresSortedBySkillsets(User u, int calcVersion, ProfileSort ps) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq
@@ -102,6 +104,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return searchDocuments(req);
 	}
 
+	@CacheEarlyExit
 	@LogRuntime
 	public List<Integer> findAllRates() {
 		SearchRequest.Builder req = new SearchRequest.Builder().aggregations("rates", agg -> agg.terms(ta -> ta.field("musicRate")));
@@ -112,6 +115,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return aggs.get("rates").lterms().buckets().array().stream().map(b -> Integer.parseInt(b.key())).collect(Collectors.toList());
 	}
 
+	@CacheEarlyExit
 	@LogRuntime
 	public HighScoreCollection findScoresOnAllChartsOnRate(int rate, int calcVersion, AllLeaderboardSort ls, int page, int itemsPerPage) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q
@@ -231,6 +235,7 @@ public class HighScoreIndexService extends BaseIndexService<HighScore> {
 		return new HighScoreCollection(searchDocuments(req));
 	}
 
+	@CacheEarlyExit
 	@LogRuntime
 	public HighScoreCollection findScoresOnAllChartsOnAllRates(int calcVersion, AllLeaderboardSort ls, int page, int itemsPerPage) {
 		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q
