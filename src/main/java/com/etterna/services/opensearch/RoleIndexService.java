@@ -32,12 +32,11 @@ public class RoleIndexService extends BaseIndexService<Role> {
 	}
 
 	public Set<Role> findByUser(User u) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("username").query(fv -> fv.stringValue(u.getUsername()))));
 		
-		List<RoleUser> connections = roleUserIndex.searchDocuments(req, null);
+		List<RoleUser> connections = roleUserIndex.searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("username").query(fv -> fv.stringValue(u.getUsername())))));
 		String names = String.join(" ", connections.stream().map(ru -> ru.getRole()).collect(Collectors.toList()));
-		SearchRequest.Builder getroles = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("name").query(fv -> fv.stringValue(names))));
-		Set<Role> result = searchDocuments(getroles, null).stream().collect(Collectors.toSet());
+		Set<Role> result = searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("name").query(fv -> fv.stringValue(names)))))
+				.stream().collect(Collectors.toSet());
 		return result;
 	}
 

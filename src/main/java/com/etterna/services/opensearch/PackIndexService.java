@@ -24,8 +24,7 @@ public class PackIndexService extends BaseIndexService<Pack> {
 	 * Find a list of packs containing this chartkey
 	 */
 	public List<Pack> findByChartKey(String chartkey) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKeys").query(fv -> fv.stringValue(chartkey))));
-		return searchDocuments(req, null);
+		return searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKeys").query(fv -> fv.stringValue(chartkey)))));
 	}
 
 }

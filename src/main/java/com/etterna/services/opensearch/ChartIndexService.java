@@ -51,31 +51,30 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	}
 
 	@LogRuntime
-	public List<Chart> findByCalcVersionLessThan(int version) {
-		SearchRequest.Builder req = new SearchRequest.Builder()
+	public List<Chart> findByCalcVersionLessThan(int version) { 
+		return searchDocuments(() -> new SearchRequest.Builder()
 				.query(
-					new Query.Builder()
-						.range(rq -> rq.field("calcVersion").lt(JsonData.of(version)))
-						.build()
-					);
-		return searchDocuments(req);
+						new Query.Builder()
+							.range(rq -> rq.field("calcVersion").lt(JsonData.of(version)))
+							.build()
+						)
+				);
 	}
 
 	@LogRuntime
 	public List<Chart> findByCalcVersionNot(int version) {
-		SearchRequest.Builder req = new SearchRequest.Builder()
+		return searchDocuments(() -> new SearchRequest.Builder()
 				.query(
-					new Query.Builder()
-						.bool(bq -> bq.mustNot(mnq -> mnq.match(m -> m.field("calcVersion").query(fv -> fv.longValue(version)))))
-						.build()
-					);
-		return searchDocuments(req);
+						new Query.Builder()
+							.bool(bq -> bq.mustNot(mnq -> mnq.match(m -> m.field("calcVersion").query(fv -> fv.longValue(version)))))
+							.build()
+						)
+				);
 	}
 	
 	@LogRuntime
 	public Chart findByChartkey(String chartkey) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(chartkey))));
-		List<Chart> o = searchDocuments(req, null);
+		List<Chart> o = searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(chartkey)))));
 		if (o == null || o.size() == 0) {
 			return null;
 		}
@@ -85,8 +84,14 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	@LogRuntime
 	public Map<String, Chart> findChartsByChartKeyMap(Collection<String> chartkeys) {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs))));
-		return searchDocuments(req).stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
+		return searchDocuments(() -> new SearchRequest.Builder()
+				.query(q -> q
+						.terms(tq -> tq
+								.field("chartKey.keyword")
+								.terms(tqf -> tqf
+										.value(fvs)))))
+				.stream()
+				.collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
 	}
 
 	/**
@@ -94,11 +99,11 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	 */
 	@LogRuntime
 	public Set<String> findChartKeyByChartKeyNotNull() {
-		SearchRequest.Builder req = new SearchRequest.Builder()
+		return searchDocuments(() -> new SearchRequest.Builder()
 				.query(new Query.Builder()
 						.bool(bq -> bq.must(mq -> mq.exists(eq -> eq.field("chartKey"))))
-						.build());
-		return searchDocuments(req).stream().map(c -> c.getChartKey()).collect(Collectors.toSet());
+						.build()))
+				.stream().map(c -> c.getChartKey()).collect(Collectors.toSet());
 	}
 
 	@LogRuntime
@@ -139,15 +144,26 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 		SearchResponse<HighScore> resp = scoreIndex.searchInternal(req, null);
 		Map<String, FiltersBucket> aggs = resp.aggregations().get("count").filters().buckets().keyed();
 		
-		SearchRequest.Builder getCharts = new SearchRequest.Builder().query(qb -> qb.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(String.join(" ", chartkeys)))));
-		return searchDocuments(getCharts).stream().map(c -> new ChartWithCount(c, (long)aggs.get(c.getChartKey()).docCount())).collect(Collectors.toList());
+		return searchDocuments(() -> new SearchRequest.Builder()
+				.query(qb -> qb
+						.match(mq -> mq
+								.field("chartKey")
+								.query(fv -> fv
+										.stringValue(String.join(" ", chartkeys))))))
+				.stream().map(c -> new ChartWithCount(c, (long)aggs.get(c.getChartKey()).docCount())).collect(Collectors.toList());
 	}
 
 	@LogRuntime
 	// TODO ???
 	public List<ChartWithCount> getChartsWithNoScores(Set<String> chartkeys) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.bool(bq -> bq.mustNot(mnq -> mnq.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(String.join(" ", chartkeys)))))));
-		scoreIndex.searchDocuments(req);
+		scoreIndex.searchDocuments(() -> new SearchRequest.Builder()
+				.query(q -> q
+						.bool(bq -> bq
+								.mustNot(mnq -> mnq
+										.match(mq -> mq
+												.field("chartKey")
+												.query(fv -> fv
+														.stringValue(String.join(" ", chartkeys))))))));
 		return null;
 	}
 	
@@ -167,8 +183,13 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	@LogRuntime
 	public List<ChartWithSkillsets> findChartsWithSkillsets(Collection<String> chartkeys) {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs))));
-		Map<String, Chart> chartmap = searchDocuments(req).stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
+		Map<String, Chart> chartmap = searchDocuments(() -> new SearchRequest.Builder()
+				.query(q -> q
+						.terms(tq -> tq
+								.field("chartKey.keyword")
+								.terms(tqf -> tqf
+										.value(fvs)))))
+				.stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> c));
 		return chartmap.values().stream().map(c -> new ChartWithSkillsets(c, 0)).collect(Collectors.toList());
 	}
 	
@@ -180,15 +201,19 @@ public class ChartIndexService extends BaseIndexService<Chart> {
 	@LogRuntime
 	public Map<String, ChartWithSkillsets> findChartsWithSkillsetsMap(Collection<String> chartkeys) {
 		List<FieldValue> fvs = chartkeys.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs))));
-		List<Chart> huh = searchDocuments(req);
+		List<Chart> huh = searchDocuments(() -> new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs)))));
 		return huh.stream().collect(Collectors.toMap(c -> c.getChartKey(), c -> new ChartWithSkillsets(c, 0)));
 	}
 	
 	@LogRuntime
 	public Set<Chart> getChartsInPack(Pack pack) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("chartKey").query(fv -> fv.stringValue(String.join(" ", pack.getChartKeys())))));
-		return searchDocuments(req, null).stream().collect(Collectors.toSet());
+		return searchDocuments(() -> new SearchRequest.Builder()
+				.query(q -> q
+						.match(mq -> mq
+								.field("chartKey")
+								.query(fv -> fv
+										.stringValue(String.join(" ", pack.getChartKeys()))))))
+				.stream().collect(Collectors.toSet());
 	}
 
 }

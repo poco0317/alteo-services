@@ -43,21 +43,20 @@ public class ChartDiffValueHistoryIndexService extends BaseIndexService<ChartSki
 			return null;
 		}
 		
-		SearchRequest.Builder req = new SearchRequest.Builder()
+		Set<ChartSkillsetValuesHistory> result = searchDocuments(() -> new SearchRequest.Builder()
 				.query(new Query.Builder()
-					.bool(new BoolQuery.Builder()
-						.must(
-							new Query.Builder()
-								.match(m -> m.field("chartKey").query(fv -> fv.stringValue(c.getChartKey())))
-								.build(),
-							new Query.Builder()
-								.match(m -> m.field("calcVersion").query(fv -> fv.longValue(c.getCalcVersion())))
-								.build()
+						.bool(new BoolQuery.Builder()
+							.must(
+								new Query.Builder()
+									.match(m -> m.field("chartKey").query(fv -> fv.stringValue(c.getChartKey())))
+									.build(),
+								new Query.Builder()
+									.match(m -> m.field("calcVersion").query(fv -> fv.longValue(c.getCalcVersion())))
+									.build()
+								).build()
 							).build()
-						).build()
-					);
-		
-		Set<ChartSkillsetValuesHistory> result = searchDocuments(req, null).stream().collect(Collectors.toSet());
+						))
+				.stream().collect(Collectors.toSet());
 		if (result == null || result.isEmpty()) {
 			return null;
 		}
@@ -74,20 +73,20 @@ public class ChartDiffValueHistoryIndexService extends BaseIndexService<ChartSki
 		}
 		
 		List<FieldValue> fvs = charts.stream().map(c -> new FieldValue.Builder().stringValue(c.getChartKey()).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder()
+		return searchDocuments(() -> new SearchRequest.Builder()
 				.query(new Query.Builder()
-					.bool(new BoolQuery.Builder()
-						.must(
-							new Query.Builder()
-								.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs)))
-								.build(),
-							new Query.Builder()
-								.match(m -> m.field("calcVersion").query(fv -> fv.longValue(calc.getCalcVersion())))
-								.build()
+						.bool(new BoolQuery.Builder()
+							.must(
+								new Query.Builder()
+									.terms(tq -> tq.field("chartKey.keyword").terms(tqf -> tqf.value(fvs)))
+									.build(),
+								new Query.Builder()
+									.match(m -> m.field("calcVersion").query(fv -> fv.longValue(calc.getCalcVersion())))
+									.build()
+								).build()
 							).build()
-						).build()
-					);
-		return searchDocuments(req).stream().collect(Collectors.toSet());
+						))
+				.stream().collect(Collectors.toSet());
 	}
 
 }

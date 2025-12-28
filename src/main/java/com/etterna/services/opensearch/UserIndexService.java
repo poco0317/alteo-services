@@ -39,8 +39,7 @@ public class UserIndexService extends BaseIndexService<User> {
 	}
 
 	public List<User> findByUsername(String username) {
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("username.keyword").query(fv -> fv.stringValue(username.toLowerCase()))));
-		return searchDocuments(req, null);
+		return searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("username.keyword").query(fv -> fv.stringValue(username.toLowerCase())))));
 	}
 
 	public List<Object[]> findUsersWithSkillsetHistory() {
@@ -53,8 +52,12 @@ public class UserIndexService extends BaseIndexService<User> {
 	@LogRuntime
 	public Map<String, User> findUsersByNameMap(Collection<String> usernames) {
 		List<FieldValue> fvs = usernames.stream().map(ck -> new FieldValue.Builder().stringValue(ck).build()).collect(Collectors.toList());
-		SearchRequest.Builder req = new SearchRequest.Builder().query(q -> q.terms(tq -> tq.field("username.keyword").terms(tqf -> tqf.value(fvs))));
-		return searchDocuments(req).stream().collect(Collectors.toMap(u -> u.getUsername(), u -> u));
+		return searchDocuments(() -> new SearchRequest.Builder()
+				.query(q -> q
+						.terms(tq -> tq
+								.field("username.keyword")
+								.terms(tqf -> tqf
+										.value(fvs)))))
+				.stream().collect(Collectors.toMap(u -> u.getUsername(), u -> u));
 	}
-
 }

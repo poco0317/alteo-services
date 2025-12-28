@@ -1,10 +1,19 @@
 package com.etterna.services.opensearch;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.opensearch.client.opensearch._types.Refresh;
+import org.opensearch.client.opensearch._types.SlicedScroll;
 import org.opensearch.client.opensearch._types.query_dsl.IdsQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.BulkRequest;
@@ -35,7 +44,9 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	protected OpenSearchService search;
 	
 	protected static final int REQUEST_CHUNK_SIZE = 10000; // max
+	protected static final int PARALLEL_SCROLL_REQ = 3; // multiplied by REQUEST_CHUNK_SIZE for record count to do threaded parallel slice search
 	protected static final String SCROLL_TIME = "2s";
+	protected static final String PARALLEL_SCROLL_TIME = "10s";
 	
 	/**
 	 * Specify the index name
@@ -84,38 +95,109 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	}
 	
 	/**
+	 * Dump the results of a search of arbitrary size.
+	 * Forced no parallel searching
+	 */
+	protected List<T> searchDocuments(Supplier<SearchRequest.Builder> builder) {
+		return searchDocuments(builder, SCROLL_TIME, false);
+	}
+	
+	/**
 	 * Dump the results of a search of arbitrary size
 	 */
-	protected List<T> searchDocuments(SearchRequest.Builder builder) {
-		return searchDocuments(builder, SCROLL_TIME);
+	protected List<T> searchDocuments(Supplier<SearchRequest.Builder> builder, boolean parallel) {
+		return searchDocuments(builder, SCROLL_TIME, parallel);
 	}
 	
 	/**
 	 * Dump the results of a search of arbitrary size
 	 */
 	@LogRuntime
-	protected List<T> searchDocuments(SearchRequest.Builder builder, String scrollTime) {
-		SearchResponse<T> resp = searchInternal(builder);
-		if (resp.hits().total().value() > REQUEST_CHUNK_SIZE) {
-			List<T> o = hits(resp);
-			while (resp.hits().hits().size() >= REQUEST_CHUNK_SIZE) {
-				long t1 = System.currentTimeMillis();
-				ScrollRequest reqq = new ScrollRequest.Builder().scrollId(resp.scrollId()).scroll(t -> t.time(scrollTime)).build();
-				resp = search.searchScroll(reqq, getClazz());
-				long t2 = System.currentTimeMillis();
-				o.addAll(hits(resp));
-				m_logger.info(" -  scrollsearch took {}ms", t2-t1);
+	protected List<T> searchDocuments(Supplier<SearchRequest.Builder> bgetter, String scrollTime, boolean parallel) {
+		
+		if (parallel) {
+			m_logger.info(" + Executing parallel search on {}", INDEX_NAME());
+			
+			long count = count();
+			if (count < 100) {
+				return hits(searchInternal(bgetter.get()));
 			}
 			
-			if (resp.scrollId() != null) {
-				search.exitScroll(resp.scrollId());
+			int PARALLEL_SEARCHES_COUNT = (int)(count / 1000L) + 1;
+			
+			long a1 = System.currentTimeMillis();
+			
+			ExecutorService executor = Executors.newWorkStealingPool();
+			List<Future<List<T>>> futs = new ArrayList<>();
+			for (int i = 0; i < PARALLEL_SEARCHES_COUNT; i++) {
+				final int j = i;
+				futs.add(executor.submit(
+					new Callable<List<T>>() {
+						@Override
+						public List<T> call() throws Exception {
+							SearchRequest.Builder b = bgetter.get().slice(
+										new SlicedScroll.Builder()
+										.id(j)
+										.max(PARALLEL_SEARCHES_COUNT)
+										.build()
+										)
+									.scroll(t->t.time(PARALLEL_SCROLL_TIME))
+									.index(INDEX_NAME())
+									.size(REQUEST_CHUNK_SIZE);
+							
+							return hits(searchInternal(b));
+						}
+					}
+				));
 			}
+			
+			executor.shutdown();
+			try {
+				executor.awaitTermination(30, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				m_logger.error(e.getMessage(), e);
+			}
+			
+			@SuppressWarnings("unchecked")
+			List<T> o = (List<T>) futs.stream().map((fut) -> {
+				try {
+					return fut.get();
+				} catch (InterruptedException | ExecutionException e) {
+					m_logger.error(e.getMessage(), e);
+					return new ArrayList<>();
+				}
+			}).flatMap((l) -> 
+				l.stream()
+			).toList();
+			
+			long a2 = System.currentTimeMillis();
+			m_logger.info(" - parallelscroll took {}ms", a2-a1);
+			
 			return o;
-		} else {
-			if (resp.scrollId() != null) {
-				search.exitScroll(resp.scrollId());
+		}
+		else {
+			SearchResponse<T> resp = searchInternal(bgetter.get());
+			if (resp.hits().total().value() > REQUEST_CHUNK_SIZE) {
+				List<T> o = hits(resp);
+				while (resp.hits().hits().size() >= REQUEST_CHUNK_SIZE) {
+					long t1 = System.currentTimeMillis();
+					ScrollRequest reqq = new ScrollRequest.Builder().scrollId(resp.scrollId()).scroll(t -> t.time(scrollTime)).build();
+					resp = search.searchScroll(reqq, getClazz());
+					long t2 = System.currentTimeMillis();
+					o.addAll(hits(resp));
+					m_logger.info(" -  scrollsearch took {}ms", t2-t1);
+				}
+				
+				if (resp.scrollId() != null) {
+					search.exitScroll(resp.scrollId());
+				}
+				return o;
+			} else {
+				if (resp.scrollId() != null) {
+					search.exitScroll(resp.scrollId());
+				}
+				return hits(resp);
 			}
-			return hits(resp);
 		}
 	}
 	
@@ -186,7 +268,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 	 */
 	public List<T> findAll() {
 		SearchRequest.Builder req = new SearchRequest.Builder().index(INDEX_NAME());
-		return searchDocuments(req);
+		return searchDocuments(() -> req, true);
 	}
 	
 	/**
