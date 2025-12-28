@@ -99,9 +99,12 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 		if (resp.hits().total().value() > REQUEST_CHUNK_SIZE) {
 			List<T> o = hits(resp);
 			while (resp.hits().hits().size() >= REQUEST_CHUNK_SIZE) {
+				long t1 = System.currentTimeMillis();
 				ScrollRequest reqq = new ScrollRequest.Builder().scrollId(resp.scrollId()).scroll(t -> t.time(scrollTime)).build();
 				resp = search.searchScroll(reqq, getClazz());
+				long t2 = System.currentTimeMillis();
 				o.addAll(hits(resp));
+				m_logger.info(" -  scrollsearch took {}ms", t2-t1);
 			}
 			
 			if (resp.scrollId() != null) {
