@@ -85,7 +85,15 @@ public class RankingDao {
 		int queueBefore = noteinfoQueue.size();
 		noteinfoQueue.putAll(noteinfos);
 		packRankQueue.put(packname, songdatas);
-		m_logger.info("Added {} new charts to the NoteInfo Ranking Queue due to ranking {} which contains {} songs", noteinfoQueue.size() - queueBefore, packname, songdatas.size());
+		m_logger.info("Added {} new charts to the NoteInfo Ranking Queue due to ranking {} which contains {} songs", noteinfoQueue.size() - queueBefore, packname, songdatas.size());	
+	}
+	
+	public void unrankPack(String packname) {
+		if (!packs.isRanked(packname)) {
+			m_logger.info("Tried to unrank pack {} when it is already unranked", packname);
+			return;
+		}
+		
 		
 	}
 	
@@ -214,7 +222,7 @@ public class RankingDao {
 		Chart c = new Chart();
 		c.setChartKey(chartCache.getChartkey());
 		c.setDifficulty(chartCache.getDifficulty());
-		//c.setCalcVersion(calc.getCalcVersion());
+		//c.setCalcVersion(calc.getCalcVersion()); // the calc version is set by the diff recalc later
 		c.setArtist(songCache.getArtist());
 		c.setCredit(songCache.getCredit());
 		c.setSubtitle(songCache.getSubtitle());
