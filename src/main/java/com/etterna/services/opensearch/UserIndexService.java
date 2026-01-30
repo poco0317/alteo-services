@@ -34,8 +34,7 @@ public class UserIndexService extends BaseIndexService<User> {
 	}
 
 	public List<User> findByMustRecalcRatingTrue() {
-		SearchRequest req = new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("mustRecalcRating").query(fv -> fv.booleanValue(true)))).build();
-		return searchDocuments(req);
+		return searchDocuments(() -> new SearchRequest.Builder().query(q -> q.match(mq -> mq.field("mustRecalcRating").query(fv -> fv.booleanValue(true)))));
 	}
 
 	public List<User> findByUsername(String username) {

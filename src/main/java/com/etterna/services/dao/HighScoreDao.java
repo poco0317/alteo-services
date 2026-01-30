@@ -159,7 +159,7 @@ public class HighScoreDao {
 			hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, -1, itemsPerPage);
 			//hsCollection = hsIndex.findScoresOnAllChartsOnRate(rate, calc.getCalcVersion(), ls, page, itemsPerPage);
 		}
-		if (hsCollection.getHses().isEmpty()) {
+		if (hsCollection.getHses() == null || hsCollection.getHses().isEmpty()) {
 			return new ChartLeaderboardPagination(null, new ArrayList<>(), 1, 1, rate);
 		}
 		
