@@ -25,12 +25,18 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardJudgmentsDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardSkillsetDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardUserDTO;
+import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
 import com.etterna.services.data.Chart;
 import com.etterna.services.data.HighScore;
 import com.etterna.services.data.User;
 import com.etterna.services.jpa.dao.ChartDao;
 import com.etterna.services.jpa.dao.HighScoreDao;
+import com.etterna.services.jpa.model.HighScoreFullUnion;
+import com.etterna.site.dto.AllLeaderboardSort;
+import com.etterna.site.dto.ChartLeaderboardPagination;
+import com.etterna.site.dto.ChartLeaderboardSort;
+import com.etterna.site.dto.ProfileSort;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -303,6 +309,38 @@ public class ScoreService {
 			dto.setAttributes(attr);
 			return dto;
 		}).collect(Collectors.toList());
+	}
+
+	public HighScorePagination getUserScores(User u, ProfileSort ps, int currentPage, int itemsperpage) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object countUncalculatedScores(User u) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object countIncalculableScores(User u) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ChartLeaderboardPagination getChartLeaderboardPagination(String chartkey, int selectedrate,
+			ChartLeaderboardSort ls, int currentPage, int itemsperpage) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public HighScoreFullUnion getFullUnion(String scorekey) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ChartLeaderboardPagination getLeaderboardForAllChartsPagination(int selectedrate, AllLeaderboardSort ls,
+			int currentPage, int itemsperpage) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

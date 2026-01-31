@@ -3,7 +3,7 @@ package com.etterna.services.controller.legacy.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.etterna.services.opensearch.model.HighScoreFullUnion;
+import com.etterna.services.jpa.model.HighScoreFullUnion;
 
 import lombok.Getter;
 import lombok.Setter;

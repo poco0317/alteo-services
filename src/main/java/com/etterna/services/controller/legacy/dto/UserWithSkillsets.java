@@ -1,6 +1,6 @@
 package com.etterna.services.controller.legacy.dto;
 
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.User;
 
 import lombok.Getter;
 import lombok.Setter;

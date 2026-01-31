@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.services.opensearch.index.ChartIndexService;
 import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.ChartWithCount;
+import com.etterna.services.opensearch.model.ChartWithSkillsets;
+import com.etterna.services.opensearch.model.ChartsInPackPagination;
 import com.etterna.services.opensearch.model.Pack;
-import com.etterna.site.dto.ChartWithCount;
-import com.etterna.site.dto.ChartWithSkillsets;
-import com.etterna.site.dto.ChartsInPackPagination;
 import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;

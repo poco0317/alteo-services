@@ -22,14 +22,14 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
-import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
-import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.opensearch.index.HighScoreIndexService;
 import com.etterna.services.opensearch.index.UserIndexService;
 import com.etterna.services.opensearch.index.UserSkillsetValueIndexService;
 import com.etterna.services.opensearch.model.HighScore;
 import com.etterna.services.opensearch.model.User;
 import com.etterna.services.opensearch.model.UserSkillsetValuesHistory;
+import com.etterna.services.opensearch.model.UserWithSkillsets;
+import com.etterna.services.opensearch.model.UserWithSkillsetsPagination;
 import com.etterna.site.dto.LeaderboardSort;
 
 @Deprecated

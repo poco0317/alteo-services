@@ -15,11 +15,11 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.Skillset;
+import com.etterna.services.opensearch.model.AllLeaderboardSort;
 import com.etterna.services.opensearch.model.Chart;
 import com.etterna.services.opensearch.model.HighScore;
 import com.etterna.services.opensearch.model.HighScoreCollection;
 import com.etterna.services.opensearch.model.User;
-import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.util.CacheEarlyExit;
 import com.etterna.util.LogRuntime;

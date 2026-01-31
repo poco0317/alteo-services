@@ -1,6 +1,6 @@
 package com.etterna.site.dto;
 
-import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.data.Chart;
 
 import lombok.Getter;
 import lombok.Setter;

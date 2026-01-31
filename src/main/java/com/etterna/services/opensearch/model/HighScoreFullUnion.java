@@ -1,9 +1,5 @@
 package com.etterna.services.opensearch.model;
 
-import com.etterna.services.opensearch.model.HighScore;
-import com.etterna.services.opensearch.model.User;
-import com.etterna.site.dto.ChartWithSkillsets;
-
 import lombok.Getter;
 import lombok.Setter;
 

@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
-import com.etterna.services.opensearch.model.HighScoreFullUnion;
+import com.etterna.services.jpa.model.HighScoreFullUnion;
 
 public enum ChartLeaderboardSort {
 	

@@ -25,6 +25,7 @@ import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO.Sk
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
+import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
 import com.etterna.services.data.Chart;
 import com.etterna.services.data.HighScore;
 import com.etterna.services.data.User;
@@ -32,6 +33,7 @@ import com.etterna.services.data.UserSkillsetValuesHistory;
 import com.etterna.services.jpa.dao.HighScoreDao;
 import com.etterna.services.jpa.dao.UserDao;
 import com.etterna.services.jpa.dao.UserSkillsetValuesHistoryDao;
+import com.etterna.site.dto.LeaderboardSort;
 
 @Service
 public class UserService {
@@ -268,6 +270,26 @@ public class UserService {
 	public void setMustRecalcRating(Collection<User> userList, boolean mustRecalcRating) {
 		userList.forEach(u -> u.setMustRecalcRating(mustRecalcRating));
 		userDao.syncUsers(userList);
+	}
+
+	public boolean newUser(String username, String password) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public User get(String username) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void resetPassword(User u) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public UserWithSkillsetsPagination getUserLeaderboard(LeaderboardSort ls, int currentPage, int itemsperpage) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

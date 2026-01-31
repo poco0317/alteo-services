@@ -20,10 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.ChartWithCount;
+import com.etterna.services.opensearch.model.ChartWithSkillsets;
 import com.etterna.services.opensearch.model.HighScore;
 import com.etterna.services.opensearch.model.Pack;
-import com.etterna.site.dto.ChartWithCount;
-import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.util.CacheEarlyExit;
 import com.etterna.util.LogRuntime;

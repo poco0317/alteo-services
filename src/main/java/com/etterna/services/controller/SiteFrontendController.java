@@ -32,20 +32,20 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.etterna.multi.data.GameLobby;
+import com.etterna.services.ChartService;
 import com.etterna.services.MultiplayerDataService;
 import com.etterna.services.MultiplayerRequestService;
+import com.etterna.services.PackService;
+import com.etterna.services.RankingService;
+import com.etterna.services.ScoreService;
+import com.etterna.services.UserService;
 import com.etterna.services.XmlProfileParsingService;
 import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
-import com.etterna.services.opensearch.dao.ChartDao;
-import com.etterna.services.opensearch.dao.HighScoreDao;
-import com.etterna.services.opensearch.dao.PackDao;
-import com.etterna.services.opensearch.dao.RankingDao;
-import com.etterna.services.opensearch.dao.UserDao;
-import com.etterna.services.opensearch.model.HighScoreFullUnion;
-import com.etterna.services.opensearch.model.Pack;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.Pack;
+import com.etterna.services.data.User;
+import com.etterna.services.jpa.model.HighScoreFullUnion;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;
@@ -68,22 +68,22 @@ import lombok.extern.slf4j.Slf4j;
 public class SiteFrontendController {
 	
 	@Autowired
-	private UserDao users;
+	private UserService users;
 	
 	@Autowired
-	private HighScoreDao scores;
+	private ScoreService scores;
 	
 	@Autowired
 	private XmlProfileParsingService xmls;
 	
 	@Autowired
-	private ChartDao charts;
+	private ChartService charts;
 	
 	@Autowired
-	private RankingDao chartRanking;
+	private RankingService chartRanking;
 	
 	@Autowired
-	private PackDao packs;
+	private PackService packs;
 	
 	@Autowired
 	private MultiplayerRequestService multiplayerApi;
