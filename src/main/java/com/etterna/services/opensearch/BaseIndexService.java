@@ -168,7 +168,7 @@ public abstract class BaseIndexService<T extends IOpenSearchModel> implements Ap
 				}
 			}).flatMap((l) -> 
 				l.stream()
-			).toList();
+			).collect(Collectors.toList());
 			
 			long a2 = System.currentTimeMillis();
 			m_logger.info(" - parallelscroll took {}ms", a2-a1);
