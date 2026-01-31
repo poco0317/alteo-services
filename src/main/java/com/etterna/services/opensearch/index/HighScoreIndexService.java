@@ -1,4 +1,4 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,10 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.Skillset;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.HighScore;
 import com.etterna.services.opensearch.model.HighScoreCollection;
+import com.etterna.services.opensearch.model.User;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ProfileSort;
 import com.etterna.util.CacheEarlyExit;

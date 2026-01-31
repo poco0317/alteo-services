@@ -20,10 +20,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 
-import com.etterna.services.dao.UserDao;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
-import com.etterna.services.opensearch.HighScoreIndexService;
+import com.etterna.services.opensearch.dao.UserDao;
+import com.etterna.services.opensearch.index.HighScoreIndexService;
+import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.opensearch.model.User;
 
 import lombok.extern.slf4j.Slf4j;
 

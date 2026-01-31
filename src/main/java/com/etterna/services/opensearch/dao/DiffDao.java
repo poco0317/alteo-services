@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,10 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartSkillsetValuesHistory;
-import com.etterna.services.opensearch.ChartDiffValueHistoryIndexService;
-import com.etterna.services.opensearch.ChartIndexService;
+import com.etterna.services.opensearch.index.ChartDiffValueHistoryIndexService;
+import com.etterna.services.opensearch.index.ChartIndexService;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
 
 import lombok.extern.slf4j.Slf4j;
 

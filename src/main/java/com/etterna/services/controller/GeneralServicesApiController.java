@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.etterna.services.XmlProfileParsingService;
-import com.etterna.services.dao.RankingDao;
+import com.etterna.services.opensearch.dao.RankingDao;
 
 import lombok.extern.slf4j.Slf4j;
 

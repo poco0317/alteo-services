@@ -26,12 +26,12 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardSkillsetDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardUserDTO;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
-import com.etterna.services.dao.ChartDao;
-import com.etterna.services.dao.HighScoreDao;
-import com.etterna.services.dao.RankingDao;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
+import com.etterna.services.opensearch.dao.ChartDao;
+import com.etterna.services.opensearch.dao.HighScoreDao;
+import com.etterna.services.opensearch.dao.RankingDao;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.opensearch.model.User;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.ScoreService;
-import com.etterna.services.dao.RankingDao;
-import com.etterna.services.dao.UserDao;
+import com.etterna.services.opensearch.dao.RankingDao;
+import com.etterna.services.opensearch.dao.UserDao;
 
 import lombok.extern.slf4j.Slf4j;
 

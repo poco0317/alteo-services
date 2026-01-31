@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,12 +24,12 @@ import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsets;
 import com.etterna.services.controller.legacy.dto.UserWithSkillsetsPagination;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
-import com.etterna.services.model.UserSkillsetValuesHistory;
-import com.etterna.services.opensearch.HighScoreIndexService;
-import com.etterna.services.opensearch.UserIndexService;
-import com.etterna.services.opensearch.UserSkillsetValueIndexService;
+import com.etterna.services.opensearch.index.HighScoreIndexService;
+import com.etterna.services.opensearch.index.UserIndexService;
+import com.etterna.services.opensearch.index.UserSkillsetValueIndexService;
+import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.opensearch.model.User;
+import com.etterna.services.opensearch.model.UserSkillsetValuesHistory;
 import com.etterna.site.dto.LeaderboardSort;
 
 @Service

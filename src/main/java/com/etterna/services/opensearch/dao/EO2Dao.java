@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.net.URI;
 import java.net.http.HttpClient;

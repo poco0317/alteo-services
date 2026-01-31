@@ -1,4 +1,4 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import java.util.List;
 import java.util.Set;
@@ -8,9 +8,9 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.model.Role;
-import com.etterna.services.model.RoleUser;
-import com.etterna.services.model.User;
+import com.etterna.services.opensearch.model.Role;
+import com.etterna.services.opensearch.model.RoleUser;
+import com.etterna.services.opensearch.model.User;
 
 import lombok.extern.slf4j.Slf4j;
 

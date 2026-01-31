@@ -3,7 +3,7 @@ package com.etterna.site.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.etterna.services.model.Chart;
+import com.etterna.services.opensearch.model.Chart;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
 
 import lombok.Getter;

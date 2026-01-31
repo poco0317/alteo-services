@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.etterna.services.dao.RankingDao;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
+import com.etterna.services.opensearch.dao.RankingDao;
+import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.opensearch.model.User;
 
 import lombok.Getter;
 import lombok.Setter;

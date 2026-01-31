@@ -1,9 +1,9 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.model.User;
-import com.etterna.services.model.UserSkillsetValuesHistory;
+import com.etterna.services.opensearch.model.User;
+import com.etterna.services.opensearch.model.UserSkillsetValuesHistory;
 
 @Service
 public class UserSkillsetValueIndexService extends BaseIndexService<UserSkillsetValuesHistory> {

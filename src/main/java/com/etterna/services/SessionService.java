@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 import com.etterna.services.controller.legacy.dto.LoginRequest;
 import com.etterna.services.controller.legacy.dto.LoginResponse;
 import com.etterna.services.controller.legacy.dto.LoginResponse.SessionTokenDTO;
-import com.etterna.services.dao.UserDao;
-import com.etterna.services.model.LoginSession;
-import com.etterna.services.model.User;
-import com.etterna.services.opensearch.LoginSessionIndexService;
+import com.etterna.services.opensearch.dao.UserDao;
+import com.etterna.services.opensearch.index.LoginSessionIndexService;
+import com.etterna.services.opensearch.model.LoginSession;
+import com.etterna.services.opensearch.model.User;
 
 import io.jsonwebtoken.Jwts;
 

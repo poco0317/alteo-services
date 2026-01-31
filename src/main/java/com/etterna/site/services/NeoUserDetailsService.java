@@ -8,9 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.model.User;
-import com.etterna.services.opensearch.RoleIndexService;
-import com.etterna.services.opensearch.UserIndexService;
+import com.etterna.services.opensearch.index.RoleIndexService;
+import com.etterna.services.opensearch.index.UserIndexService;
+import com.etterna.services.opensearch.model.User;
 import com.etterna.site.dto.NeoUserPrincipal;
 
 @Service

@@ -6,8 +6,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import com.etterna.services.dao.EO2Dao;
-import com.etterna.services.dao.RankingDao;
+import com.etterna.services.opensearch.dao.EO2Dao;
+import com.etterna.services.opensearch.dao.RankingDao;
 
 import lombok.extern.slf4j.Slf4j;
 

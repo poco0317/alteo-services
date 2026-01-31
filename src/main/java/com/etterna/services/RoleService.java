@@ -12,10 +12,10 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.model.Role;
-import com.etterna.services.model.RoleUser;
-import com.etterna.services.opensearch.RoleIndexService;
-import com.etterna.services.opensearch.RoleUserIndexService;
+import com.etterna.services.opensearch.index.RoleIndexService;
+import com.etterna.services.opensearch.index.RoleUserIndexService;
+import com.etterna.services.opensearch.model.Role;
+import com.etterna.services.opensearch.model.RoleUser;
 
 import lombok.extern.slf4j.Slf4j;
 

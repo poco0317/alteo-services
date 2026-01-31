@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,14 +25,14 @@ import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.HighScorePagination;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
-import com.etterna.services.opensearch.HighScoreHistoryIndexService;
-import com.etterna.services.opensearch.HighScoreIndexService;
-import com.etterna.services.opensearch.UserIndexService;
+import com.etterna.services.opensearch.index.HighScoreHistoryIndexService;
+import com.etterna.services.opensearch.index.HighScoreIndexService;
+import com.etterna.services.opensearch.index.UserIndexService;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.HighScore;
 import com.etterna.services.opensearch.model.HighScoreCollection;
 import com.etterna.services.opensearch.model.HighScoreFullUnion;
+import com.etterna.services.opensearch.model.User;
 import com.etterna.site.dto.AllLeaderboardSort;
 import com.etterna.site.dto.ChartLeaderboardPagination;
 import com.etterna.site.dto.ChartLeaderboardSort;

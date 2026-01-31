@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +14,10 @@ import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.Pack;
-import com.etterna.services.opensearch.ChartIndexService;
-import com.etterna.services.opensearch.PackIndexService;
+import com.etterna.services.opensearch.index.ChartIndexService;
+import com.etterna.services.opensearch.index.PackIndexService;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.Pack;
 
 @Service
 public class PackDao {

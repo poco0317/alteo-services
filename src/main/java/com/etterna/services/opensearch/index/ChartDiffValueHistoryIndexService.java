@@ -1,4 +1,4 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartSkillsetValuesHistory;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
 import com.etterna.util.LogRuntime;
 
 @Service

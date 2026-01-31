@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,11 +23,11 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.dao.NoteInfoDao;
-import com.etterna.calc.datamodel.NoteInfo;
-import com.etterna.services.dao.SongCacheData.ChartCacheData;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.ChartSkillsetValuesHistory;
-import com.etterna.services.model.Pack;
+import com.etterna.calc.data.NoteInfo;
+import com.etterna.services.opensearch.dao.SongCacheData.ChartCacheData;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
+import com.etterna.services.opensearch.model.Pack;
 
 import lombok.extern.slf4j.Slf4j;
 

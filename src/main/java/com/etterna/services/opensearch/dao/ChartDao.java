@@ -1,4 +1,4 @@
-package com.etterna.services.dao;
+package com.etterna.services.opensearch.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,11 +15,9 @@ import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.etterna.calc.CalcManager;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.Pack;
-import com.etterna.services.opensearch.ChartDiffValueHistoryIndexService;
-import com.etterna.services.opensearch.ChartIndexService;
+import com.etterna.services.opensearch.index.ChartIndexService;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.Pack;
 import com.etterna.site.dto.ChartWithCount;
 import com.etterna.site.dto.ChartWithSkillsets;
 import com.etterna.site.dto.ChartsInPackPagination;
@@ -27,25 +25,15 @@ import com.etterna.site.dto.PackContentSort;
 import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
-import com.etterna.util.LogRuntime;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class ChartDao {
 		
 	@Autowired
 	private ChartIndexService chartsIndex;
 	
 	@Autowired
-	private ChartDiffValueHistoryIndexService diffIndex;
-	
-	@Autowired
 	private PackDao packs;
-	
-	@Autowired
-	private CalcManager calc;
 	
 	@Transactional
 	public Chart get(String chartkey) {

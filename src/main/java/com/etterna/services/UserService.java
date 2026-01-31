@@ -21,11 +21,11 @@ import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO.Sk
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
-import com.etterna.services.dao.HighScoreDao;
-import com.etterna.services.dao.UserDao;
-import com.etterna.services.model.Chart;
-import com.etterna.services.model.HighScore;
-import com.etterna.services.model.User;
+import com.etterna.services.opensearch.dao.HighScoreDao;
+import com.etterna.services.opensearch.dao.UserDao;
+import com.etterna.services.opensearch.model.Chart;
+import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.opensearch.model.User;
 
 @Service
 public class UserService {

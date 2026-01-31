@@ -2,7 +2,7 @@ package com.etterna.services.opensearch.model;
 
 import java.util.List;
 
-import com.etterna.services.model.HighScore;
+import com.etterna.services.opensearch.model.HighScore;
 
 import lombok.Getter;
 import lombok.Setter;

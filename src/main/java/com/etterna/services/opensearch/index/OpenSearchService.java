@@ -1,4 +1,4 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -61,12 +61,20 @@ public class OpenSearchService {
 	@Value("${opensearch.ssl.enabled}")
 	private Boolean sslEnabled;
 	
+	@Value("${opensearch.enabled}")
+	private Boolean openSearchEnabled;
+	
 	private OpenSearchClient client = null;
 
 	private OpenSearchClient client() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 		if (this.client != null) return this.client;
 		//System.setProperty("javax.net.ssl.trustStore", "/full/path/to/keystore");
 		//System.setProperty("javax.net.ssl.trustStorePassword", "password-to-keystore");
+		
+		if (!openSearchEnabled) {
+			m_logger.warn("OpenSearch is disabled. Client will not be generated");
+			return null;
+		}
 		
 		m_logger.info("Connecting to '{}' port '{}' ", dbhost, dbport);
 		

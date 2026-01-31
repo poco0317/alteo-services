@@ -1,4 +1,4 @@
-package com.etterna.services.opensearch;
+package com.etterna.services.opensearch.index;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.etterna.services.model.IOpenSearchModel;
+import com.etterna.services.opensearch.model.IOpenSearchModel;
 import com.etterna.util.LogRuntime;
 
 import lombok.extern.slf4j.Slf4j;
