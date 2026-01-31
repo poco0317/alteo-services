@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import javax.transaction.Transactional;
 
@@ -14,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.etterna.calc.CalcManager;
 import com.etterna.calc.Skillset;
 import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO;
 import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO;
@@ -21,11 +25,13 @@ import com.etterna.services.controller.legacy.dto.GetSkillsetTopXDTO.ScoreDTO.Sk
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO;
 import com.etterna.services.controller.legacy.dto.GetUserInfoResponse.UserInfoDTO.UserSkillsetDTO;
-import com.etterna.services.opensearch.dao.HighScoreDao;
-import com.etterna.services.opensearch.dao.UserDao;
-import com.etterna.services.opensearch.model.Chart;
-import com.etterna.services.opensearch.model.HighScore;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.Chart;
+import com.etterna.services.data.HighScore;
+import com.etterna.services.data.User;
+import com.etterna.services.data.UserSkillsetValuesHistory;
+import com.etterna.services.jpa.dao.HighScoreDao;
+import com.etterna.services.jpa.dao.UserDao;
+import com.etterna.services.jpa.dao.UserSkillsetValuesHistoryDao;
 
 @Service
 public class UserService {
@@ -33,10 +39,102 @@ public class UserService {
 	private static final Logger m_logger = LoggerFactory.getLogger(UserService.class);
 	
 	@Autowired
-	private UserDao users;
+	private UserDao userDao;
 	
 	@Autowired
 	private HighScoreDao scores;
+	
+	@Autowired
+	private CalcManager calc;
+	
+	@Autowired
+	private UserSkillsetValuesHistoryDao ussvHistory;
+	
+	public void maintainUserSkillsetRatings() {
+		List<User> users = userDao.findByMustRecalcRatingTrue();
+		if (!users.isEmpty()) {
+			m_logger.info("Updating user skillset ratings for {} users", users.size());
+			final int calcVer = calc.getCalcVersion();
+			
+			for (User user : users) {
+				UserSkillsetValuesHistory ssvals = ussvHistory.findByUserAndCalcVersion(user, calcVer);
+				if (ssvals != null) {
+					ussvHistory.delete(ssvals);
+				}
+				
+				HashMap<Skillset, List<Double>> skillsetSSRs = new HashMap<>();
+				BiConsumer<Skillset, Double> addskillset = (ss, v) -> {
+					if (!skillsetSSRs.containsKey(ss)) {
+						skillsetSSRs.put(ss, new ArrayList<>());
+					}
+					skillsetSSRs.get(ss).add(v);
+				};
+				
+				List<HighScore> userScores = scores.findByUser(user);
+				m_logger.info("Updating user {} SSRs - {} total scores", user.getUsername(), userScores.size());
+				for (HighScore hs : userScores) {
+					if (hs.getCalcVersion() != calc.getCalcVersion()) {
+						continue;
+					}
+					
+					addskillset.accept(Skillset.STREAM, hs.getStream());
+					addskillset.accept(Skillset.JUMPSTREAM, hs.getJumpstream());
+					addskillset.accept(Skillset.HANDSTREAM, hs.getHandstream());
+					addskillset.accept(Skillset.STAMINA, hs.getStamina());
+					addskillset.accept(Skillset.JACKSPEED, hs.getJackspeed());
+					addskillset.accept(Skillset.CHORDJACK, hs.getChordjack());
+					addskillset.accept(Skillset.TECHNICAL, hs.getTechnical());
+				}
+				
+				// this should work out correctly
+				// basically, we want a list of only Stream -> Tech not including the 0.0 Overall
+				List<Double> newssvals = new LinkedList<>();
+				for (Skillset ss : Skillset.values()) {
+					switch (ss) {
+						case OVERALL:
+						{
+							break;
+						}
+						case STREAM:
+						case JUMPSTREAM:
+						case HANDSTREAM:
+						case STAMINA:
+						case JACKSPEED:
+						case CHORDJACK:
+						case TECHNICAL:
+						{
+							if (skillsetSSRs.containsKey(ss)) {
+								Collections.sort(skillsetSSRs.get(ss), Collections.reverseOrder());
+								Double v = calc.aggregateSkill(skillsetSSRs.get(ss), 0.1, 1.05, 0.0, 10.24);
+								newssvals.add(v);
+							} else {
+								newssvals.add(0.0);
+							}
+							break;
+						}
+						default:
+							break;
+					}
+				}
+				
+				newssvals.add(0, calc.aggregateSkill(newssvals, 0.1, 1.125, 0.0, 10.24));
+				user.setSs1Value(newssvals.get(0));
+				user.setSs2Value(newssvals.get(1));
+				user.setSs3Value(newssvals.get(2));
+				user.setSs4Value(newssvals.get(3));
+				user.setSs5Value(newssvals.get(4));
+				user.setSs6Value(newssvals.get(5));
+				user.setSs7Value(newssvals.get(6));
+				user.setSs8Value(newssvals.get(7));
+				user.setMustRecalcRating(false);
+				ussvHistory.save(new UserSkillsetValuesHistory(user.getUsername(), calcVer, newssvals));
+				userDao.save(user);
+				m_logger.info("Updated user {} SSRs", user.getUsername());
+			}
+			
+			m_logger.info("Finished updating user skillset ratings");
+		}
+	}
 
 	public void addFavorite() {
 		// TODO Auto-generated method stub
@@ -78,7 +176,7 @@ public class UserService {
 		m_logger.info("Getting Top {} for user {} - Skillset {}", count, username, skillset);
 		Skillset actualSkillset = Skillset.fromEttString(skillset);
 		
-		User user = users.get(username);
+		User user = userDao.get(username);
 		if (user == null) {
 			return null;
 		}
@@ -142,7 +240,7 @@ public class UserService {
 
 	@Transactional
 	public GetUserInfoResponse getUserInfo(String userName) {
-		User user = users.get(userName);
+		User user = userDao.get(userName);
 		if (user == null) {
 			return null;
 		}
@@ -164,12 +262,12 @@ public class UserService {
 	}
 	
 	public Map<String, User> getByUsernamesMap(Collection<String> usernames) {
-		return users.getByUserNamesMap(usernames);
+		return userDao.getByUserNamesMap(usernames);
 	}
 
 	public void setMustRecalcRating(Collection<User> userList, boolean mustRecalcRating) {
 		userList.forEach(u -> u.setMustRecalcRating(mustRecalcRating));
-		users.syncUsers(userList);
+		userDao.syncUsers(userList);
 	}
 
 }

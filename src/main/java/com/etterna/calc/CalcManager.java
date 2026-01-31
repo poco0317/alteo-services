@@ -1,16 +1,11 @@
 package com.etterna.calc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
@@ -21,9 +16,9 @@ import org.springframework.stereotype.Service;
 
 import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.jni.MinaCalcJNI;
-import com.etterna.services.opensearch.model.Chart;
-import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
-import com.etterna.services.opensearch.model.HighScore;
+import com.etterna.services.data.Chart;
+import com.etterna.services.data.ChartWithSkillsetValuesHistory;
+import com.etterna.services.data.HighScore;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,7 +66,7 @@ public class CalcManager {
 		
 		m_logger.debug("Calculating SSR - {} - {}x - {}%", chartkey, rate, goal * 100);
 		byte[] data = noteInfo.getData(chartkey);
-		int ifThisIsntHereItCrashes = data.length;
+		int ifThisIsntHereItCrashes = data.length; // force runtime exception if data is null
 		float[] ssrs = calc().minaSDCalcBytes(data, rate, goal);
 		List<Float> o = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
@@ -96,7 +91,7 @@ public class CalcManager {
 		List<List<Float>> ssrs = new ArrayList<>();
 		MinaCalcJNI calc = calc();
 		byte[] data = noteInfo.getData(chartkey);
-		int ifThisIsntHereItCrashes = data.length;
+		int ifThisIsntHereItCrashes = data.length; // force runtime exception if data is null
 		for (float[] rg : rategoals) {
 			float[] ssr = calc.minaSDCalcBytes(data, rg[0], rg[1]);
 			List<Float> o = new ArrayList<>(ssr.length);
@@ -124,7 +119,7 @@ public class CalcManager {
 		Map<HighScore, List<Float>> hsToSsrs = new HashMap<>();
 		MinaCalcJNI calc = calc();
 		byte[] data = noteInfo.getData(chartkey);
-		int ifThisIsntHereItCrashes = data.length;
+		int ifThisIsntHereItCrashes = data.length; // force runtime exception if data is null
 		hses.forEach(hs -> {
 			float rate = hs.getMusicRate() / 100.F;
 			float goal = hs.getSsrNorm() / 1000000.F;
@@ -164,7 +159,7 @@ public class CalcManager {
 	 */
 	@Deprecated
 	@Transactional
-	public String diffsToString(Set<ChartSkillsetValuesHistory> diffs, boolean inHTMLTableForm) {
+	public String diffsToString(Set<ChartWithSkillsetValuesHistory> diffs, boolean inHTMLTableForm) {
 		StringBuilder sb = new StringBuilder();
 		
 		/*
@@ -218,11 +213,11 @@ public class CalcManager {
 	/**
 	 * Will return calc diff values for a chart
 	 */
-	public ChartSkillsetValuesHistory calcDiffValues(Chart c, float rate, float goal) {
+	public ChartWithSkillsetValuesHistory calcDiffValues(Chart c, float rate, float goal) {
 		final String ck = c.getChartKey();
 		m_logger.trace("Getting MSD for file {}", ck);
 		byte[] data = noteInfo.getData(ck);
-		int ifThisIsntHereItCrashes = data.length;
+		int ifThisIsntHereItCrashes = data.length; // force runtime exception if data is null
 		float[] ssrs = calc().minaSDCalcBytes(data, rate, goal);
 		List<Double> diffs = new ArrayList<>(ssrs.length);
 		for (float f : ssrs) {
@@ -232,7 +227,7 @@ public class CalcManager {
 			diffs.add(0.0);
 		}
 		final Integer ver = getCalcVersion();
-		return new ChartSkillsetValuesHistory(ck, ver, diffs.get(0), diffs.get(1), diffs.get(2), diffs.get(3), diffs.get(4), diffs.get(5), diffs.get(6), diffs.get(7));
+		return new ChartWithSkillsetValuesHistory(ck, ver, diffs.get(0), diffs.get(1), diffs.get(2), diffs.get(3), diffs.get(4), diffs.get(5), diffs.get(6), diffs.get(7));
 	}
 	
 	/**

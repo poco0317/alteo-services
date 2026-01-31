@@ -32,6 +32,7 @@ import com.etterna.services.opensearch.model.User;
 import com.etterna.services.opensearch.model.UserSkillsetValuesHistory;
 import com.etterna.site.dto.LeaderboardSort;
 
+@Deprecated
 @Service
 public class UserDao {
 

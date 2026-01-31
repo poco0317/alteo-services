@@ -8,19 +8,19 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.opensearch.index.RoleIndexService;
-import com.etterna.services.opensearch.index.UserIndexService;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.User;
+import com.etterna.services.jpa.dao.RoleDao;
+import com.etterna.services.jpa.dao.UserDao;
 import com.etterna.site.dto.NeoUserPrincipal;
 
 @Service
 public class NeoUserDetailsService implements UserDetailsService {
 		
 	@Autowired
-	private UserIndexService users;
+	private UserDao users;
 	
 	@Autowired
-	private RoleIndexService roles;
+	private RoleDao roles;
 	
 	private User get(String username) {
 		List<User> us = users.findByUsername(username);

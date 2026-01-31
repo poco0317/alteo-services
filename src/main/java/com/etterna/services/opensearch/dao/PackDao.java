@@ -19,6 +19,7 @@ import com.etterna.services.opensearch.index.PackIndexService;
 import com.etterna.services.opensearch.model.Chart;
 import com.etterna.services.opensearch.model.Pack;
 
+@Deprecated
 @Service
 public class PackDao {
 

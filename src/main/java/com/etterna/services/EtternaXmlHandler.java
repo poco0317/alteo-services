@@ -9,9 +9,8 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.etterna.services.opensearch.dao.RankingDao;
-import com.etterna.services.opensearch.model.HighScore;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.HighScore;
+import com.etterna.services.data.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +21,7 @@ import lombok.Setter;
 public class EtternaXmlHandler extends DefaultHandler {
 	
 	@Autowired
-	private RankingDao chartRanking;
+	private RankingService chartRanking;
 	
 	private StringBuilder currentValue = new StringBuilder();
 	private List<HighScore> highscores;

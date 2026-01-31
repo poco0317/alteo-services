@@ -21,6 +21,7 @@ import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Service
 @Slf4j
 public class DiffDao {

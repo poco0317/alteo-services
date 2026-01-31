@@ -13,17 +13,16 @@ import javax.transaction.Transactional;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 
-import com.etterna.services.opensearch.dao.UserDao;
-import com.etterna.services.opensearch.index.HighScoreIndexService;
-import com.etterna.services.opensearch.model.HighScore;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.HighScore;
+import com.etterna.services.data.User;
+import com.etterna.services.jpa.dao.HighScoreDao;
+import com.etterna.services.jpa.dao.UserDao;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class XmlProfileParsingService {
 	
 	@Autowired
-	private HighScoreIndexService highScoreIndex;
+	private HighScoreDao highScoreIndex;
 	
 	@Autowired
 	private SessionService sessions;
@@ -113,7 +112,7 @@ public class XmlProfileParsingService {
 			
 			m_logger.info("Finished parsing XML for user {} - {} ranked scores - Saving to DB", user.getUsername(), highscores.size());
 			if (highscores.size() > 0)
-				highScoreIndex.saveBulk(highscores, Refresh.False);
+				highScoreIndex.saveBulk(highscores);
 			m_logger.info("Saved highscores for user {} to DB", user.getUsername());
 			
 			return null; // success

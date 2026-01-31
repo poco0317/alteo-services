@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
-import org.opensearch.client.opensearch._types.Refresh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,10 @@ import org.springframework.stereotype.Service;
 import com.etterna.services.controller.legacy.dto.LoginRequest;
 import com.etterna.services.controller.legacy.dto.LoginResponse;
 import com.etterna.services.controller.legacy.dto.LoginResponse.SessionTokenDTO;
-import com.etterna.services.opensearch.dao.UserDao;
-import com.etterna.services.opensearch.index.LoginSessionIndexService;
-import com.etterna.services.opensearch.model.LoginSession;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.LoginSession;
+import com.etterna.services.data.User;
+import com.etterna.services.jpa.dao.LoginSessionDao;
+import com.etterna.services.jpa.dao.UserDao;
 
 import io.jsonwebtoken.Jwts;
 
@@ -28,7 +27,7 @@ public class SessionService {
 	private static final Logger m_logger = LoggerFactory.getLogger(SessionService.class);
 
 	@Autowired
-	private LoginSessionIndexService loginSessionIndex;
+	private LoginSessionDao sessions;
 	
 	@Autowired
 	private UserDao users;
@@ -63,8 +62,8 @@ public class SessionService {
 	 */
 	@Transactional
 	public boolean validateSession(String jwt) {
-		LoginSession sessions = loginSessionIndex.findById(jwt);
-		if (sessions == null) {
+		LoginSession session = sessions.findById(jwt);
+		if (session == null) {
 			return false;
 		}
 		return true;
@@ -72,7 +71,7 @@ public class SessionService {
 	
 	@Transactional
 	public User sessionToUser(String jwt) {
-		LoginSession sess = loginSessionIndex.findById(jwt);
+		LoginSession sess = sessions.findById(jwt);
 		if (sess != null) {
 			return users.getByUserId(sess.getUsername());
 		}
@@ -92,7 +91,7 @@ public class SessionService {
 		session.setCreatedAt(now);
 		session.setUsername(user.getUsername());
 		session.setSessionJwt(jwt);
-		loginSessionIndex.save(session, Refresh.True);
+		sessions.save(session);
 		return jwt;
 	}
 

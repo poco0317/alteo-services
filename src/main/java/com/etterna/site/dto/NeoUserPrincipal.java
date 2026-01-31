@@ -9,8 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.etterna.services.opensearch.model.Role;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.Role;
+import com.etterna.services.data.User;
 
 import lombok.Getter;
 import lombok.Setter;

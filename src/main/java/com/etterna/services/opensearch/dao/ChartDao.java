@@ -26,6 +26,7 @@ import com.etterna.site.dto.PackNameWithChartCount;
 import com.etterna.site.dto.PackNameWithChartCountPagination;
 import com.etterna.site.dto.PacksSort;
 
+@Deprecated
 @Service
 public class ChartDao {
 		

@@ -5,17 +5,17 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.opensearch.client.opensearch._types.Refresh;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.stereotype.Service;
 
-import com.etterna.services.opensearch.index.RoleIndexService;
-import com.etterna.services.opensearch.index.RoleUserIndexService;
-import com.etterna.services.opensearch.model.Role;
-import com.etterna.services.opensearch.model.RoleUser;
+import com.etterna.services.data.Role;
+import com.etterna.services.data.RoleUser;
+import com.etterna.services.data.RoleUserId;
+import com.etterna.services.jpa.dao.RoleDao;
+import com.etterna.services.jpa.dao.RoleUserDao;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,10 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 public class RoleService {
 	
 	@Autowired
-	private RoleIndexService roles;
+	private RoleDao roles;
 	
 	@Autowired
-	private RoleUserIndexService userRoleIndex;
+	private RoleUserDao userRoles;
 	
 	public static final String ROLE_ADMIN = "ROLE_ADMIN";
 	public static final String ROLE_USER = "ROLE_USER";
@@ -46,7 +46,7 @@ public class RoleService {
 			m_logger.info("Created new role {}", name);
 			role = new Role();
 			role.setName(name);
-			roles.save(role, Refresh.True);
+			roles.save(role);
 		}
 		return role;
 	}
@@ -70,9 +70,10 @@ public class RoleService {
 	@Transactional
 	public void grantRole(String username, String role) {
 		RoleUser urole = new RoleUser();
-		urole.setRole(role);
-		urole.setUsername(username);
-		userRoleIndex.save(urole, Refresh.True);
+		RoleUserId id = new RoleUserId();
+		id.setRole(role);
+		id.setUsername(username);
+		userRoles.save(urole);
 	}
 	
 	

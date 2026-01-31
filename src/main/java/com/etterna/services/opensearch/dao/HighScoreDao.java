@@ -44,6 +44,7 @@ import com.etterna.util.SelfExpiringCache;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Service
 @Slf4j
 public class HighScoreDao {

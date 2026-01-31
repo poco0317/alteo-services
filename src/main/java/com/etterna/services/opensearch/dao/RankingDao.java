@@ -18,19 +18,20 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.etterna.calc.CalcManager;
 import com.etterna.calc.dao.NoteInfoDao;
 import com.etterna.calc.data.NoteInfo;
-import com.etterna.services.opensearch.dao.SongCacheData.ChartCacheData;
+import com.etterna.services.SongCacheData;
+import com.etterna.services.SongCacheData.ChartCacheData;
 import com.etterna.services.opensearch.model.Chart;
 import com.etterna.services.opensearch.model.ChartSkillsetValuesHistory;
 import com.etterna.services.opensearch.model.Pack;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Service
 @Slf4j
 public class RankingDao {
@@ -56,7 +57,7 @@ public class RankingDao {
 	private static Map<String, List<String>> packRankQueue = new ConcurrentHashMap<>();
 	private static Map<String, byte[]> noteinfoQueue = new ConcurrentHashMap<>();
 	
-	@Scheduled(fixedDelay = RANKING_QUEUE_TIMER)
+	//@Scheduled(fixedDelay = RANKING_QUEUE_TIMER)
 	void handlePackRankQueue() {
 		if (packRankQueue.size() == 0) {
 			return;
@@ -125,7 +126,10 @@ public class RankingDao {
 			List<Future<Object[]>> futures = new LinkedList<>();
 			all.forEach(c -> {
 				futures.add(bulkCalc.submit(() -> {
-					return new Object[] {c, calc.calcDiffValues(c, 1.f,.93f)};
+					return new Object[] {
+							c,
+							null//calc.calcDiffValues(c, 1.f,.93f)
+							};
 				}));
 			});
 			

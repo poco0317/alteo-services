@@ -26,12 +26,11 @@ import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.Leaderboar
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardSkillsetDTO;
 import com.etterna.services.controller.legacy.dto.ChartLeaderboardDTO.LeaderboardScoreDTO.LeaderboardUserDTO;
 import com.etterna.services.controller.legacy.dto.UploadScoreRequest;
-import com.etterna.services.opensearch.dao.ChartDao;
-import com.etterna.services.opensearch.dao.HighScoreDao;
-import com.etterna.services.opensearch.dao.RankingDao;
-import com.etterna.services.opensearch.model.Chart;
-import com.etterna.services.opensearch.model.HighScore;
-import com.etterna.services.opensearch.model.User;
+import com.etterna.services.data.Chart;
+import com.etterna.services.data.HighScore;
+import com.etterna.services.data.User;
+import com.etterna.services.jpa.dao.ChartDao;
+import com.etterna.services.jpa.dao.HighScoreDao;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +42,7 @@ public class ScoreService {
 	private HighScoreDao highScores;
 	
 	@Autowired
-	private RankingDao chartRanking;
+	private RankingService chartRanking;
 	
 	@Autowired
 	private ChartDao charts;
@@ -220,7 +219,8 @@ public class ScoreService {
 	
 	private void queue(UploadScoreRequest req, User user) {
 		try {
-			highScores.add(req, user);
+			// calc ver 0 to have it recalc later
+			highScores.add(req.toHighScore(user.getUsername(), 0));
 		} catch (Exception e) {
 			m_logger.warn("Threw exception when trying to queue score {} :: {}", req.getScorekey(), e.getMessage());
 		}

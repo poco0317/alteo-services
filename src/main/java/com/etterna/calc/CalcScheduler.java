@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.etterna.services.RankingService;
 import com.etterna.services.ScoreService;
-import com.etterna.services.opensearch.dao.RankingDao;
-import com.etterna.services.opensearch.dao.UserDao;
+import com.etterna.services.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,10 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CalcScheduler {
 	
 	@Autowired
-	private RankingDao packRanking;
+	private RankingService packRanking;
 	
 	@Autowired
-	private UserDao users;
+	private UserService users;
 	
 	@Autowired
 	private ScoreService scores;
