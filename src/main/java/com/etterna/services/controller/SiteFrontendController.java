@@ -180,6 +180,9 @@ public class SiteFrontendController {
 		} catch (Exception e) {}
 		
 		GameLobby lobby = multiplayerData.getSession(id);
+		if (lobby == null) {
+			return getMultiplayerSessions(model);
+		}
 		
 		model.addAttribute("sessionId", sessionId);
 		model.addAttribute("lobby", lobby);
