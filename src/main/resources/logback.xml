@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%-20(%d{yyyy-MM-dd HH:mm:ss} %highlight([%-5level])) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logs_dir:-.}/system.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover monthly -->
+            <fileNamePattern>system-%d{yyyy-MM}.log.zip</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-26(%d [%-5level]) %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="com.etterna" level="debug" />
+    <root level="INFO">
+    
+    	<appender-ref ref="ROLLING" />
+    	<appender-ref ref="STDOUT" />
+    
+    </root>
+
+</configuration>
