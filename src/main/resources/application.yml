@@ -2,12 +2,21 @@ spring:
   jpa:
     properties:
       jdbc:
-        batch_size: 500
-    generate-ddl: true
+        batch_size: 5000
+    #generate-ddl: true
     hibernate:
-      ddl-auto: update
+    #  ddl-auto: update
       show_sql: true
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+      naming_strategy: org.hibernate.cfg.EJB3NamingStrategy
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    
+    # spring boot 2.x
+    #database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    
+    # spring boot 3.x
+    database-platform: org.hibernate.dialect.MySQL8Dialect
   datasource:
     driver-class-name: ${DB_DRIVER}
     username: ${DB_USER}
