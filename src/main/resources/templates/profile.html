@@ -16,98 +16,60 @@
 				<div class="col-md-12 text-center">
 					<h1 th:object="${user}" th:text="${user.username}"></h1>
 					
-					<h4 sec:authorize="isAuthenticated()" th:if="${#authentication.getPrincipal().getUsername() == user.username}">(this is you)</h4>
-					<h6 th:object="${skillsets}" th:text="${'Overall: ' + #numbers.formatDecimal(skillsets.overall, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Stream: ' + #numbers.formatDecimal(skillsets.stream, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Jumpstream: ' + #numbers.formatDecimal(skillsets.jumpstream, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Handstream: ' + #numbers.formatDecimal(skillsets.handstream, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Stamina: ' + #numbers.formatDecimal(skillsets.stamina, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Jackspeed: ' + #numbers.formatDecimal(skillsets.jackspeed, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Chordjack: ' + #numbers.formatDecimal(skillsets.chordjack, 2, 2)}"></h6>
-					<h6 th:object="${skillsets}" th:text="${'Technical: ' + #numbers.formatDecimal(skillsets.technical, 2, 2)}"></h6>
+					<h3 th:object="${user}" th:text="${user.aboutme}"></h3>
+					
+					<h6 th:object="${user}" th:text="${'Overall: ' + #numbers.formatDecimal(user.overall, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Stream: ' + #numbers.formatDecimal(user.stream, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Jumpstream: ' + #numbers.formatDecimal(user.jumpstream, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Handstream: ' + #numbers.formatDecimal(user.handstream, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Stamina: ' + #numbers.formatDecimal(user.stamina, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Jackspeed: ' + #numbers.formatDecimal(user.jackSpeed, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Chordjack: ' + #numbers.formatDecimal(user.chordjack, 2, 2)}"></h6>
+					<h6 th:object="${user}" th:text="${'Technical: ' + #numbers.formatDecimal(user.technical, 2, 2)}"></h6>
 				</div>
 			</div>
 
-			<div class="container" style="margin-top: 2vh;" sec:authorize="isAuthenticated()"
-				th:if="${#authentication.getPrincipal().getUsername() == user.username}">
-				<h6 th:if="${param.uploaded}">Xml Uploaded! Refresh to see scores update in real time.</h6>
-				<form th:unless="${param.uploaded}"
-					method="post" th:action="@{/user/{username}/xml(username=${#authentication.getPrincipal().getUsername()})}"
-					enctype="multipart/form-data">
-					<div class="form-group">
-						<h6>Upload xml here</h6>
-						<input type="file" name="xml" accept=".xml"
-							class="form-control-file">
-					</div>
-					<button type="submit" class="btn btn-secondary btn-sm">Upload XML</button>
-				</form>
-				<h6 th:object="${uncalculatedScores}" th:if="${uncalculatedScores > -1}" th:text="${'You have ' + uncalculatedScores + ' uncalculated and eligible scores uploaded. Wait for a bit and refresh to see if they update.'}"></h6>
-				<h6 th:object="${incalculableScores}" th:if="${incalculableScores > 0}" th:text="${'You have ' + incalculableScores + ' scores that can''t be updated. They may be invalidated or malformed.'}"></h6>
-			</div>
 			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
 			
-				<ul th:if="${maxPage > 1}" th:object="${user}" class="pagination justify-content-end">
-					<li th:if="${currentPage > 1}" class="page-item">
-						<a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=1, sort=${currentSort})}">First</a>
-					</li>
-					<li th:if="${currentPage > 1}"
-						class="page-item"><a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${currentPage - 1}, sort=${currentSort})}">Prev</a>
-					</li>
-					<li th:each="page: ${pageRange}" class="page-item"
-						th:classappend="${page == currentPage} ? active"><a
-						class="page-link" th:text="${page}"
-						th:href="@{/user/{username}(username=${user.username}, page=${page}, sort=${currentSort})}"></a>
-					</li>
-					<li th:if="${maxPage != currentPage}" class="page-item"><a
-						class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${currentPage + 1}, sort=${currentSort})}">Next</a>
-					</li>
-					<li th:if="${maxPage != currentPage}"
-						class="page-item"><a class="page-link"
-						th:href="@{/user/{username}(username=${user.username}, page=${maxPage}, sort=${currentSort})}">Last</a>
-					</li>
-				</ul>
-				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm">
+				<table th:if="${#lists.size(scores) > 0}" class="table table-hover table-sm sortable-theme-bootstrap" data-sortable>
 				
 				<!-- header -->
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='SONG')}">Song Name</a></th>
-						<th scope="col">Difficulty</th>
+						<th scope="col">Song Name</th>
+						<th scope="col" data-sortable="false">Difficulty</th>
 						<th scope="col">Rate</th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='PERCENT')}">Percent</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='DATE')}">Date</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='OVERALL')}">Overall</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='STREAM')}">Stream</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='JUMPSTREAM')}">Jumpstream</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='HANDSTREAM')}">Handstream</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='STAMINA')}">Stamina</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='JACKSPEED')}">Jackspeed</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='CHORDJACK')}">Chordjack</a></th>
-						<th scope="col"><a th:href="@{/user/{username}(username=${user.username}, page=1, sort='TECHNICAL')}">Technical</a></th>
+						<th scope="col">Percent</th>
+						<th scope="col">Date</th>
+						<th scope="col">Overall</th>
+						<th scope="col">Stream</th>
+						<th scope="col">Jumpstream</th>
+						<th scope="col">Handstream</th>
+						<th scope="col">Stamina</th>
+						<th scope="col">Jackspeed</th>
+						<th scope="col">Chordjack</th>
+						<th scope="col">Technical</th>
 					</tr>
 				</thead>
 				
 				<!-- The Business. -->
 				<tbody>
 					<tr th:each="score, stat: ${scores}">
-						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${score.chartUnion.chart.title}" th:href="@{/chart/{chartkey}(chartkey=${score.chartUnion.chart.chartKey})}"></a></td>
-						<td th:text="${score.chartUnion.chart.difficulty}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.musicRate / 100.0, 1, 2) + 'x'}"></td>
-						<td><a th:text="${#numbers.formatDecimal(score.hsUnion.ssrNorm / 10000.0, 2, 4) + '%'}" th:href="@{/score/{scorekey}(scorekey=${score.hsUnion.scoreKey})}"></a></td>
-						<td th:text="${score.hsUnion.dateStr}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.overall, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.stream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.jumpstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.handstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.stamina, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.jackspeed, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.chordjack, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(score.hsUnion.technical, 2, 2)}"></td>
+						<th scope="row" th:text="${stat.index + 1}"></th>
+						<td><a th:text="${score.songname}" th:href="@{/chart/{chartkey}(chartkey=${score.chartkey})}"></a></td>
+						<td th:text="${score.difficulty}"></td>
+						<td th:text="${#numbers.formatDecimal(score.rate, 1, 2) + 'x'}"></td>
+						<td><a th:text="${#numbers.formatDecimal(score.wifescore * 100.0, 2, 4) + '%'}" th:href="@{/userscores/{username}/{scorekey}(scorekey=${score.scorekey}, username=${user.username})}"></a></td>
+						<td th:text="${score.datetime}"></td>
+						<td th:text="${#numbers.formatDecimal(score.overall, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.stream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.jumpstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.handstream, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.stamina, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.jackSpeed, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.chordjack, 2, 2)}"></td>
+						<td th:text="${#numbers.formatDecimal(score.technical, 2, 2)}"></td>
 					</tr>
 				</tbody>
 				

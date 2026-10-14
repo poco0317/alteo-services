@@ -9,9 +9,13 @@
 		content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE"></title>
 	
+	<script src="/sortable.min.js"></script>
+	
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet"
 		href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+	<link rel="stylesheet"
+		href="/sortable-theme-bootstrap.css">
 	<style>
 		.bg-primary {
 			background-color: #614080 !important;
@@ -32,16 +36,13 @@
 
 	<!-- Main Navigation -->
 	<nav class="navbar navbar-expand-md navbar-dark bg-primary">
-		<a class="navbar-brand" th:href="@{/}">notEtternaOnline</a>
+		<a class="navbar-brand" th:href="@{/}">notEtternaOnline Legacy</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
 			data-target="#navbar" aria-controls="navbar" aria-expanded="false"
 			aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		
-		<ul class="navbar-nav ml-auto" sec:authorize="hasAuthority('ROLE_ADMIN')">
-			<li class="nav-item"><a class="nav-link" th:href="@{/admin}">Admin</a></li>
-		</ul>
 		
 		<div class="collapse navbar-collapse" id="navbar">
 			<ul class="navbar-nav ml-auto">
@@ -50,18 +51,14 @@
 				<li class="nav-item"><a class="nav-link" th:href="@{/leaderboard}">Leaderboard</a></li>
 				<li class="nav-item"><a class="nav-link" th:href="@{/packs}">Packs</a></li>
 				<li class="nav-item"><a class="nav-link" href="https://etternaonline.com">Real EO</a></li>
+				<!-- 
 				<li class="nav-item" sec:authorize="isAuthenticated()">
 					<a class="nav-link" 
 						th:href="@{/user/{username}(username=${#authentication.getPrincipal().getUsername()})}"
 						th:text="${#authentication.getPrincipal().getUsername()}"></a>
 				</li>
+				-->
 				
-				<li class="nav-item" sec:authorize="!isAuthenticated()"><a class="nav-link" th:href="@{/login}">Log In</a></li>
-				<li sec:authorize="isAuthenticated()">
-					<form th:action="@{/logout}" method="post">
-						<input class="btn btn-link" type="submit" value="Log Out"/>
-					</form>
-				</li>
 			</ul>
 		</div>
 	</nav>

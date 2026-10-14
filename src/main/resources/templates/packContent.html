@@ -15,12 +15,13 @@
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<h1>Pack Contents</h1>
-					<h3 th:text="${packObj.displayName}"></h3>
+					<h3 th:text="${packname}"></h3>
 				</div>
 			</div>
 			
 			<div class="row" style="margin-top: 5vh;">
 			
+				<!-- 
 				<ul th:if="${maxPage > 1}" class="pagination justify-content-end">
 					<li th:if="${currentPage > 1}" class="page-item">
 						<a class="page-link"
@@ -44,24 +45,18 @@
 						th:href="@{/packs/{pack}(pack=${pack}, page=${maxPage}, sort=${currentSort})}">Last</a>
 					</li>
 				</ul>
-				<table th:if="${#lists.size(charts) > 0}" class="table table-hover table-sm">
+				-->
+				
+				<table th:if="${#lists.size(charts) > 0}" class="table table-hover table-sm sortable-theme-bootstrap" data-sortable>
 				
 				<!-- header -->
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='NAME')}">Song Name</a></th>
-						<th scope="col"><a>Difficulty</a></th>
-						<th scope="col"><a>Keycount</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='OVERALL')}">Overall</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='STREAM')}">Stream</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='JUMPSTREAM')}">Jumpstream</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='HANDSTREAM')}">Handstream</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='STAMINA')}">Stamina</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='JACKSPEED')}">Jackspeed</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='CHORDJACK')}">Chordjack</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='TECHNICAL')}">Technical</a></th>
-						<th scope="col"><a th:href="@{/packs/{pack}(pack=${pack}, page=1, sort='SCORES')}">Total Scores</a></th>
+						<th scope="col">Song Name</th>
+						<th scope="col">Difficulty</th>
+						<th scope="col">Overall</th>
+						<th scope="col">Total Scores</th>
 					</tr>
 				</thead>
 				
@@ -69,18 +64,10 @@
 				<tbody>
 					<tr th:each="chart, stat: ${charts}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${chart.chart.title}" th:href="@{/chart/{chart}(chart=${chart.chart.chartKey})}"></a></td>
-						<td th:text="${chart.chart.difficulty}"></td>
-						<td th:with="columnCount=${T(com.etterna.util.EtternaUtil).stepsTypeToColumnCount(chart.chart.stepsType)}" th:text="${columnCount}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.overall, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.stream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.jumpstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.handstream, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.stamina, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.jackspeed, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.chordjack, 2, 2)}"></td>
-						<td th:text="${#numbers.formatDecimal(chart.technical, 2, 2)}"></td>
-						<td th:text="${chart.scoreCount}"></td>
+						<td><a th:text="${chart.songname}" th:href="@{/chart/{chart}(chart=${chart.chartkey})}"></a></td>
+						<td th:text="${chart.difficulty}"></td>
+						<td th:text="${#numbers.formatDecimal(chart.msd, 2, 2)}"></td>
+						<td th:text="${chart.scorecount}"></td>
 					</tr>
 				</tbody>
 				

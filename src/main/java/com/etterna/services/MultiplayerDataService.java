@@ -50,7 +50,8 @@ public class MultiplayerDataService {
 				return o1.getId().compareTo(o2.getId());
 			}});
 		
-		return sessions;
+		int start = Math.min(0, sessions.size() - 50);
+		return sessions.subList(start, sessions.size());
 	}
 	
 	@Transactional

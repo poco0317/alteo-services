@@ -38,23 +38,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
-			.addFilterAfter(new RedirectingFilter(), UsernamePasswordAuthenticationFilter.class)
+			//.addFilterAfter(new RedirectingFilter(), UsernamePasswordAuthenticationFilter.class)
 			.authorizeRequests().expressionHandler(webSecurityExpressionHandler2())
 				.antMatchers("/favicon.ico").permitAll()
 				.antMatchers("/", "/home", "/register").permitAll() // base site access to public
 				.antMatchers("/user/*", "/packs*", "/leaderboard*").permitAll() // front end nav
-				.antMatchers("/user/*/*").authenticated() // front end post protected
-				.antMatchers("/login").not().authenticated() // cant login twice
-				.antMatchers("/admin").hasRole("ADMIN")
+				//.antMatchers("/user/*/*").authenticated() // front end post protected
+				//.antMatchers("/login").not().authenticated() // cant login twice
+				//.antMatchers("/admin").hasRole("ADMIN")
 				.anyRequest().permitAll() // everything else
 				.and()
-			.formLogin()
-				.loginPage("/login")
-				.permitAll()
-				.and()
-				.logout()
-				.permitAll()
-				.and()
+			//.formLogin()
+			//	.loginPage("/login")
+			//	.permitAll()
+			//	.and()
+			//	.logout()
+			//	.permitAll()
+			//	.and()
 			.exceptionHandling()
 				.accessDeniedHandler(accessDenied());
 	}

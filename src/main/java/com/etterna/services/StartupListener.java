@@ -6,8 +6,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import com.etterna.services.opensearch.dao.EO2Dao;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -17,19 +15,12 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	@Autowired
 	private RoleService roles;
 	
-	@Autowired
-	private RankingService rankedCharts;
-	
-	@Autowired
-	private EO2Dao eo2;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		m_logger.info("Beginning Application Init");
 		
-		roles.maintainRoles();
-		rankedCharts.updateRankedChartkeys();
-		eo2.refreshdata();
+		//roles.maintainRoles();
 		
 		m_logger.info("Finished Application Init");
 	}

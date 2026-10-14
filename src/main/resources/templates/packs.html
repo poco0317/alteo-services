@@ -20,6 +20,7 @@
 			
 			<div th:object="${packs}" class="row" style="margin-top: 5vh;">
 			
+				<!-- 
 				<ul th:if="${maxPage > 1}" th:object="${user}" class="pagination justify-content-end">
 					<li th:if="${currentPage > 1}" class="page-item">
 						<a class="page-link"
@@ -43,16 +44,17 @@
 						th:href="@{/packs(page=${maxPage}, sort=${currentSort})}">Last</a>
 					</li>
 				</ul>
-				<table th:if="${#lists.size(packs) > 0}" class="table table-hover table-sm">
+				-->
+				<table th:if="${#lists.size(packs) > 0}" class="table table-hover table-sm sortable-theme-bootstrap" data-sortable>
 				
 				<!-- header -->
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col"><a th:href="@{/packs(page=1, sort='NAME')}">Name</a></th>
-						<th scope="col"><a th:href="@{/packs(page=1, sort='COUNT')}">Charts In Pack</a></th>
-						<th scope="col"><a th:href="@{/packs(page=1, sort='SCORES')}">Scores In Pack</a></th>
-						<th scope="col"><a th:href="@{/packs(page=1, sort='AVG')}">Avg Scores Per Chart</a></th>
+						<th scope="col">Name</th>
+						<th scope="col">Charts In Pack</th>
+						<th scope="col">Scores In Pack</th>
+						<th scope="col">Avg Scores Per Chart</th>
 					</tr>
 				</thead>
 				
@@ -60,10 +62,10 @@
 				<tbody>
 					<tr th:each="pack, stat: ${packs}">
 						<th scope="row" th:text="${stat.index + 1 + ((currentPage-1) * 200)}"></th>
-						<td><a th:text="${pack.displayName}" th:href="@{/packs/{pack}(pack=${pack.pack})}"></a></td>
-						<td th:text="${pack.count}"></td>
-						<td th:text="${pack.scoreCount}"></td>
-						<td th:text="${#numbers.formatDecimal(pack.averageScores, 1, 2)}"></td>
+						<td><a th:text="${pack.packname}" th:href="@{/packs/{pack}(pack=${pack.packname})}"></a></td>
+						<td th:text="${pack.chartcount}"></td>
+						<td th:text="${pack.scorecount}"></td>
+						<td th:text="${#numbers.formatDecimal(pack.averagescores, 1, 2)}"></td>
 					</tr>
 				</tbody>
 				

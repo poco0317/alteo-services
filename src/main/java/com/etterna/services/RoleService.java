@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.etterna.services.data.Role;
 import com.etterna.services.data.RoleUser;
 import com.etterna.services.data.RoleUserId;
+import com.etterna.services.data.User;
 import com.etterna.services.jpa.dao.RoleDao;
 import com.etterna.services.jpa.dao.RoleUserDao;
 
@@ -74,6 +75,11 @@ public class RoleService {
 		id.setRole(role);
 		id.setUsername(username);
 		userRoles.save(urole);
+	}
+
+	public Set<Role> findByUser(User u) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

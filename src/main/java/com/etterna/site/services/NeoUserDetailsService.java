@@ -8,8 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.etterna.services.RoleService;
 import com.etterna.services.data.User;
-import com.etterna.services.jpa.dao.RoleDao;
 import com.etterna.services.jpa.dao.UserDao;
 import com.etterna.site.dto.NeoUserPrincipal;
 
@@ -20,7 +20,7 @@ public class NeoUserDetailsService implements UserDetailsService {
 	private UserDao users;
 	
 	@Autowired
-	private RoleDao roles;
+	private RoleService roles;
 	
 	private User get(String username) {
 		List<User> us = users.findByUsername(username);

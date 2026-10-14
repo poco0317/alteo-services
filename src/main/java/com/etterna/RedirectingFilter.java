@@ -32,11 +32,13 @@ public class RedirectingFilter extends GenericFilterBean {
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse resp = (HttpServletResponse) response;
 		
+		/*
 		if (isAuthenticated() && ("/register".equals(req.getRequestURI()) || "/login".equals(req.getRequestURI()))) {
 			String redir = resp.encodeRedirectURL(req.getContextPath() + "/home");
 			resp.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
 			resp.setHeader("Location",  redir);
 		}
+		*/
 		
 		chain.doFilter(req, resp);
 	}
