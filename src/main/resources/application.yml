@@ -48,6 +48,7 @@ opensearch:
 server:
   port: ${SOCKET_PORT}
   ssl:
+    enabled: ${SSL_ENABLED}
     key-alias: ${SSL_ALIAS}
     key-store: ${SSL_KEYSTORE}
     key-store-password: ${SSL_KEYSTORE_PASS}
