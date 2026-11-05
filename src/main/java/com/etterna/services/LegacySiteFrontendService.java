@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.etterna.services.data.Pack;
@@ -33,6 +34,7 @@ import com.etterna.services.repo.projection.ScoreReplayProjection;
 import com.etterna.services.repo.projection.UserSkillsetProjection;
 import com.etterna.util.EtternaUtil;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -59,6 +61,13 @@ public class LegacySiteFrontendService {
 	
 	private static int scorecount = 0;
 	private static List<PackListProjection> packcache = new ArrayList<>();
+	
+	@Value("${etterna.uid-min}")
+	private Integer UIDMIN;
+	@Value("${etterna.uid-max}")
+	private Integer UIDMAX;
+	@Value("${etterna.client}")
+	private String EXPCLIENT;
 	
 	@PostConstruct
 	public void fart() {
@@ -210,10 +219,17 @@ public class LegacySiteFrontendService {
 		JwtParser parser = Jwts.parserBuilder()
 				.requireIssuer("https://api.etternaonline.com/api/client/login")
 				.require("username", username)
+				.require("client", EXPCLIENT)
 				.build();
 		
 		try {
 			Jwt<?,?> j = parser.parse(token);
+			String sub = ((Claims)j.getBody()).getSubject();
+			Integer uid = Integer.parseInt(sub);
+			if (uid < UIDMIN || uid > UIDMAX) {
+				m_logger.warn("User with account too new tried to download xml - sub {}", sub);
+				return null;
+			}
 		} catch (Exception e) {
 			m_logger.warn(e.getMessage(), e);
 			return null;

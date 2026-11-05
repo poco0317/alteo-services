@@ -35,6 +35,10 @@ etterna:
   calc:
     scheduler:
       enabled: ${CALC_SCHEDULER_ENABLED}
+  uid-max: ${UID_MAX}
+  uid-min: ${UID_MIN}
+  client: ${EXPCLIENT}
+  
 
 opensearch:
   ssl:
