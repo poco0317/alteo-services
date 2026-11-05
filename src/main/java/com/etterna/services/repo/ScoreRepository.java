@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.etterna.services.data.Score;
 import com.etterna.services.data.ScoreId;
 import com.etterna.services.repo.projection.ScoreProjection;
+import com.etterna.services.repo.projection.ScoreReplayProjection;
 
 @Repository
 public interface ScoreRepository extends JpaRepository<Score, ScoreId> {
@@ -40,6 +41,12 @@ public interface ScoreRepository extends JpaRepository<Score, ScoreId> {
 			nativeQuery = true)
 	List<ScoreProjection> getScoresForUser2(String username);
 	
+	@Query(value = "select "
+			+ "s.scorekey, s.datetime, s.replay "
+			+ "from scores s, users u "
+			+ "where s.user_chart_rate_user_chart_userid = u.userid and u.username = :username and s.replay is not null ",
+			nativeQuery = true)
+	List<ScoreReplayProjection> getScoreReplaysForUser(String username);
 	
 	@Query(value = SELECT_SCORES2
 			+ "order by s.datetime desc limit :perpage offset :offset",

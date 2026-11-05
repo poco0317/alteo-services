@@ -1,16 +1,23 @@
 package com.etterna.services.controller;
 
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -22,6 +29,8 @@ import com.etterna.services.dto.ChartInfo;
 import com.etterna.services.dto.PackPageDto;
 import com.etterna.services.dto.UserInfoDto;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -67,6 +76,32 @@ public class SiteFrontendController {
 		model.addAttribute("scores", userinfo.getScores());
 		
 		return "profile";
+	}
+	
+	@PostMapping("/user/{username}/export")
+	public void exportUser(
+			@PathVariable("username") String username,
+			@RequestParam Map<String, String> body,
+			HttpServletResponse resp) {
+		
+		File result = frontendService.exportUser(username, body.get("tok"));
+		
+		if (result == null) {
+			m_logger.info("No file to return for username {}", username);
+			return;
+		}
+		
+		try {
+			FileInputStream fin = new FileInputStream(result);
+			resp.setContentType("application/zip");
+			resp.setHeader("Content-Disposition",  "attachment; filename="+username+".zip");
+			
+			IOUtils.copy(fin, resp.getOutputStream());
+			//resp.getOutputStream().flush();
+			resp.flushBuffer();
+		} catch (Exception e) {
+			m_logger.error(e.getMessage(), e);
+		}
 	}
 	
 	@GetMapping("/userscores/{username}/{scorekey}")
@@ -202,4 +237,9 @@ public class SiteFrontendController {
 		return "admin";
 	}
 	
+	
+	@Getter @Setter
+	public static class UserExportDto {
+		private String tok;
+	}
 }

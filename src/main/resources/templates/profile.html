@@ -28,6 +28,23 @@
 					<h6 th:object="${user}" th:text="${'Technical: ' + #numbers.formatDecimal(user.technical, 2, 2)}"></h6>
 				</div>
 			</div>
+			
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<br><br><br>
+					<form method="post" th:action="@{/user/{username}/export(username=${user.username})}">
+						<div class="form-group">
+							<h5>Download Profile</h5>
+							<h6>Paste your EtternaOnline login token from your Etterna client in this box.</h6>
+							<h6>You can find it in the install folder at /Save/LocalProfiles/????/yourtheme_settings/playerConfig.lua</h6>
+							<h6>The username associated with the token must match this profile.</h6>
+							<input type="text" name="tok" class="form-control">
+						</div>
+						<button type="submit" class="btn btn-secondary btn-sm">Download</button>
+						<h6>(This might take a long time)</h6>
+					</form>
+				</div>
+			</div>
 
 			<div th:object="${scores}" class="row" style="margin-top: 5vh;">
 			
