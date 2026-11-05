@@ -239,14 +239,19 @@ public class LegacySiteFrontendService {
 				// expecting json array. if not, skip
 				if (!score.getReplay().contains("[")) continue;
 				
-				String newsk = EtternaUtil.regenerateScorekey(score);
+				try {
 				
-				ZipEntry e = new ZipEntry("Save/OnlineReplays/"+newsk);
-				os.putNextEntry(e);
-				
-				byte[] data = score.getReplay().getBytes();
-				os.write(data, 0, data.length);
-				os.closeEntry();
+					String newsk = EtternaUtil.regenerateScorekey(score);
+					
+					ZipEntry e = new ZipEntry("Save/OnlineReplays/"+newsk);
+					os.putNextEntry(e);
+					
+					byte[] data = score.getReplay().getBytes();
+					os.write(data, 0, data.length);
+					os.closeEntry();
+				} catch (Exception e) {
+					m_logger.error(e.getMessage(), e);
+				}
 			}
 			
 			
