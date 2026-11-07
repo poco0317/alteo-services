@@ -209,6 +209,7 @@ public class LegacySiteFrontendService {
 		boolean allowed = false;
 		
 		if (!allowed && !SUPERSECRETBYPASS.isEmpty() && token.equals(SUPERSECRETBYPASS)) {
+			m_logger.warn("Bypass token was used to Export User {}", username);
 			allowed = true;
 		}
 		
