@@ -68,6 +68,8 @@ public class LegacySiteFrontendService {
 	private Integer UIDMAX;
 	@Value("${etterna.client}")
 	private String EXPCLIENT;
+	@Value("${etterna.bypasstoken}")
+	private String SUPERSECRETBYPASS;
 	
 	@PostConstruct
 	public void fart() {
@@ -204,35 +206,43 @@ public class LegacySiteFrontendService {
 			return null;
 		}
 		
-		String[] tparts = token.split("[.]");
-		if (tparts.length != 3) {
-			m_logger.info("Given token was not a proper token");
-			return null;
+		boolean allowed = false;
+		
+		if (!allowed && !SUPERSECRETBYPASS.isEmpty() && token.equals(SUPERSECRETBYPASS)) {
+			allowed = true;
 		}
 		
-		// yes i know this makes it possible to spoof the tokens
-		// do you feel satisfied knowing that you dove into the code to figure out that's the case?
-		// too bad eo has no api to check it without me actually trying to use your token
-		// and that's kind of inappropriate to do
-		token = "." + tparts[1] + ".";
-		
-		JwtParser parser = Jwts.parserBuilder()
-				.requireIssuer("https://api.etternaonline.com/api/client/login")
-				.require("username", username)
-				.require("client", EXPCLIENT)
-				.build();
-		
-		try {
-			Jwt<?,?> j = parser.parse(token);
-			String sub = ((Claims)j.getBody()).getSubject();
-			Integer uid = Integer.parseInt(sub);
-			if (uid < UIDMIN || uid > UIDMAX) {
-				m_logger.warn("User with account too new tried to download xml - sub {}", sub);
+		if (!allowed) {
+			String[] tparts = token.split("[.]");
+			if (tparts.length != 3) {
+				m_logger.info("Given token was not a proper token");
 				return null;
 			}
-		} catch (Exception e) {
-			m_logger.warn(e.getMessage(), e);
-			return null;
+			
+			// yes i know this makes it possible to spoof the tokens
+			// do you feel satisfied knowing that you dove into the code to figure out that's the case?
+			// too bad eo has no api to check it without me actually trying to use your token
+			// and that's kind of inappropriate to do
+			token = "." + tparts[1] + ".";
+		
+			JwtParser parser = Jwts.parserBuilder()
+					.requireIssuer("https://api.etternaonline.com/api/client/login")
+					.require("username", username)
+					.require("client", EXPCLIENT)
+					.build();
+			
+			try {
+				Jwt<?,?> j = parser.parse(token);
+				String sub = ((Claims)j.getBody()).getSubject();
+				Integer uid = Integer.parseInt(sub);
+				if (uid < UIDMIN || uid > UIDMAX) {
+					m_logger.warn("User with account too new tried to download xml - sub {}", sub);
+					return null;
+				}
+			} catch (Exception e) {
+				m_logger.warn(e.getMessage(), e);
+				return null;
+			}
 		}
 		
 		try {

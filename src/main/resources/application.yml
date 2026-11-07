@@ -38,6 +38,7 @@ etterna:
   uid-max: ${UID_MAX}
   uid-min: ${UID_MIN}
   client: ${EXPCLIENT}
+  bypasstoken: ${BYPASS_TOKEN}
   
 
 opensearch:
